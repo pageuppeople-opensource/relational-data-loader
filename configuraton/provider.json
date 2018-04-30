@@ -1,0 +1,87 @@
+{
+  "source_table": {
+    "name": "SmallTable",
+    "schema": "dbo"
+  },
+  "stage_table": {
+    "name": "stage_source_data",
+    "schema": "stage"
+  },
+  "load_table": {
+    "name": "load_source_data",
+    "schema": "load"
+  },
+  "batch": {
+    "size": 1000000,
+    "source_unique_column": "id"
+  },
+  "columns": [
+    {
+      "source_name": "id",
+      "destination": {
+        "name": "id",
+        "type": "sqlalchemy.Integer",
+        "nullable": false,
+        "primary_key": true
+      }
+    },
+    {
+      "source_name": "StringColumn1_That_Does_Not_Exist",
+      "destination": {
+        "name": "string_column_1",
+        "type": "citext.CIText",
+        "nullable": true
+      },
+      "column_transformer": "ToUpper.ToUpper"
+    },
+    {
+      "source_name": "StringColumn1",
+      "destination": {
+        "name": "string_column_1",
+        "type": "citext.CIText",
+        "nullable": true
+      },
+      "column_transformer": "ToUpper.ToUpper"
+    },
+    {
+      "source_name": "IntColumn1",
+      "destination": {
+        "name": "int_column_1",
+        "type": "sqlalchemy.Integer",
+        "nullable": true
+      }
+    },
+    {
+      "source_name": "StringColumn2",
+      "destination": {
+        "name": "string_column_2",
+        "type": "citext.CIText",
+        "nullable": true
+      }
+    },
+    {
+      "source_name": "DateColumn1",
+      "destination": {
+        "name": "date_column_1",
+        "type": "sqlalchemy.DateTime",
+        "nullable": true
+      }
+    },
+    {
+      "source_name": "DateColumn2",
+      "destination": {
+        "name": "date_column_2",
+        "type": "sqlalchemy.DateTime",
+        "nullable": true
+      }
+    },
+    {
+      "source_name": "DateTimeColumn1",
+      "destination": {
+        "name": "date__time_column_1",
+        "type": "sqlalchemy.DateTime",
+        "nullable": true
+      }
+    }
+  ]
+}
