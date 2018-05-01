@@ -10,7 +10,7 @@ def main(args):
     destination_engine = create_engine(args['destination-engine'])
 
     data_load_manager = DataLoadManager(args['configuration-folder'])
-    data_load_manager.start_import(source_engine, destination_engine, "provider", True)
+    data_load_manager.start_import(source_engine, destination_engine, True)
 
 
 def configure_logging():

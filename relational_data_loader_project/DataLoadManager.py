@@ -3,6 +3,7 @@ from relational_data_loader_project.BatchDataLoader import BatchDataLoader
 from relational_data_loader_project.DestinationTableManager import DestinationTableManager
 from relational_data_loader_project.DataLoadTracker import DataLoadTracker
 from relational_data_loader_project.SourceTableManager import SourceTableManager
+import os
 import json
 
 
@@ -11,9 +12,13 @@ class DataLoadManager(object):
         self.logger = logger or logging.getLogger(__name__)
         self.configuration_path = configuration_path
 
-    def start_import(self, source_engine, target_engine, configuration_name, full_load):
+    def start_import(self, source_engine, target_engine, full_load):
+        for file in os.listdir(self.configuration_path):
+            self.start_single_import(source_engine, target_engine, file, full_load)
 
-        with open("{0}{1}.json".format(self.configuration_path, configuration_name)) as json_data:
+    def start_single_import(self, source_engine, target_engine, configuration_name, full_load):
+
+        with open("{0}{1}".format(self.configuration_path, configuration_name)) as json_data:
             pipeline_configuration = json.load(json_data)
 
         data_load_tracker = DataLoadTracker(configuration_name, json_data, full_load)
