@@ -43,7 +43,7 @@ class BatchDataLoader(object):
         batch_tracker.extract_completed_successfully(len(data_frame))
 
         if len(data_frame) == 0:
-            self.logger.info("There are no rows to import, returning False")
+            self.logger.debug("There are no rows to import, returning -1")
             batch_tracker.load_skipped_due_to_zero_rows()
             return -1
 
