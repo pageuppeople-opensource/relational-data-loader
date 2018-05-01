@@ -1,6 +1,7 @@
 {
+
   "source_table": {
-    "name": "SmallTable",
+    "name": "SourceData",
     "schema": "dbo"
   },
   "stage_table": {
@@ -12,7 +13,7 @@
     "schema": "load"
   },
   "batch": {
-    "size": 1000000,
+    "size": 100000,
     "source_unique_column": "id"
   },
   "columns": [
@@ -41,7 +42,7 @@
         "type": "citext.CIText",
         "nullable": true
       },
-      "column_transformer": "ToUpper.ToUpper"
+      "column_transformer": "StringTransformers.ToUpper"
     },
     {
       "source_name": "IntColumn1",

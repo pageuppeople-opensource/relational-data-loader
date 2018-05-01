@@ -35,7 +35,6 @@ class DataLoadManager(object):
                                                    columns, target_engine, drop_first=True)
 
         # Import the data.
-        self.logger.info("Creating Batch Importer")
         batch_importer = BatchDataLoader(pipeline_configuration['source_table'], columns,
                                          pipeline_configuration['batch'])
 

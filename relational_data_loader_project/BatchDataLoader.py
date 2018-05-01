@@ -3,7 +3,7 @@ import pandas
 from io import StringIO
 import importlib
 
-
+from column_transformers.StringTransformers import ToUpper
 
 
 
@@ -33,33 +33,33 @@ class BatchDataLoader(object):
         self.logger.debug("ImportBatch Starting for source {0} target {1} previous_key {2}".format(self.source_table_configuration['name'],
                                                                                                    target_table_configuration['name'],
                                                                                                    previous_key))
+
         sql = self.build_select_statement(previous_key)
-        self.logger.debug("SQL Statement: {0}".format(sql))
-        self.logger.info("Starting read")
+
+        self.logger.debug("Starting read of SQL Statement: {0}".format(sql))
         data_frame = pandas.read_sql_query(sql, source_engine)
-        self.logger.info("Completed read")
+        self.logger.debug("Completed read")
 
         batch_tracker.extract_completed_successfully(len(data_frame))
-
-        self.attach_column_transformers(data_frame)
 
         if len(data_frame) == 0:
             self.logger.info("There are no rows to import, returning False")
             batch_tracker.load_skipped_due_to_zero_rows()
             return -1
 
+        data_frame = self.attach_column_transformers(data_frame)
+
         self.write_data_frame_to_table(data_frame, target_table_configuration, target_engine)
         batch_tracker.load_completed_successfully()
 
         last_key_returned = data_frame.iloc[-1][self.batch_configuration['source_unique_column']]
 
-        self.logger.debug("Returning {0} to signify we loaded data.".format(last_key_returned))
-
+        self.logger.info("Batch key {0} Completed. {1}".format(last_key_returned, batch_tracker.get_statistics()))
         return last_key_returned
 
     def write_data_frame_to_table(self, data_frame, table_configuration, target_engine):
         destination_table = "{0}.{1}".format(table_configuration['schema'], table_configuration['name'])
-        self.logger.info("Starting write to table {0}".format(destination_table))
+        self.logger.debug("Starting write to table {0}".format(destination_table))
         data = StringIO()
         data_frame.to_csv(data, header=False, index=False, na_rep='')
         data.seek(0)
@@ -69,25 +69,20 @@ class BatchDataLoader(object):
         column_array = list(map(lambda cfg: cfg['destination']['name'], self.columns))
 
         curs.copy_from(data, destination_table, sep=',', columns=column_array, null='')
-        self.logger.info("Completed write to table {0}".format(destination_table))
+        self.logger.debug("Completed write to table {0}".format(destination_table))
 
         curs.connection.commit()
         return
 
     def attach_column_transformers(self, data_frame):
-        return
-        #for column in self.columns:
-            #if 'column_transformer' in column:
-
-                #TODO: this is horribly broken
-                #data_frame = data_frame[column['source_name']].map(lambda x: x.upper())
-                #print (data_frame)
+        self.logger.debug("Attaching column transformers")
+        for column in self.columns:
+            if 'column_transformer' in column:
                 #transformer = self.create_column_transformer_type(column['column_transformer'])
-               #// df['a'] = df['a'].map(lambda a: a / 2.)
-
-                #data_frame.
-
-
+                transformer = ToUpper.execute;
+                data_frame[column['source_name']] = data_frame[column['source_name']].map(transformer)
+                #print (data_frame)
+        return data_frame
 
 
     def create_column_transformer_type(self, type_name):
@@ -95,6 +90,3 @@ class BatchDataLoader(object):
         class_ = getattr(module, type_name)
         instance = class_()
         return instance
-
-    def remove_non_existent_columns(self, columns):
-        pass

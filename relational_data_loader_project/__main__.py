@@ -19,7 +19,7 @@ def configure_logging():
     console_stream_handler = logging.StreamHandler()
     console_stream_handler.setFormatter(formatter)
     log.addHandler(console_stream_handler)
-    log.setLevel(logging.DEBUG)
+    log.setLevel(logging.INFO)
     return
 
 def get_arguments():
