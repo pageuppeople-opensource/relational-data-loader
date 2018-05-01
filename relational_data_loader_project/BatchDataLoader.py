@@ -61,14 +61,14 @@ class BatchDataLoader(object):
         destination_table = "{0}.{1}".format(table_configuration['schema'], table_configuration['name'])
         self.logger.info("Starting write to table {0}".format(destination_table))
         data = StringIO()
-        data_frame.to_csv(data, header=False, index=False)
+        data_frame.to_csv(data, header=False, index=False, na_rep='')
         data.seek(0)
         raw = target_engine.raw_connection()
         curs = raw.cursor()
 
         column_array = list(map(lambda cfg: cfg['destination']['name'], self.columns))
 
-        curs.copy_from(data, destination_table, sep=',', columns=column_array)
+        curs.copy_from(data, destination_table, sep=',', columns=column_array, null='')
         self.logger.info("Completed write to table {0}".format(destination_table))
 
         curs.connection.commit()

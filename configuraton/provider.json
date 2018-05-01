@@ -82,6 +82,23 @@
         "type": "sqlalchemy.DateTime",
         "nullable": true
       }
+    },
+     {
+      "source_name": "LongString",
+      "destination": {
+        "name": "long_string",
+        "type": "citext.CIText",
+        "nullable": true
+      }
+    },
+     {
+      "source_name": "UnicodeString",
+      "destination": {
+        "name": "unicode_string",
+        "type": "citext.CIText",
+        "nullable": true
+      }
     }
+
   ]
 }
