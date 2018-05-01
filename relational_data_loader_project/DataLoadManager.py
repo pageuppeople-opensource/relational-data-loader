@@ -1,8 +1,8 @@
 import logging
-from BatchDataLoader import BatchDataLoader
-from DestinationTableManager import DestinationTableManager
-from DataLoadTracker import DataLoadTracker
-from SourceTableManager import SourceTableManager
+from relational_data_loader_project.BatchDataLoader import BatchDataLoader
+from relational_data_loader_project.DestinationTableManager import DestinationTableManager
+from relational_data_loader_project.DataLoadTracker import DataLoadTracker
+from relational_data_loader_project.SourceTableManager import SourceTableManager
 import json
 
 
@@ -21,7 +21,8 @@ class DataLoadManager(object):
         self.logger.debug("Execute Starting")
         destination_table_manager = DestinationTableManager()
 
-        columns = self.remove_invalid_columns(pipeline_configuration['source_table'], pipeline_configuration['columns'], source_engine)
+        columns = self.remove_invalid_columns(pipeline_configuration['source_table'], pipeline_configuration['columns'],
+                                              source_engine)
 
         if full_load:
             self.logger.info("Full-load is set. Recreating the staging table.")
