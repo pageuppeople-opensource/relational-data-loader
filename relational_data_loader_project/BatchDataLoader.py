@@ -1,46 +1,28 @@
 import logging
-import pandas
 from io import StringIO
 import importlib
 
 from column_transformers.StringTransformers import ToUpper
 
 
-
 class BatchDataLoader(object):
-    def __init__(self, source_table_configuration, columns, batch_configuration, logger=None):
+    def __init__(self, data_source, source_table_configuration, target_table_configuration, columns, data_load_tracker, batch_configuration, target_engine, logger=None):
         self.logger = logger or logging.getLogger(__name__)
         self.source_table_configuration = source_table_configuration
         self.columns = columns
+        self.data_source = data_source
+        self.target_table_configuration = target_table_configuration
+        self.data_load_tracker = data_load_tracker
         self.batch_configuration = batch_configuration
-
-    def build_select_statement(self, previous_key=0):
-
-        column_array = list(map(lambda cfg: cfg['source_name'], self.columns))
-        column_names = ", ".join(column_array)
-
-
-        return "SELECT TOP ({0}) {1} FROM {2}.{3} WHERE {4} > {5} ORDER BY {4}".format(self.batch_configuration['size'],
-                                                            column_names,
-                                                            self.source_table_configuration['schema'],
-                                                            self.source_table_configuration['name'],
-                                                            self.batch_configuration['source_unique_column'],
-                                                            previous_key
-                                                            )
+        self.target_engine = target_engine
 
     # Imports rows, returns True if >0 rows were found
-    def import_batch(self, source_engine, target_engine, target_table_configuration, batch_tracker, previous_key):
-        self.logger.debug("ImportBatch Starting for source {0} target {1} previous_key {2}".format(self.source_table_configuration['name'],
-                                                                                                   target_table_configuration['name'],
-                                                                                                   previous_key))
+    def import_batch(self, previous_batch_key):
+        batch_tracker = self.data_load_tracker.start_batch()
 
-        sql = self.build_select_statement(previous_key)
+        self.logger.debug("ImportBatch Starting from previous_batch_key: {0}".format(previous_batch_key))
 
-        self.logger.debug("Starting read of SQL Statement: {0}".format(sql))
-        data_frame = pandas.read_sql_query(sql, source_engine)
-        self.logger.debug("Completed read")
-
-        batch_tracker.extract_completed_successfully(len(data_frame))
+        data_frame = self.data_source.get_next_data_frame(self.source_table_configuration, self.columns, self.batch_configuration, batch_tracker, previous_batch_key)
 
         if len(data_frame) == 0:
             self.logger.debug("There are no rows to import, returning -1")
@@ -49,7 +31,7 @@ class BatchDataLoader(object):
 
         data_frame = self.attach_column_transformers(data_frame)
 
-        self.write_data_frame_to_table(data_frame, target_table_configuration, target_engine)
+        self.write_data_frame_to_table(data_frame, self.target_table_configuration, self.target_engine)
         batch_tracker.load_completed_successfully()
 
         last_key_returned = data_frame.iloc[-1][self.batch_configuration['source_unique_column']]
@@ -66,6 +48,9 @@ class BatchDataLoader(object):
         raw = target_engine.raw_connection()
         curs = raw.cursor()
 
+        #TODO: This is assuming that our destination schema column order matches the columns in the dataframe. This
+        #isn't always correct (especially in csv sources) - therefore, we should derive the column_array from the
+        #data frames' columns.
         column_array = list(map(lambda cfg: cfg['destination']['name'], self.columns))
 
         curs.copy_from(data, destination_table, sep=',', columns=column_array, null='')
@@ -78,12 +63,11 @@ class BatchDataLoader(object):
         self.logger.debug("Attaching column transformers")
         for column in self.columns:
             if 'column_transformer' in column:
-                #transformer = self.create_column_transformer_type(column['column_transformer'])
+                # transformer = self.create_column_transformer_type(column['column_transformer'])
                 transformer = ToUpper.execute;
                 data_frame[column['source_name']] = data_frame[column['source_name']].map(transformer)
-                #print (data_frame)
+                # print (data_frame)
         return data_frame
-
 
     def create_column_transformer_type(self, type_name):
         module = importlib.import_module(type_name)

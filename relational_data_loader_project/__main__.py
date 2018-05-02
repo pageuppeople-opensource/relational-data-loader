@@ -1,5 +1,6 @@
 import logging
 from relational_data_loader_project.DataLoadManager import DataLoadManager
+from relational_data_loader_project.MsSqlDataSource import MsSqlDataSource
 from sqlalchemy import create_engine
 import argparse
 
@@ -9,11 +10,12 @@ _LOG_LEVEL_STRINGS = ['CRITICAL', 'ERROR', 'WARNING', 'INFO', 'DEBUG']
 def main(args):
 
     configure_logging(args['log_level'])
-    source_engine = create_engine(args['source-engine'])
+    data_source = MsSqlDataSource(args['source-connection-string'])
+
     destination_engine = create_engine(args['destination-engine'])
 
-    data_load_manager = DataLoadManager(args['configuration-folder'])
-    data_load_manager.start_import(source_engine, destination_engine, True)
+    data_load_manager = DataLoadManager(args['configuration-folder'], data_source)
+    data_load_manager.start_imports(destination_engine, True)
 
 
 def configure_logging(log_level):
@@ -41,8 +43,8 @@ def _log_level_string_to_int(log_level_string):
 def get_arguments():
     parser = argparse.ArgumentParser(description='Relational Data Loader')
 
-    parser.add_argument('source-engine', metavar='source-engine',
-                        help='The source engine. Eg: mssql+pyodbc://dwsource')
+    parser.add_argument('source-connection-string', metavar='source-connection-string',
+                        help='The source connections string. Eg: mssql+pyodbc://dwsource or csv://c://some//Path//To//Csv//Files//')
 
     parser.add_argument('destination-engine', metavar='destination-engine',
                         help='The destination engine. Eg: postgresql+psycopg2://postgres:xxxx@localhost/dest_dw')
