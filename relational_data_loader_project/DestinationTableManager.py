@@ -4,16 +4,21 @@ from sqlalchemy.schema import Column, Table
 import importlib
 from sqlalchemy.sql import func
 import io
+import os
+
 
 class DestinationTableManager(object):
+    TIMESTAMP_COLUMN_NAME = "data_pipeline_timestamp"
+
     def __init__(self, target_engine, logger=None):
         self.logger = logger or logging.getLogger(__name__)
         self.target_engine = target_engine
 
     def create_schema(self, schema_name):
-
         self.target_engine.execute("CREATE SCHEMA IF NOT EXISTS {0}".format(schema_name))
-        #self.target_engine.execute(CreateSchema(schema_name))
+
+    def table_exists(self, schema_name, table_name):
+        return self.target_engine.dialect.has_table(self.target_engine, "{0}.{1}".format(schema_name, table_name))
 
     def create_table(self, schema_name, table_name, columns_configuration, drop_first):
         metadata = MetaData()
@@ -24,7 +29,7 @@ class DestinationTableManager(object):
             table.append_column(self.create_column(column_configuration['destination']))
 
         table.append_column(
-            Column("data_pipeline_timestamp", DateTime(timezone=True), server_default=func.now()))
+            Column(self.TIMESTAMP_COLUMN_NAME, DateTime(timezone=True), server_default=func.now()))
 
         if drop_first:
             self.logger.info(
@@ -72,10 +77,12 @@ class DestinationTableManager(object):
         sql_builder.write("BEGIN TRANSACTION; ")
 
         # Step 3
-        sql_builder.write("ALTER TABLE {0}.{1} RENAME TO {2}; ".format(schema_name, target_table_name, old_load_table_name))
+        sql_builder.write(
+            "ALTER TABLE IF EXISTS {0}.{1} RENAME TO {2}; ".format(schema_name, target_table_name, old_load_table_name))
 
         # Step 4
-        sql_builder.write("ALTER TABLE {0}.{1} RENAME TO {2}; ".format(schema_name, source_table_name, target_table_name))
+        sql_builder.write(
+            "ALTER TABLE {0}.{1} RENAME TO {2}; ".format(schema_name, source_table_name, target_table_name))
 
         sql_builder.write("COMMIT TRANSACTION; ")
         self.logger.debug("Table Rename, executing {0}".format(sql_builder.getvalue()))
@@ -85,7 +92,34 @@ class DestinationTableManager(object):
 
         sql = "DROP TABLE IF EXISTS {0}.{1} ".format(schema_name, old_load_table_name)
         self.logger.debug("Table Rename, executing {0}".format(sql))
+        self.target_engine.execute(sql)
 
-    def upsert_data_from_stage_to_load_tables(self, source_table_configuration, target_table_configuration):
-        print('TODO - create a method to upsert the data;')
-        return;
+    def upsert_table(self, schema_name, source_table_name, target_table_name, columns_configuration):
+        column_array = list(map(lambda column: column['destination']['name'], columns_configuration))
+        column_list = ','.join(map(str, column_array))
+        column_list = column_list + ",{0}".format(self.TIMESTAMP_COLUMN_NAME)
+
+        primary_key_column_array = [column_configuration['destination']['name'] for column_configuration in columns_configuration if 'primary_key' in column_configuration['destination'] and column_configuration['destination']['primary_key']]
+
+        primary_key_column_list = ','.join(map(str, primary_key_column_array))
+
+        sql_builder = io.StringIO()
+        sql_builder.write("INSERT INTO {0}.{1} ({2})".format(schema_name, target_table_name, column_list))
+        sql_builder.write(os.linesep)
+        sql_builder.write(" SELECT {0} FROM {1}.{2}".format(column_list, schema_name, source_table_name))
+        sql_builder.write(os.linesep)
+        sql_builder.write(" ON CONFLICT({0}) DO UPDATE SET ".format(primary_key_column_list))
+
+        for column_configuratiomn in columns_configuration:
+            sql_builder.write("{0} = EXCLUDED.{0},".format(column_configuratiomn['destination']['name']))
+            sql_builder.write(os.linesep)
+
+        sql_builder.write("{0} = EXCLUDED.{0}".format(self.TIMESTAMP_COLUMN_NAME))
+
+        self.logger.debug("Upsert executing {0}".format(sql_builder.getvalue()))
+        self.target_engine.execute(sql_builder.getvalue())
+
+        sql_builder.close()
+
+    def bob(self, x):
+        print(x)

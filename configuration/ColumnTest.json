@@ -2,15 +2,15 @@
 
   "source_table": {
     "name": "ColumnTest",
-    "schema": "dbo"
+    "schema": "dbo",
+    "primary_key": "id"
   },
-  "target_schema": "load",
+  "target_schema": "rdl_integration_tests",
   "stage_table": "stage_source_data",
   "load_table": "load_source_data",
 
   "batch": {
-    "size": 100000,
-    "source_unique_column": "id"
+    "size": 100000
   },
   "columns": [
     {

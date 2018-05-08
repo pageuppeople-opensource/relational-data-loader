@@ -22,7 +22,7 @@ class RelationalDataLoader:
         destination_engine = create_engine(args['destination-engine'])
 
         data_load_manager = DataLoadManager(args['configuration-folder'], data_source)
-        data_load_manager.start_imports(destination_engine, True)
+        data_load_manager.start_imports(destination_engine, args['full_refresh'])
 
     def configure_logging(self, log_level):
         formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -55,13 +55,14 @@ class RelationalDataLoader:
 
         parser.add_argument('source-connection-string', metavar='source-connection-string',
                             type=self.raw_connection_string_to_valid_source_connection_string,
-                            help='The source connections string. Eg: mssql+pyodbc://dwsource or csv://c://some//Path//To//Csv//Files//')
+                            help='The source connections string. Eg: mssql+pyodbc://dwsource or '
+                                 'csv://c://some//Path//To//Csv//Files//')
 
         parser.add_argument('destination-engine', metavar='destination-engine',
                             help='The destination engine. Eg: postgresql+psycopg2://postgres:xxxx@localhost/dest_dw')
 
         parser.add_argument('configuration-folder', metavar='configuration-folder',
-                            help='The configuration folder. Eg C:\\_dev\\oscars-misc\\el-pipeline-spike\\configuraton\\')
+                            help='The configuration folder. Eg C:\\_dev\\oscars-misc\\el-pipeline-spike\\configuration\\')
 
         parser.add_argument('--log-level',
                             default='INFO',
@@ -69,4 +70,18 @@ class RelationalDataLoader:
                             nargs='?',
                             help='Set the logging output level. {0}'.format(_LOG_LEVEL_STRINGS))
 
+        parser.add_argument("--full-refresh", type=self.str2bool, nargs='?',
+                            const=True, default=False,
+                            help='If true, a full refresh of the destination will be performed. This drops/re-creates '
+                                 'the destination table(s).')
+
+
         return vars(parser.parse_args())
+
+    def str2bool(v):
+        if v.lower() in ('yes', 'true', 't', 'y', '1'):
+            return True
+        elif v.lower() in ('no', 'false', 'f', 'n', '0'):
+            return False
+        else:
+            raise argparse.ArgumentTypeError('Boolean value expected.')

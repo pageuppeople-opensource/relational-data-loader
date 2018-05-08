@@ -35,7 +35,7 @@ class BatchDataLoader(object):
         self.write_data_frame_to_table(data_frame)
         batch_tracker.load_completed_successfully()
 
-        last_key_returned = data_frame.iloc[-1][self.batch_configuration['source_unique_column']]
+        last_key_returned = data_frame.iloc[-1][self.source_table_configuration['primary_key']]
 
         self.logger.info("Batch key {0} Completed. {1}".format(last_key_returned, batch_tracker.get_statistics()))
         return last_key_returned

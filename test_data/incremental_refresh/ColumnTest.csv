@@ -1,0 +1,4 @@
+id,StringColumn1,IntColumn1,DecimalColumn1,DateColumn1,DateTimeColumn1
+5,"This row WAS updated in the incremental review test",,,,
+6,"A Basic String",111,12.1212,01-Dec-1976,01-dec-1976 1:00 am
+7,"Another Basic String",111,12.1212,01-Dec-1976,01-dec-1976 1:00 am
