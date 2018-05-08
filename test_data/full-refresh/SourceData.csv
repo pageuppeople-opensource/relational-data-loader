@@ -1,4 +1,0 @@
-id,StringColumn1,IntColumn1,StringColumn2,DateColumn1,DateColumn2,DateTimeColumn1,LongString,UnicodeString
-1,"String Column 1",555, "String Column 2, 01-Dec-1976,,01-dec-1976 1:00 am,"This is a really long string",""
-
-

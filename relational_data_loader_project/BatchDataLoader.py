@@ -6,32 +6,33 @@ from column_transformers.StringTransformers import ToUpper
 
 
 class BatchDataLoader(object):
-    def __init__(self, data_source, source_table_configuration, target_table_configuration, columns, data_load_tracker, batch_configuration, target_engine, logger=None):
+    def __init__(self, data_source, source_table_configuration, target_schema, target_table, columns, data_load_tracker, batch_configuration, target_engine, logger=None):
         self.logger = logger or logging.getLogger(__name__)
         self.source_table_configuration = source_table_configuration
         self.columns = columns
         self.data_source = data_source
-        self.target_table_configuration = target_table_configuration
+        self.target_schema = target_schema
+        self.target_table = target_table
         self.data_load_tracker = data_load_tracker
         self.batch_configuration = batch_configuration
         self.target_engine = target_engine
 
     # Imports rows, returns True if >0 rows were found
-    def import_batch(self, previous_batch_key):
+    def load_batch(self, previous_batch_key):
         batch_tracker = self.data_load_tracker.start_batch()
 
         self.logger.debug("ImportBatch Starting from previous_batch_key: {0}".format(previous_batch_key))
 
         data_frame = self.data_source.get_next_data_frame(self.source_table_configuration, self.columns, self.batch_configuration, batch_tracker, previous_batch_key)
 
-        if len(data_frame) == 0:
+        if data_frame is None or len(data_frame) == 0:
             self.logger.debug("There are no rows to import, returning -1")
             batch_tracker.load_skipped_due_to_zero_rows()
             return -1
 
         data_frame = self.attach_column_transformers(data_frame)
 
-        self.write_data_frame_to_table(data_frame, self.target_table_configuration, self.target_engine)
+        self.write_data_frame_to_table(data_frame)
         batch_tracker.load_completed_successfully()
 
         last_key_returned = data_frame.iloc[-1][self.batch_configuration['source_unique_column']]
@@ -39,25 +40,34 @@ class BatchDataLoader(object):
         self.logger.info("Batch key {0} Completed. {1}".format(last_key_returned, batch_tracker.get_statistics()))
         return last_key_returned
 
-    def write_data_frame_to_table(self, data_frame, table_configuration, target_engine):
-        destination_table = "{0}.{1}".format(table_configuration['schema'], table_configuration['name'])
-        self.logger.debug("Starting write to table {0}".format(destination_table))
+    def write_data_frame_to_table(self, data_frame):
+        qualified_target_table = "{0}.{1}".format(self.target_schema, self.target_table)
+        self.logger.debug("Starting write to table {0}".format(qualified_target_table))
         data = StringIO()
         data_frame.to_csv(data, header=False, index=False, na_rep='')
         data.seek(0)
-        raw = target_engine.raw_connection()
+        raw = self.target_engine.raw_connection()
         curs = raw.cursor()
 
-        #TODO: This is assuming that our destination schema column order matches the columns in the dataframe. This
-        #isn't always correct (especially in csv sources) - therefore, we should derive the column_array from the
-        #data frames' columns.
-        column_array = list(map(lambda cfg: cfg['destination']['name'], self.columns))
+        column_array = list(map(lambda source_colum_name: self.get_destination_column_name(source_colum_name), data_frame.columns))
+        column_list = ','.join(map(str, column_array))
 
-        curs.copy_from(data, destination_table, sep=',', columns=column_array, null='')
-        self.logger.debug("Completed write to table {0}".format(destination_table))
+        sql = "COPY {0}({1}) FROM STDIN with csv".format(qualified_target_table, column_list)
+        self.logger.debug("Writing to table using command {0}".format(sql))
+        curs.copy_expert(sql=sql, file=data)
+
+        self.logger.debug("Completed write to table {0}".format(qualified_target_table))
 
         curs.connection.commit()
         return
+
+    def get_destination_column_name(self, source_column_name):
+        for column in self.columns:
+            if column['source_name'] == source_column_name:
+                return column['destination']['name']
+
+        message = 'A source column with name {0} was not found in the column configuration'.format(source_column_name)
+        raise ValueError(message)
 
     def attach_column_transformers(self, data_frame):
         self.logger.debug("Attaching column transformers")

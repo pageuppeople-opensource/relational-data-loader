@@ -12,6 +12,15 @@ class MsSqlDataSource(object):
         self.connection_string = connection_string
         self.database_engine = create_engine(connection_string)
 
+    @staticmethod
+    def can_handle_connection_string(connection_string):
+        return connection_string.startswith(MsSqlDataSource.connection_string_prefix())
+
+    @staticmethod
+    def connection_string_prefix():
+        return 'mssql+pyodbc://'
+
+
     def build_select_statement(self, table_configuration, columns, batch_configuration, previous_batch_key):
         column_array = list(map(lambda cfg: cfg['source_name'], columns))
         column_names = ", ".join(column_array)

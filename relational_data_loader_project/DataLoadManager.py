@@ -25,18 +25,22 @@ class DataLoadManager(object):
 
         self.logger.debug("Execute Starting")
 
-        destination_table_manager = DestinationTableManager()
+        destination_table_manager = DestinationTableManager(target_engine)
 
-        columns = self.data_source.get_valid_columns(pipeline_configuration['source_table'], pipeline_configuration['columns'])
+        columns = self.data_source.get_valid_columns(pipeline_configuration['source_table'],
+                                                     pipeline_configuration['columns'])
 
+        destination_table_manager.create_schema(pipeline_configuration['target_schema'])
         if full_load:
             self.logger.info("Full-load is set. Recreating the staging table.")
-            destination_table_manager.create_table(pipeline_configuration['stage_table'],
-                                                   columns, target_engine, drop_first=True)
+            destination_table_manager.create_table(pipeline_configuration['target_schema'],
+                                                   pipeline_configuration['stage_table'],
+                                                   columns, drop_first=True)
 
         # Import the data.
-        batch_importer = BatchDataLoader(self.data_source,
+        batch_data_loader = BatchDataLoader(self.data_source,
                                          pipeline_configuration['source_table'],
+                                         pipeline_configuration['target_schema'],
                                          pipeline_configuration['stage_table'],
                                          columns,
                                          data_load_tracker,
@@ -45,17 +49,18 @@ class DataLoadManager(object):
 
         previous_unique_column_value = 0
         while previous_unique_column_value > -1:
-            previous_unique_column_value = batch_importer.import_batch(previous_unique_column_value)
+            previous_unique_column_value = batch_data_loader.load_batch(previous_unique_column_value)
 
         self.logger.info("ImportBatch Completed")
 
-        #if full_load:
+        if full_load:
             #return
             # Rename the stage table to the load table.
-            # log.information("Full-load is set. Renaming the stage table to the load table.")
-            # rename_table(pipeline_configuration['stage_source_data'], pipeline_configuration['load_source_data'])
+            self.logger.info("Full-load is set. Renaming the stage table to the load table.")
+            destination_table_manager.rename_table(pipeline_configuration['target_schema'],
+                                                   pipeline_configuration['stage_table'],
+                                                   pipeline_configuration['load_table'])
         #else:
-            #return
             # upsert_data_from_stage_to_load_tables(pipeline_configuration['stage_source_data'], pipeline_configuration['load_source_data'])
 
         data_load_tracker.completed_successfully()
