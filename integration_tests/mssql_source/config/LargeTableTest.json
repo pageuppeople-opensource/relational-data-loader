@@ -57,7 +57,7 @@
          {
       "source_name": "StringColumn2",
       "destination": {
-        "name": "string_column_1",
+        "name": "string_column_2",
         "type": "citext.CIText",
         "nullable": true
       }
