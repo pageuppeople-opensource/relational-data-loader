@@ -1,5 +1,4 @@
-py rdl.py csv://.\test_data\incremental_refresh postgresql+psycopg2://postgres:xxxx@localhost/dest_dw .\configuration\ --log-level INFO --full-refresh no
-
+py rdl.py csv://.\integration_tests\csv_source\incremental_refresh_data\ postgresql+psycopg2://postgres:xxxx@localhost/dest_dw .\integration_tests\csv_source\config\ --log-level INFO --full-refresh yes
 
 
 
