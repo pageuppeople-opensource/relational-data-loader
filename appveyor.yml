@@ -19,12 +19,13 @@ services:
 
 init:
   - "set PATH=C:\\Program Files\\PostgreSQL\\10\\bin\\;%PATH%"
-  - ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+  #- ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
 
 install:
   #Swap path to python to latest version (as per Matrix section)
   - "SET PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
   - "python --version"
+  - "python -m venv c:\projects\relational-data-loader\venv\"
 build_script:
   - "psql -c \"SELECT VERSION()\""
   - "createdb relational_data_loader"
@@ -37,4 +38,4 @@ test_script:
 
 
 on_finish:
-  - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+  #- ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
