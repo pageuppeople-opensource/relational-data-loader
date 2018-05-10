@@ -25,7 +25,7 @@ install:
   #Swap path to python to latest version (as per Matrix section)
   - "SET PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
   - "python --version"
-  - "python -m venv c:\projects\relational-data-loader\venv\"
+  - "python -m venv c:\\projects\\relational-data-loader\\venv\\"
 build_script:
   - "psql -c \"SELECT VERSION()\""
   - "createdb relational_data_loader"
