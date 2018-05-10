@@ -9,6 +9,11 @@ environment:
   PGPORT: 5432
   PGHOST: "localhost"
 
+  matrix:
+    - PYTHON: "C:\\Python35-x64"
+      PYTHON_VERSION: "3.6.x"
+      PYTHON_ARCH: "64"
+
 services:
   - postgresql101
 
@@ -19,3 +24,7 @@ build_script:
   - "psql -c \"SELECT VERSION()\""
   - "createdb relational_data_loader"
 
+
+test:
+  - "test_full_refresh_from_csv.cmd"
+  - "test_incremental_refresh_from_csv.cmd"
