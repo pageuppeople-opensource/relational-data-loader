@@ -20,6 +20,21 @@ class DestinationTableManager(object):
     def table_exists(self, schema_name, table_name):
         return self.target_engine.dialect.has_table(self.target_engine, table_name, schema_name)
 
+
+    def drop_table(self, schema_name, table_name):
+        metadata = MetaData()
+        self.logger.debug(
+            "Dropping table {0}.{1}".format(schema_name, table_name))
+
+        table = Table(table_name, metadata, schema=schema_name)
+        table.drop(self.target_engine, checkfirst=True)
+
+        self.logger.debug(
+            "Dropped table {0}.{1}".format(schema_name, table_name))
+
+
+
+
     def create_table(self, schema_name, table_name, columns_configuration, drop_first):
         metadata = MetaData()
 
@@ -121,6 +136,3 @@ class DestinationTableManager(object):
         self.logger.debug("Upsert completed {0}")
 
         sql_builder.close()
-
-    def bob(self, x):
-        print(x)

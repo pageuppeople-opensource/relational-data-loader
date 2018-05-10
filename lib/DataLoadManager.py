@@ -83,8 +83,8 @@ class DataLoadManager(object):
                                                    pipeline_configuration['load_table'],
                                                    pipeline_configuration['columns'])
 
-            #TODO: Drop stage table if exists
-            destination_table_manager.drop
+            destination_table_manager.drop_table(pipeline_configuration['target_schema'],
+                                                 pipeline_configuration['stage_table'])
         data_load_tracker.completed_successfully()
         self.logger.info("Import for configuration: {0} Complete. {1}".format(configuration_name, data_load_tracker.get_statistics()))
 
