@@ -63,7 +63,8 @@ class DataLoadTracker:
             self.row_count = row_count
             self.extract_completed = datetime.now()
             self.extract_execution_time = self.extract_completed - self.extract_started
-            self.extract_rows_per_second = self.row_count / self.extract_execution_time.total_seconds()
+            #Add a tiny bit of time to guarentee against div by 0 errors.
+            self.extract_rows_per_second = self.row_count / self.extract_execution_time.total_seconds() + 0.001
 
         def load_completed_successfully(self):
             self.status = "Load Completed Successfully"
@@ -71,7 +72,8 @@ class DataLoadTracker:
             self.load_execution_time = self.load_completed - self.extract_completed
             self.load_rows_per_second = self.row_count / self.load_execution_time.total_seconds()
             self.total_execution_time = self.load_completed - self.extract_started
-            self.total_rows_per_second = self.row_count / self.total_execution_time.total_seconds()
+            # Add a tiny bit of time to guarentee against div by 0 errors.
+            self.total_rows_per_second = self.row_count / self.total_execution_time.total_seconds() + 0.001
 
         def load_skipped_due_to_zero_rows(self):
             self.status = "Skipped - Zero Rows"

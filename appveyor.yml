@@ -1,14 +1,12 @@
 version: 1.0.{build}
 build: off
 
-
-
 environment:
   PGUSER: "postgres"
   PGPASSWORD: "Password12!"
   PGPORT: 5432
   PGHOST: "localhost"
-
+  DBNAME: relational_data_loader_integration_tests
   matrix:
     - PYTHON: "C:\\Python36-x64"
       PYTHON_VERSION: "3.6.x"
@@ -18,28 +16,28 @@ services:
   - postgresql101
 
 init:
-  - "set PATH=C:\\Program Files\\PostgreSQL\\10\\bin\\;%PATH%"
+  - set PATH=C:\\Program Files\\PostgreSQL\\10\\bin\\;%PATH%
   - ps: Set-Content "c:\program files\postgresql\10\data\pg_hba.conf" "host   all   all   ::1/128        trust"
   - ps: Add-Content "c:\program files\postgresql\10\data\pg_hba.conf" "host   all   all   127.0.0.1/32   trust"
-  - ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+  #- ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
 
 install:
   #Swap path to python to latest version (as per Matrix section)
-  - "SET PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
-  - "python --version"
-  - "python -m venv c:\\projects\\relational-data-loader\\venv\\"
+  - SET PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%
+  - python --version
+  - python -m venv c:\\projects\\relational-data-loader\\venv\\
 
 build_script:
   - psql -c "SELECT VERSION()"
-  - createdb relational_data_loader
-  - psql -d relational_data_loader -c "CREATE EXTENSION IF NOT EXISTS citext"
+  - createdb %DBNAME%
+  - psql -d %DBNAME% -c "CREATE EXTENSION IF NOT EXISTS citext"
   - pip install -r requirements.txt
 
 
 test_script:
-  - "test_full_refresh_from_csv.cmd"
-  - "test_incremental_refresh_from_csv.cmd"
+  - test_full_refresh_from_csv.cmd
+  - test_incremental_refresh_from_csv.cmd
 
 
 on_finish:
-  - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+  #- ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
