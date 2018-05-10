@@ -32,3 +32,8 @@ Destination takes the following format
 Run with  `--log-level DEBUG` on the command line.
 
 
+##Other Notes
+###Testing
+The test batch files assume there is a user by the name of `postgres` on the system.
+It also sends though a nonense password - it is assumed that the target system is running in 'trust' mode.
+See https://www.postgresql.org/docs/9.1/static/auth-pg-hba-conf.html for details on trust mode
