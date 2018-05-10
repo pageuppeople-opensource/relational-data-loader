@@ -1,6 +1,6 @@
 import logging
-from rdl.data_sources.MsSqlDataSource import MsSqlDataSource
-from rdl.data_sources.CsvDataSource import CsvDataSource
+from lib.data_sources.MsSqlDataSource import MsSqlDataSource
+from lib.data_sources.CsvDataSource import CsvDataSource
 
 
 class DataSourceFactory(object):

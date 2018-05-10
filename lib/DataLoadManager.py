@@ -1,7 +1,7 @@
 import logging
-from rdl.BatchDataLoader import BatchDataLoader
-from rdl.DestinationTableManager import DestinationTableManager
-from rdl.DataLoadTracker import DataLoadTracker
+from lib.BatchDataLoader import BatchDataLoader
+from lib.DestinationTableManager import DestinationTableManager
+from lib.DataLoadTracker import DataLoadTracker
 import os
 import json
 

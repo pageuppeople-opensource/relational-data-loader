@@ -1,6 +1,6 @@
 import logging
-from rdl.DataLoadManager import DataLoadManager
-from rdl.data_sources.DataSourceFactory import DataSourceFactory
+from lib.DataLoadManager import DataLoadManager
+from lib.data_sources.DataSourceFactory import DataSourceFactory
 
 from sqlalchemy import create_engine
 import argparse
