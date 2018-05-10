@@ -30,10 +30,10 @@ install:
   - "python -m venv c:\\projects\\relational-data-loader\\venv\\"
 
 build_script:
-  - "psql -c \"SELECT VERSION()\""
-  - "createdb relational_data_loader"
-  - "psql -d relational_data_loader -c 'CREATE EXTENSION IF NOT EXISTS citext'"
-  - "pip install -r requirements.txt"
+  - psql -c "SELECT VERSION()"
+  - createdb relational_data_loader
+  - psql -d relational_data_loader -c "CREATE EXTENSION IF NOT EXISTS citext"
+  - pip install -r requirements.txt
 
 
 test_script:
