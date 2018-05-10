@@ -25,6 +25,6 @@ build_script:
   - "createdb relational_data_loader"
 
 
-test:
+test_script:
   - "test_full_refresh_from_csv.cmd"
   - "test_incremental_refresh_from_csv.cmd"
