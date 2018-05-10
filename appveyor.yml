@@ -21,6 +21,9 @@ init:
   - "set PATH=C:\\Program Files\\PostgreSQL\\10\\bin\\;%PATH%"
   - ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
 
+install:
+  - "SET PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
+  - "python --version"
 build_script:
   - "psql -c \"SELECT VERSION()\""
   - "createdb relational_data_loader"
