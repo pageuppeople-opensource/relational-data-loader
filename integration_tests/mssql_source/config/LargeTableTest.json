@@ -3,7 +3,7 @@
   "source_table": {
     "name": "LargeTable",
     "schema": "dbo",
-    "primary_key": "id"
+    "primary_key": "Id"
   },
   "target_schema": "rdl_integration_tests",
   "stage_table": "stage_large_data",
@@ -14,7 +14,7 @@
   },
   "columns": [
     {
-      "source_name": "id",
+      "source_name": "Id",
       "destination": {
         "name": "id",
         "type": "sqlalchemy.Integer",
@@ -54,10 +54,18 @@
         "nullable": true
       }
     },
-         {
+    {
       "source_name": "StringColumn2",
       "destination": {
         "name": "string_column_2",
+        "type": "citext.CIText",
+        "nullable": true
+      }
+    },
+    {
+      "source_name": "GuidColumn",
+      "destination": {
+        "name": "guid_column",
         "type": "citext.CIText",
         "nullable": true
       }
