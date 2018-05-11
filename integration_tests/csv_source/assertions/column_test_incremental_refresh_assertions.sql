@@ -1,5 +1,4 @@
 SET client_encoding TO 'UTF8';
-
 DROP TABLE IF EXISTS results;
 
 CREATE TEMPORARY TABLE  results AS
