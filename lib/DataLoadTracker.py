@@ -76,11 +76,15 @@ class DataLoadTracker:
             self.total_execution_time = self.load_completed - self.extract_started
 
             if self.total_execution_time.total_seconds() == 0:
-                self.load_rows_per_second = self.row_count
                 self.total_rows_per_second = self.row_count
             else:
-                self.load_rows_per_second = self.row_count / self.load_execution_time.total_seconds()
                 self.total_rows_per_second = self.row_count / self.total_execution_time.total_seconds()
+
+            if self.load_execution_time.total_seconds() == 0:
+                self.load_rows_per_second = self.row_count
+            else:
+                self.load_rows_per_second = self.row_count / self.load_execution_time.total_seconds()
+
 
         def load_skipped_due_to_zero_rows(self):
             self.status = "Skipped - Zero Rows"
