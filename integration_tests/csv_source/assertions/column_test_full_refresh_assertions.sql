@@ -10,7 +10,7 @@ CREATE TEMPORARY TABLE  results AS
     UNION ALL
     SELECT 3, 333.0, '2001-01-01', 33.333, NULL, 'This Text Has a Quote Before "Dave'
     UNION ALL
-    SELECT 4, NULL, NULL, NULL, NULL, 'ം ഃ അ ആ ഇ ഈ ഉ ഊ ഋ ഌ എ ഏ '
+    SELECT 4, NULL, NULL, NULL, NULL, 'ം ഃ അ ആ ഇ ഈ ഉ ഊ ഋ ഌ എ ഏ'
     UNION ALL
     SELECT 5, NULL, NULL, NULL, NULL, 'This row will be updated in the incremental review test'
   ),
