@@ -20,7 +20,7 @@ init:
   - set PATH=C:\\Program Files\\PostgreSQL\\10\\bin\\;%PATH%
   - ps: Set-Content "c:\program files\postgresql\10\data\pg_hba.conf" "host   all   all   ::1/128        trust"
   - ps: Add-Content "c:\program files\postgresql\10\data\pg_hba.conf" "host   all   all   127.0.0.1/32   trust"
-  - ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+  #- ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
 
 install:
 
@@ -49,4 +49,4 @@ test_script:
   - test_full_refresh_from_mssql.cmd
 
 on_finish:
-  - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+  #- ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
