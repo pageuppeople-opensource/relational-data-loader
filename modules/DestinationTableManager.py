@@ -46,6 +46,7 @@ class DestinationTableManager(object):
         table.append_column(
             Column(self.TIMESTAMP_COLUMN_NAME, DateTime(timezone=True), server_default=func.now()))
 
+
         if drop_first:
             self.logger.debug(
                 "Dropping table {0}.{1}".format(schema_name, table_name))
@@ -60,8 +61,11 @@ class DestinationTableManager(object):
 
     def create_column_type(self, type_name):
         parts = type_name.split(".")
-        module = importlib.import_module(parts[0])
-        class_ = getattr(module, parts[1])
+        module_name = '.'.join(parts[0:len(parts) - 1])
+        module = importlib.import_module(module_name)
+        class_name = parts[len(parts)-1]
+        self.logger.debug("Creating column type: {0}.{1}".format(module_name, class_name))
+        class_ = getattr(module, parts[len(parts)-1])
         instance = class_()
         return instance
 
