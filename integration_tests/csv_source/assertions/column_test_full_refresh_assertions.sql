@@ -24,7 +24,7 @@ CREATE TEMPORARY TABLE results AS
   EXCEPT
   SELECT * FROM actual;
 
-do $$
+DO $$
 BEGIN
     PERFORM * FROM results;
     IF FOUND THEN RAISE EXCEPTION '[FULL REFRESH TEST] FAIL: The actual data did not match the expected data for the CSV refresh';
