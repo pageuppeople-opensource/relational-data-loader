@@ -8,7 +8,7 @@ environment:
   PGHOST: "localhost"
   DBNAME: relational_data_loader_integration_tests
   matrix:
-    - PYTHON: "C:\\Python36-x64"
+    - PYTHON: "C:\\Python36-x64" #This needs to be a double slash
       PYTHON_VERSION: "3.6.x"
       PYTHON_ARCH: "64"
 
@@ -17,9 +17,10 @@ services:
   - mssql2016
 
 init:
-  - set PATH=C:\\Program Files\\PostgreSQL\\10\\bin\\;%PATH%
+  - set PATH=C:\\rogram Files\PostgreSQL\10\bin\;%PATH%
   - ps: Set-Content "c:\program files\postgresql\10\data\pg_hba.conf" "host   all   all   ::1/128        trust"
   - ps: Add-Content "c:\program files\postgresql\10\data\pg_hba.conf" "host   all   all   127.0.0.1/32   trust"
+  #Enable this line to enable RDP for the build.
   #- ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
 
 install:
@@ -49,4 +50,5 @@ test_script:
   - test_full_refresh_from_mssql.cmd
 
 on_finish:
+  #Enable this line to make the build pause after completion for RDP troubleshooting.
   #- ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
