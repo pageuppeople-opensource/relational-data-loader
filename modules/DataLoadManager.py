@@ -1,7 +1,7 @@
 import logging
-from lib.BatchDataLoader import BatchDataLoader
-from lib.DestinationTableManager import DestinationTableManager
-from lib.DataLoadTracker import DataLoadTracker
+from modules.BatchDataLoader import BatchDataLoader
+from modules.DestinationTableManager import DestinationTableManager
+from modules.DataLoadTracker import DataLoadTracker
 import os
 import json
 

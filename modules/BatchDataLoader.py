@@ -2,7 +2,7 @@ import logging
 from io import StringIO
 import importlib
 
-from lib.column_transformers.StringTransformers import ToUpper
+from modules.column_transformers.StringTransformers import ToUpper
 
 
 class BatchDataLoader(object):
