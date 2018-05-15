@@ -3,7 +3,7 @@ DROP TABLE IF EXISTS results;
 
 CREATE TEMPORARY TABLE results AS
   WITH expected(id, int_column_1 , date_column_1, decimal_column_1, date_time_column_1, string_column_1) AS (
-    SELECT 1, 111.0, '1976-12-01'::date, 12.1212, '1976-12-01 01:00:00.000000'::timestamp, 'A Basic String'
+    SELECT 1, 111.0, '1976-12-01'::DATE, 12.1212, '1976-12-01 01:00:00.000000'::TIMESTAMP, 'A Basic String'
     UNION ALL
     SELECT 2, NULL, NULL, NULL, NULL, NULL
     UNION ALL
@@ -13,9 +13,9 @@ CREATE TEMPORARY TABLE results AS
     UNION ALL
     SELECT 5, NULL, NULL, NULL, NULL, 'This row WAS updated in the incremental review test'
     UNION ALL
-    SELECT 6, 111.0, '1976-12-01'::date, 12.1212, '1976-12-01 01:00:00.000000'::timestamp, 'A Basic String'
+    SELECT 6, 111.0, '1976-12-01'::DATE, 12.1212, '1976-12-01 01:00:00.000000'::TIMESTAMP, 'A Basic String'
     UNION ALL
-    SELECT 7, 111.0, '1976-12-01'::date, 12.1212, '1976-12-01 01:00:00.000000'::timestamp, 'Another Basic String'
+    SELECT 7, 111.0, '1976-12-01'::DATE, 12.1212, '1976-12-01 01:00:00.000000'::TIMESTAMP, 'Another Basic String'
   ),
 
   actual AS (

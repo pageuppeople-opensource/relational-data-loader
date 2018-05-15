@@ -1,7 +1,6 @@
 import logging
-from io import StringIO
 import importlib
-
+from io import StringIO
 from modules.column_transformers.StringTransformers import ToUpper
 
 
@@ -31,7 +30,6 @@ class BatchDataLoader(object):
             return -1
 
         data_frame = self.attach_column_transformers(data_frame)
-
         self.write_data_frame_to_table(data_frame)
         batch_tracker.load_completed_successfully()
 

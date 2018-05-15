@@ -1,9 +1,10 @@
+import os
+import json
 import logging
 from modules.BatchDataLoader import BatchDataLoader
 from modules.DestinationTableManager import DestinationTableManager
 from modules.DataLoadTracker import DataLoadTracker
-import os
-import json
+
 
 
 class DataLoadManager(object):
@@ -48,7 +49,7 @@ class DataLoadManager(object):
 
         destination_table_manager.create_schema(pipeline_configuration['target_schema'])
 
-        self.logger.info("Recreating the staging table {0}.{1}".format(pipeline_configuration['target_schema'], pipeline_configuration['stage_table']))
+        self.logger.debug("Recreating the staging table {0}.{1}".format(pipeline_configuration['target_schema'], pipeline_configuration['stage_table']))
         destination_table_manager.create_table(pipeline_configuration['target_schema'],
                                                pipeline_configuration['stage_table'],
                                                columns, drop_first=True)
@@ -68,11 +69,9 @@ class DataLoadManager(object):
         while previous_unique_column_value > -1:
             previous_unique_column_value = batch_data_loader.load_batch(previous_unique_column_value)
 
-        self.logger.info("ImportBatch Completed")
-
         if full_refresh:
             # Rename the stage table to the load table.
-            self.logger.info("Full-load is set. Renaming the stage table to the load table.")
+            self.logger.debug("Full-load is set. Renaming the stage table to the load table.")
             destination_table_manager.rename_table(pipeline_configuration['target_schema'],
                                                    pipeline_configuration['stage_table'],
                                                    pipeline_configuration['load_table'])

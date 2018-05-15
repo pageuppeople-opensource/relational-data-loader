@@ -1,11 +1,10 @@
+import io
+import os
+import importlib
 import logging
 from sqlalchemy import MetaData, DateTime
 from sqlalchemy.schema import Column, Table
-import importlib
 from sqlalchemy.sql import func
-import io
-import os
-
 
 class DestinationTableManager(object):
     TIMESTAMP_COLUMN_NAME = "data_pipeline_timestamp"

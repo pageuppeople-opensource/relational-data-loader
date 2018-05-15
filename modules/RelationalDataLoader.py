@@ -1,9 +1,8 @@
 import logging
+import argparse
+from sqlalchemy import create_engine
 from modules.DataLoadManager import DataLoadManager
 from modules.data_sources.DataSourceFactory import DataSourceFactory
-
-from sqlalchemy import create_engine
-import argparse
 
 _LOG_LEVEL_STRINGS = ['CRITICAL', 'ERROR', 'WARNING', 'INFO', 'DEBUG']
 
