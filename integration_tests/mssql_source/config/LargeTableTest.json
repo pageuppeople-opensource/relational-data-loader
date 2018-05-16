@@ -1,33 +1,25 @@
 {
 
   "source_table": {
-    "name": "ColumnTest",
+    "name": "LargeTable",
     "schema": "dbo",
-    "primary_key": "id"
+    "primary_key": "Id"
   },
   "target_schema": "rdl_integration_tests",
-  "stage_table": "stage_source_data",
-  "load_table": "load_source_data",
+  "stage_table": "stage_large_data",
+  "load_table": "load_large_data",
 
   "batch": {
     "size": 100000
   },
   "columns": [
     {
-      "source_name": "id",
+      "source_name": "Id",
       "destination": {
         "name": "id",
         "type": "sqlalchemy.Integer",
         "nullable": false,
         "primary_key": true
-      }
-    },
-    {
-      "source_name": "IntColumn1",
-      "destination": {
-        "name": "int_column_1",
-        "type": "citext.CIText",
-        "nullable": true
       }
     },
     {
@@ -39,17 +31,17 @@
       }
     },
     {
-      "source_name": "DecimalColumn1",
+      "source_name": "IntColumn1",
       "destination": {
-        "name": "decimal_column_1",
+        "name": "int_column_1",
         "type": "sqlalchemy.Numeric",
         "nullable": true
       }
     },
     {
-      "source_name": "DateTimeColumn1",
+      "source_name": "DateColumn2",
       "destination": {
-        "name": "date_time_column_1",
+        "name": "date_column_2",
         "type": "sqlalchemy.DateTime",
         "nullable": true
       }
@@ -61,6 +53,23 @@
         "type": "citext.CIText",
         "nullable": true
       }
+    },
+    {
+      "source_name": "StringColumn2",
+      "destination": {
+        "name": "string_column_2",
+        "type": "citext.CIText",
+        "nullable": true
+      }
+    },
+    {
+      "source_name": "GuidColumn",
+      "destination": {
+        "name": "guid_column",
+        "type": "citext.CIText",
+        "nullable": true
+      }
     }
+
   ]
 }

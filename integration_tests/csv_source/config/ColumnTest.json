@@ -1,0 +1,66 @@
+{
+
+  "source_table": {
+    "name": "ColumnTest",
+    "schema": "dbo",
+    "primary_key": "id"
+  },
+  "target_schema": "rdl_integration_tests",
+  "stage_table": "stage_source_data",
+  "load_table": "load_source_data",
+
+  "batch": {
+    "size": 100000
+  },
+  "columns": [
+    {
+      "source_name": "id",
+      "destination": {
+        "name": "id",
+        "type": "sqlalchemy.Integer",
+        "nullable": false,
+        "primary_key": true
+      }
+    },
+    {
+      "source_name": "IntColumn1",
+      "destination": {
+        "name": "int_column_1",
+        "type": "sqlalchemy.Numeric",
+        "nullable": true
+      }
+    },
+    {
+      "source_name": "DateColumn1",
+      "destination": {
+        "name": "date_column_1",
+        "type": "sqlalchemy.DateTime",
+        "nullable": true
+      }
+    },
+    {
+      "source_name": "DecimalColumn1",
+      "destination": {
+        "name": "decimal_column_1",
+        "type": "sqlalchemy.Numeric",
+        "nullable": true
+      }
+    },
+    {
+      "source_name": "DateTimeColumn1",
+      "destination": {
+        "name": "date_time_column_1",
+        "type": "sqlalchemy.DateTime",
+        "nullable": true
+      }
+    },
+     {
+      "source_name": "StringColumn1",
+      "destination": {
+        "name": "string_column_1",
+        "type": "citext.CIText",
+        "nullable": true
+      }
+    }
+  ]
+}
