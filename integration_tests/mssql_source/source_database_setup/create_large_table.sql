@@ -1,12 +1,12 @@
 IF object_id('LargeTable') IS NULL
 	CREATE TABLE LargeTable (
-      Id	int PRIMARY KEY,
-      StringColumn1 varchar(100),
-      DateColumn1	datetime,
-      DateColumn2	date,
-      IntColumn1 int,
-      StringColumn2 nvarchar(100),
-      GuidColumn uniqueidentifier)
+      Id INT PRIMARY KEY,
+      StringColumn1 VARCHAR(100),
+      DateColumn1	DATETIME,
+      DateColumn2	DATE,
+      IntColumn1 INT,
+      StringColumn2 NVARCHAR(100),
+      GuidColumn UNIQUEIDENTIFIER)
 ELSE
 	TRUNCATE TABLE LargeTable
 
