@@ -61,6 +61,15 @@
         "type": "string",
         "nullable": true
       }
+    },
+
+     {
+      "source_name": "GuidColumn1",
+      "destination": {
+        "name": "guid_column_1",
+        "type": "guid",
+        "nullable": true
+      }
     }
   ]
 }

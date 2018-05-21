@@ -1,6 +1,7 @@
 import citext
 from sqlalchemy import MetaData, DateTime, Numeric, Integer
 from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.dialects.postgresql import UUID
 class ColumnTypeResolver(object):
     PANDAS_TYPE_MAP = {'string': str,
                        'datetime': str,
@@ -12,7 +13,7 @@ class ColumnTypeResolver(object):
                          'datetime': DateTime,
                          'json': JSONB,
                          'numeric': Numeric,
-                         'guid': citext.CIText,
+                         'guid': UUID,
                          'int': Integer
                          }
 
