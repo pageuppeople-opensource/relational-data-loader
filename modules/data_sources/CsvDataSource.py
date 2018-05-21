@@ -1,6 +1,7 @@
 import logging
 import pandas
 import os.path
+from modules.ColumnTypeResolver import ColumnTypeResolver
 from pathlib import Path
 
 
@@ -8,7 +9,7 @@ class CsvDataSource(object):
     def __init__(self, connection_string, logger=None):
         self.logger = logger or logging.getLogger(__name__)
         self.source_path = Path(connection_string[len(self.connection_string_prefix()):])
-
+        self.column_type_resolver = ColumnTypeResolver()
     @staticmethod
     def can_handle_connection_string(connection_string):
         return connection_string.startswith(CsvDataSource.connection_string_prefix())
@@ -55,13 +56,10 @@ class CsvDataSource(object):
             return None
 
         self.logger.debug("Starting read of file: {0}".format(csv_file))
-        types = {'id': int,
-                 'StringColumn1': str,
-                 'IntColumn1': object,
-                 'DecimalColumn1': float,
-                 'DateColumn1': str,
-                 'DateTimeColumn1': str
-                 }
+        types = {}
+        for column in columns:
+            types[column['source_name']] = self.column_type_resolver.resolve_pandas_type(column['destination'])
+
         data_frame = pandas.read_csv(csv_file, dtype=types)
         self.logger.debug("Completed read")
 
