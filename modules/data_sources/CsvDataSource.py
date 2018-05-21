@@ -3,6 +3,7 @@ import pandas
 import os.path
 from pathlib import Path
 
+
 class CsvDataSource(object):
     def __init__(self, connection_string, logger=None):
         self.logger = logger or logging.getLogger(__name__)
@@ -54,7 +55,14 @@ class CsvDataSource(object):
             return None
 
         self.logger.debug("Starting read of file: {0}".format(csv_file))
-        data_frame = pandas.read_csv(csv_file)
+        types = {'id': int,
+                 'StringColumn1': str,
+                 'IntColumn1': object,
+                 'DecimalColumn1': float,
+                 'DateColumn1': str,
+                 'DateTimeColumn1': str
+                 }
+        data_frame = pandas.read_csv(csv_file, dtype=types)
         self.logger.debug("Completed read")
 
         batch_tracker.extract_completed_successfully(len(data_frame))

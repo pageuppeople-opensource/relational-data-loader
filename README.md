@@ -37,3 +37,25 @@ Run with  `--log-level DEBUG` on the command line.
 The test batch files assume there is a user by the name of `postgres` on the system.
 It also sends through a nonense password - it is assumed that the target system is running in 'trust' mode.
 See https://www.postgresql.org/docs/9.1/static/auth-pg-hba-conf.html for details on trust mode
+
+
+
+###Destination.Type Values
+The destination.type value controls both the data reader type and the destination column type. They are mapped as followed
+
+| destination.type            | pandas type | sqlalchemy type                       | dw column type | notes                                            |
+|-----------------------------|-------------|---------------------------------------|----------------|--------------------------------------------------|
+| string                      | str         | citext.CIText                         | citext         | A case-insensitive string that supports unicode  |
+| int (when nullable = false) | int         | sqlalchemy.Integer                    | int            | An (optionally) signed INT value                 |  
+| int (when nullable = true)  | object      | sqlalchemy.Integer                    | int            | An (optionally) signed INT value                 |  
+| datetime                    | str         | sqlalchemy.DateTime                   | datetime (tz?) |                                                  | 
+| json                        | str         | sqlalchemy.dialects.postgresql.JSONB  | jsonb          | Stored as binary-encoded json on the database    |
+| numeric                     | float       | sqlalchemy.Numeric                    | numeric        | Stores whole and decimal numbers                 |
+
+ 
+
+
+
+                   
+
+
