@@ -56,11 +56,9 @@ class CsvDataSource(object):
             return None
 
         self.logger.debug("Starting read of file: {0}".format(csv_file))
-        types = {}
-        for column in columns:
-            types[column['source_name']] = self.column_type_resolver.resolve_pandas_type(column['destination'])
 
-        data_frame = pandas.read_csv(csv_file, dtype=types)
+
+        data_frame = pandas.read_csv(csv_file)
         self.logger.debug("Completed read")
 
         batch_tracker.extract_completed_successfully(len(data_frame))

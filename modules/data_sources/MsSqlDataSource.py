@@ -3,7 +3,7 @@ import pandas
 from sqlalchemy import create_engine
 from sqlalchemy import MetaData
 from sqlalchemy.schema import Table
-
+from modules.ColumnTypeResolver import ColumnTypeResolver
 
 class MsSqlDataSource(object):
 
@@ -11,6 +11,7 @@ class MsSqlDataSource(object):
         self.logger = logger or logging.getLogger(__name__)
         self.connection_string = connection_string
         self.database_engine = create_engine(connection_string)
+        self.column_type_resolver = ColumnTypeResolver()
 
     @staticmethod
     def can_handle_connection_string(connection_string):
@@ -58,11 +59,12 @@ class MsSqlDataSource(object):
                       autoload_with=self.database_engine)
         return list(map(lambda column: column.name, table.columns))
 
+
     def get_next_data_frame(self, table_configuration, columns, batch_configuration, batch_tracker, previous_batch_key):
         sql = self.build_select_statement(table_configuration, columns, batch_configuration, previous_batch_key)
-
         self.logger.debug("Starting read of SQL Statement: {0}".format(sql))
         data_frame = pandas.read_sql_query(sql, self.database_engine)
+
         self.logger.debug("Completed read")
 
         batch_tracker.extract_completed_successfully(len(data_frame))

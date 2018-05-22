@@ -62,7 +62,6 @@
         "nullable": true
       }
     },
-
      {
       "source_name": "GuidColumn1",
       "destination": {
@@ -70,6 +69,18 @@
         "type": "guid",
         "nullable": true
       }
+    },
+     {
+      "source_name": "BigIntColumn1",
+      "destination": {
+        "name": "big_int_column_1",
+        "type": "bigint",
+        "nullable": true
+      }
     }
+
+
+
+
   ]
 }

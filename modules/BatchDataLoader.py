@@ -42,7 +42,11 @@ class BatchDataLoader(object):
         qualified_target_table = "{0}.{1}".format(self.target_schema, self.target_table)
         self.logger.debug("Starting write to table {0}".format(qualified_target_table))
         data = StringIO()
-        data_frame.to_csv(data, header=False, index=False, na_rep='')
+
+
+        data_frame.to_csv(data, header=False, index=False, na_rep='',  float_format='%.16g')
+        # Float_format is used to truncate any insignificant digits. Unfortunately it gives us an artificial limitation
+
         data.seek(0)
         raw = self.target_engine.raw_connection()
         curs = raw.cursor()
