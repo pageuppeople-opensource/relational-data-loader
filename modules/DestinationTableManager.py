@@ -3,13 +3,14 @@ import os
 import logging
 from modules.ColumnTypeResolver import ColumnTypeResolver
 
-from sqlalchemy import MetaData, DateTime
+from sqlalchemy import MetaData, DateTime, Boolean
 from sqlalchemy.schema import Column, Table
 from sqlalchemy.sql import func
 
 
 class DestinationTableManager(object):
     TIMESTAMP_COLUMN_NAME = "data_pipeline_timestamp"
+    IS_DELETED_COLUMN_NAME = "data_pipeline_is_deleted"
 
     def __init__(self, target_engine, logger=None):
         self.logger = logger or logging.getLogger(__name__)
@@ -48,6 +49,12 @@ class DestinationTableManager(object):
         table.append_column(
             Column(self.TIMESTAMP_COLUMN_NAME, DateTime(timezone=True), server_default=func.now()))
 
+        table.append_column(
+            Column(self.IS_DELETED_COLUMN_NAME, Boolean, server_default='t', default=True))
+
+
+
+
 
         if drop_first:
             self.logger.debug(
@@ -79,7 +86,7 @@ class DestinationTableManager(object):
         old_load_table_name = "{0}__old".format(target_table_name)
 
         # Step 1
-        sql = "DROP TABLE IF EXISTS {0}.{1};  ".format(schema_name, old_load_table_name)
+        sql = "DROP TABLE IF EXISTS {0}.{1} CASCADE;  ".format(schema_name, old_load_table_name)
         self.logger.debug("Table Rename, executing {0} ".format(sql))
         self.target_engine.execute(sql)
 
@@ -101,7 +108,7 @@ class DestinationTableManager(object):
 
         sql_builder.close()
 
-        sql = "DROP TABLE IF EXISTS {0}.{1} ".format(schema_name, old_load_table_name)
+        sql = "DROP TABLE IF EXISTS {0}.{1} CASCADE ".format(schema_name, old_load_table_name)
         self.logger.debug("Table Rename, executing {0}".format(sql))
         self.target_engine.execute(sql)
 
