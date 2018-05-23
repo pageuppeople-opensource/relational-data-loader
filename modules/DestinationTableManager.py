@@ -50,7 +50,7 @@ class DestinationTableManager(object):
             Column(self.TIMESTAMP_COLUMN_NAME, DateTime(timezone=True), server_default=func.now()))
 
         table.append_column(
-            Column(self.IS_DELETED_COLUMN_NAME, Boolean, server_default='t', default=True))
+            Column(self.IS_DELETED_COLUMN_NAME, Boolean, server_default='f', default=False))
 
 
 
