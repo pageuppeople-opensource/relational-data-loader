@@ -37,19 +37,18 @@ class MsSqlDataSource(object):
                                                                                        previous_batch_key)
 
     # Returns an array of configured_columns containing only columns that this data source supports. Logs invalid ones.
-    def get_valid_columns(self, table_configuration, configured_columns):
+    def assert_data_source_is_valid(self, table_configuration, configured_columns):
         columns_in_database = self.get_table_columns(table_configuration)
 
-        return list(
-            filter(lambda column: self.column_exists(column['source_name'], columns_in_database), configured_columns))
+        for column in configured_columns:
+            self.assert_column_exists(column['source_name'], columns_in_database, "{0}.{1}".format(table_configuration['schema'], table_configuration['name']))
 
-    def column_exists(self, column_name, columns_in_database):
+    def assert_column_exists(self, column_name, columns_in_database, table_name):
         if column_name in columns_in_database:
             return True
-        self.logger.warning(
-            "Column {0} does not exist in source. It will be ignored for now, however may cause downstream issues.".format(
-                column_name))
-        return False
+
+        message = 'Column {0} does not exist in source {1}'.format(column_name, table_name)
+        raise ValueError(message)
 
     def get_table_columns(self, table_configuration):
         metadata = MetaData()
