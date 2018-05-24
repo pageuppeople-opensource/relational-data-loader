@@ -32,8 +32,8 @@ In the above example, dwsource is a 64bit ODBC system dsn
 Run with  `--log-level DEBUG` on the command line.
 
 
-##Other Notes
-###Testing
+## Other Notes
+### Testing
 The test batch files assume there is a user by the name of `postgres` on the system.
 It also sends through a nonense password - it is assumed that the target system is running in 'trust' mode.
 See https://www.postgresql.org/docs/9.1/static/auth-pg-hba-conf.html for details on trust mode
