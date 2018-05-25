@@ -40,7 +40,7 @@ See https://www.postgresql.org/docs/9.1/static/auth-pg-hba-conf.html for details
 
 
 
-###Destination.Type Values
+### Destination.Type Values
 The destination.type value controls both the data reader type and the destination column type. They are mapped as followed
 
 | destination.type            | pandas type | sqlalchemy type                       | dw column type | notes                                            |
