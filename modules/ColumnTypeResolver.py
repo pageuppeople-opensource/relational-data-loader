@@ -1,5 +1,5 @@
 import citext
-from sqlalchemy import MetaData, DateTime, Numeric, Integer, BigInteger
+from sqlalchemy import DateTime, Numeric, Integer, BigInteger
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.dialects.postgresql import UUID
 
@@ -18,8 +18,7 @@ class ColumnTypeResolver(object):
                          'numeric': Numeric,
                          'guid': UUID,
                          'int': Integer,
-                         'bigint': BigInteger
-                         }
+                         'bigint': BigInteger}
 
     def resolve_postgres_type(self, column):
         return self.POSTGRES_TYPE_MAP[column['type']]
