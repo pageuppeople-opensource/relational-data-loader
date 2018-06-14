@@ -5,7 +5,8 @@ from modules.column_transformers.StringTransformers import ToUpper
 
 
 class BatchDataLoader(object):
-    def __init__(self, data_source, source_table_configuration, target_schema, target_table, columns, data_load_tracker, batch_configuration, target_engine, logger=None):
+    def __init__(self, data_source, source_table_configuration, target_schema, target_table, columns, data_load_tracker,
+                 batch_configuration, target_engine, logger=None):
         self.logger = logger or logging.getLogger(__name__)
         self.source_table_configuration = source_table_configuration
         self.columns = columns
@@ -22,7 +23,8 @@ class BatchDataLoader(object):
 
         self.logger.debug("ImportBatch Starting from previous_batch_key: {0}".format(previous_batch_key))
 
-        data_frame = self.data_source.get_next_data_frame(self.source_table_configuration, self.columns, self.batch_configuration, batch_tracker, previous_batch_key)
+        data_frame = self.data_source.get_next_data_frame(self.source_table_configuration, self.columns,
+                                                          self.batch_configuration, batch_tracker, previous_batch_key)
 
         if data_frame is None or len(data_frame) == 0:
             self.logger.debug("There are no rows to import, returning -1")
@@ -42,12 +44,16 @@ class BatchDataLoader(object):
         qualified_target_table = "{0}.{1}".format(self.target_schema, self.target_table)
         self.logger.debug("Starting write to table {0}".format(qualified_target_table))
         data = StringIO()
-        data_frame.to_csv(data, header=False, index=False, na_rep='')
+
+        data_frame.to_csv(data, header=False, index=False, na_rep='', float_format='%.16g')
+        # Float_format is used to truncate any insignificant digits. Unfortunately it gives us an artificial limitation
+
         data.seek(0)
         raw = self.target_engine.raw_connection()
         curs = raw.cursor()
 
-        column_array = list(map(lambda source_colum_name: self.get_destination_column_name(source_colum_name), data_frame.columns))
+        column_array = list(
+            map(lambda source_colum_name: self.get_destination_column_name(source_colum_name), data_frame.columns))
         column_list = ','.join(map(str, column_array))
 
         sql = "COPY {0}({1}) FROM STDIN with csv".format(qualified_target_table, column_list)

@@ -40,13 +40,10 @@ class DataLoadManager(object):
 
         data_load_tracker = DataLoadTracker(configuration_name, json_data, full_refresh)
 
-        columns = self.data_source.get_valid_columns(pipeline_configuration['source_table'],
+        self.data_source.assert_data_source_is_valid(pipeline_configuration['source_table'],
                                                      pipeline_configuration['columns'])
 
-        if columns is None:
-            self.logger.debug("There are no columns, returning.")
-            return
-
+        columns = pipeline_configuration['columns']
         destination_table_manager.create_schema(pipeline_configuration['target_schema'])
 
         self.logger.debug("Recreating the staging table {0}.{1}".format(pipeline_configuration['target_schema'], pipeline_configuration['stage_table']))

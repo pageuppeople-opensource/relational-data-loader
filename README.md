@@ -32,8 +32,34 @@ In the above example, dwsource is a 64bit ODBC system dsn
 Run with  `--log-level DEBUG` on the command line.
 
 
-##Other Notes
-###Testing
+## Other Notes
+### Testing
 The test batch files assume there is a user by the name of `postgres` on the system.
 It also sends through a nonense password - it is assumed that the target system is running in 'trust' mode.
 See https://www.postgresql.org/docs/9.1/static/auth-pg-hba-conf.html for details on trust mode
+
+
+
+### Destination.Type Values
+The destination.type value controls both the data reader type and the destination column type. They are mapped as followed
+
+| destination.type            | pandas type | sqlalchemy type                       | dw column type | notes                                            |
+|-----------------------------|-------------|---------------------------------------|----------------|--------------------------------------------------|
+| string                      | str         | citext.CIText                         | citext         | A case-insensitive string that supports unicode  |
+| int (when nullable = false) | int         | sqlalchemy.Integer                    | int            | An (optionally) signed INT value                 |  
+| int (when nullable = true)  | object      | sqlalchemy.Integer                    | int            | An (optionally) signed INT value                 |  
+| datetime                    | str         | sqlalchemy.DateTime                   | datetime (tz?) |                                                  | 
+| json                        | str         | sqlalchemy.dialects.postgresql.JSONB  | jsonb          | Stored as binary-encoded json on the database    |
+| numeric                     | float       | sqlalchemy.Numeric                    | numeric        | Stores whole and decimal numbers                 |
+| guid                        | str         | sqlalchemy.dialects.postgresql.UUID   | uuid           | |
+| bigint                      | int         | sqlalchemy.BigInteger                 | BigInt         | Relies on 64big python. Limited to largest number of ~2147483647121212|
+
+
+These are implemented in Column_Type_Resolver.py
+
+
+                   
+
+                   
+
+

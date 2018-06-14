@@ -1,17 +1,21 @@
 import io
 import os
-import importlib
 import logging
-from sqlalchemy import MetaData, DateTime
+from modules.ColumnTypeResolver import ColumnTypeResolver
+
+from sqlalchemy import MetaData, DateTime, Boolean
 from sqlalchemy.schema import Column, Table
 from sqlalchemy.sql import func
 
+
 class DestinationTableManager(object):
     TIMESTAMP_COLUMN_NAME = "data_pipeline_timestamp"
+    IS_DELETED_COLUMN_NAME = "data_pipeline_is_deleted"
 
     def __init__(self, target_engine, logger=None):
         self.logger = logger or logging.getLogger(__name__)
         self.target_engine = target_engine
+        self.column_type_resolver = ColumnTypeResolver()
 
     def create_schema(self, schema_name):
         self.target_engine.execute("CREATE SCHEMA IF NOT EXISTS {0}".format(schema_name))
@@ -45,6 +49,12 @@ class DestinationTableManager(object):
         table.append_column(
             Column(self.TIMESTAMP_COLUMN_NAME, DateTime(timezone=True), server_default=func.now()))
 
+        table.append_column(
+            Column(self.IS_DELETED_COLUMN_NAME, Boolean, server_default='f', default=False))
+
+
+
+
 
         if drop_first:
             self.logger.debug(
@@ -58,18 +68,8 @@ class DestinationTableManager(object):
         self.logger.debug("Created table {0}.{1}".format(schema_name, table_name))
         return
 
-    def create_column_type(self, type_name):
-        parts = type_name.split(".")
-        module_name = '.'.join(parts[0:len(parts) - 1])
-        module = importlib.import_module(module_name)
-        class_name = parts[len(parts)-1]
-        self.logger.debug("Creating column type: {0}.{1}".format(module_name, class_name))
-        class_ = getattr(module, parts[len(parts)-1])
-        instance = class_()
-        return instance
-
     def create_column(self, configuration):
-        return Column(configuration['name'], self.create_column_type(configuration['type']),
+        return Column(configuration['name'], self.column_type_resolver.resolve_postgres_type(configuration),
                       primary_key=configuration.get("primary_key", False),
                       nullable=configuration['nullable'])
 
@@ -86,7 +86,7 @@ class DestinationTableManager(object):
         old_load_table_name = "{0}__old".format(target_table_name)
 
         # Step 1
-        sql = "DROP TABLE IF EXISTS {0}.{1};  ".format(schema_name, old_load_table_name)
+        sql = "DROP TABLE IF EXISTS {0}.{1} CASCADE;  ".format(schema_name, old_load_table_name)
         self.logger.debug("Table Rename, executing {0} ".format(sql))
         self.target_engine.execute(sql)
 
@@ -108,7 +108,7 @@ class DestinationTableManager(object):
 
         sql_builder.close()
 
-        sql = "DROP TABLE IF EXISTS {0}.{1} ".format(schema_name, old_load_table_name)
+        sql = "DROP TABLE IF EXISTS {0}.{1} CASCADE ".format(schema_name, old_load_table_name)
         self.logger.debug("Table Rename, executing {0}".format(sql))
         self.target_engine.execute(sql)
 
