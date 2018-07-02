@@ -38,6 +38,10 @@ class DataLoadManager(object):
                                                                                                               pipeline_configuration['load_table']))
             full_refresh = True
 
+        #Ask the source to check that ChangeTrackingIsEnabled and valid
+        #Maybe this returns a flag?
+
+
         data_load_tracker = DataLoadTracker(configuration_name, json_data, full_refresh)
 
         self.data_source.assert_data_source_is_valid(pipeline_configuration['source_table'],
