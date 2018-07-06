@@ -34,8 +34,6 @@ class MsSqlDataSource(object):
     def build_select_statement(self, table_configuration, columns, batch_configuration, previous_batch_key, full_refresh, change_tracking_info):
         column_array = list(map(lambda cfg: self.prefix_column(cfg['source_name'], full_refresh, table_configuration['primary_key']), columns))
         column_names = ", ".join(column_array)
-
-        #This line below is temp until we have a proper storage log of what ran - then data_pipeline_next_change_minimum_version will be stored there.
         column_names = "{0}, {1} as data_pipeline_next_change_minimum_version".format(column_names, change_tracking_info.next_sync_version)
         if full_refresh:
             return "SELECT TOP ({0}) {1} FROM {2}.{3} t WHERE t.{4} > {5} ORDER BY t.{4}".format(batch_configuration['size'],
@@ -86,7 +84,7 @@ class MsSqlDataSource(object):
         return list(map(lambda column: column.name, table.columns))
 
 
-    def get_next_data_frame(self, table_configuration, columns, batch_configuration, batch_tracker, previous_batch_key, full_refresh, change_tracking_info,):
+    def get_next_data_frame(self, table_configuration, columns, batch_configuration, batch_tracker, previous_batch_key, full_refresh, change_tracking_info):
         sql = self.build_select_statement(table_configuration, columns, batch_configuration, previous_batch_key, full_refresh, change_tracking_info,)
         self.logger.debug("Starting read of SQL Statement: {0}".format(sql))
         data_frame = pandas.read_sql_query(sql, self.database_engine)
@@ -110,7 +108,6 @@ class MsSqlDataSource(object):
 
         self.database_engine.execute(text(sql_builder.getvalue()).execution_options(autocommit=True))
 
-
         sql_builder = io.StringIO()
         sql_builder.write("DECLARE @last_sync_version bigint = {0}; \n".format(last_sync_version))
         sql_builder.write("DECLARE @this_sync_version bigint = 0; \n")
@@ -125,9 +122,6 @@ class MsSqlDataSource(object):
 
         result = self.database_engine.execute(sql_builder.getvalue())
         row = result.fetchone()
-        return_value = ChangeTrackingInfo(row["this_sync_version"], row["next_sync_version"])
-
         sql_builder.close()
 
-        return return_value
-
+        return ChangeTrackingInfo(row["this_sync_version"], row["next_sync_version"])
