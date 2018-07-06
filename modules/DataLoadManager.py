@@ -38,14 +38,23 @@ class DataLoadManager(object):
                                                                                                               pipeline_configuration['load_table']))
             full_refresh = True
 
-        #Ask the source to check that ChangeTrackingIsEnabled and valid
-        #Maybe this returns a flag?
-
-
-        data_load_tracker = DataLoadTracker(configuration_name, json_data, full_refresh)
-
         self.data_source.assert_data_source_is_valid(pipeline_configuration['source_table'],
                                                      pipeline_configuration['columns'])
+
+        last_sync_version = destination_table_manager.get_last_sync_version(pipeline_configuration['target_schema'],
+                                                                            pipeline_configuration['load_table'])
+
+        change_tracking_info = self.data_source.init_change_tracking(pipeline_configuration['source_table'],
+                                                                     last_sync_version)
+
+
+        data_load_tracker = DataLoadTracker(configuration_name, json_data, full_refresh, change_tracking_info)
+
+
+        self.logger.debug(" Change Tracking: this_sync_version: {0} next_sync_version: {1} force_full_load:{2}    : ".format(change_tracking_info.this_sync_version, change_tracking_info.next_sync_version, change_tracking_info.force_full_load()))
+        if not full_refresh and change_tracking_info.force_full_load():
+            self.logger.info("Change tracking has forced this to be a full load")
+            full_refresh = True
 
         columns = pipeline_configuration['columns']
         destination_table_manager.create_schema(pipeline_configuration['target_schema'])
@@ -64,7 +73,9 @@ class DataLoadManager(object):
                                          columns,
                                          data_load_tracker,
                                          pipeline_configuration['batch'],
-                                         target_engine)
+                                         target_engine,
+                                         full_refresh,
+                                         change_tracking_info)
 
         previous_unique_column_value = 0
         while previous_unique_column_value > -1:
@@ -86,5 +97,5 @@ class DataLoadManager(object):
             destination_table_manager.drop_table(pipeline_configuration['target_schema'],
                                                  pipeline_configuration['stage_table'])
         data_load_tracker.completed_successfully()
-        self.logger.info("Import for configuration: {0} Complete. {1}".format(configuration_name, data_load_tracker.get_statistics()))
+        self.logger.info("Import Complete for: {0}. {1}".format(configuration_name, data_load_tracker.get_statistics()))
 

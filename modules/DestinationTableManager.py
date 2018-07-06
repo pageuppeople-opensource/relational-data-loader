@@ -3,7 +3,7 @@ import os
 import logging
 from modules.ColumnTypeResolver import ColumnTypeResolver
 
-from sqlalchemy import MetaData, DateTime, Boolean
+from sqlalchemy import MetaData, DateTime, Boolean, BigInteger
 from sqlalchemy.schema import Column, Table
 from sqlalchemy.sql import func
 
@@ -11,6 +11,8 @@ from sqlalchemy.sql import func
 class DestinationTableManager(object):
     TIMESTAMP_COLUMN_NAME = "data_pipeline_timestamp"
     IS_DELETED_COLUMN_NAME = "data_pipeline_is_deleted"
+    CHANGE_VERSION_COLUMN_NAME = "data_pipeline_change_version"
+    NEXT_CHANGE_MINIMUM_VERSION_COLUMN_NAME = "data_pipeline_next_change_minimum_version"
 
     def __init__(self, target_engine, logger=None):
         self.logger = logger or logging.getLogger(__name__)
@@ -52,9 +54,11 @@ class DestinationTableManager(object):
         table.append_column(
             Column(self.IS_DELETED_COLUMN_NAME, Boolean, server_default='f', default=False))
 
+        table.append_column(
+            Column(self.CHANGE_VERSION_COLUMN_NAME, BigInteger))
 
-
-
+        table.append_column(
+            Column(self.NEXT_CHANGE_MINIMUM_VERSION_COLUMN_NAME, BigInteger))
 
         if drop_first:
             self.logger.debug(
@@ -63,15 +67,28 @@ class DestinationTableManager(object):
             self.logger.debug(
                 "Dropped table {0}.{1}".format(schema_name, table_name))
 
+
         self.logger.debug("Creating table {0}.{1}".format(schema_name, table_name))
         table.create(self.target_engine, checkfirst=False)
         self.logger.debug("Created table {0}.{1}".format(schema_name, table_name))
+
         return
 
     def create_column(self, configuration):
         return Column(configuration['name'], self.column_type_resolver.resolve_postgres_type(configuration),
                       primary_key=configuration.get("primary_key", False),
                       nullable=configuration['nullable'])
+
+    # TODO: this should come from a different log table which is only written to at the end of a successful load load.
+    def get_last_sync_version(self, schema_name, table_name):
+        sql = "SELECT max({0}) as version FROM {1}.{2}".format(self.NEXT_CHANGE_MINIMUM_VERSION_COLUMN_NAME, schema_name, table_name)
+
+        result = self.target_engine.execute(sql)
+        row = result.fetchone()
+        if row["version"] is None:
+            return 0
+        return row["version"]
+
 
     def rename_table(self, schema_name, source_table_name, target_table_name):
 
@@ -116,6 +133,10 @@ class DestinationTableManager(object):
         column_array = list(map(lambda column: column['destination']['name'], columns_configuration))
         column_list = ','.join(map(str, column_array))
         column_list = column_list + ",{0}".format(self.TIMESTAMP_COLUMN_NAME)
+        column_list = column_list + ",{0}".format(self.IS_DELETED_COLUMN_NAME)
+        column_list = column_list + ",{0}".format(self.CHANGE_VERSION_COLUMN_NAME)
+        column_list = column_list + ",{0}".format(self.NEXT_CHANGE_MINIMUM_VERSION_COLUMN_NAME)
+
 
         primary_key_column_array = [column_configuration['destination']['name'] for column_configuration in columns_configuration if 'primary_key' in column_configuration['destination'] and column_configuration['destination']['primary_key']]
 
@@ -132,7 +153,14 @@ class DestinationTableManager(object):
             sql_builder.write("{0} = EXCLUDED.{0},".format(column_configuratiomn['destination']['name']))
             sql_builder.write(os.linesep)
 
-        sql_builder.write("{0} = EXCLUDED.{0}".format(self.TIMESTAMP_COLUMN_NAME))
+        sql_builder.write("{0} = EXCLUDED.{0},".format(self.TIMESTAMP_COLUMN_NAME))
+        sql_builder.write(os.linesep)
+        sql_builder.write("{0} = EXCLUDED.{0},".format(self.IS_DELETED_COLUMN_NAME))
+        sql_builder.write(os.linesep)
+        sql_builder.write("{0} = EXCLUDED.{0},".format(self.CHANGE_VERSION_COLUMN_NAME))
+        sql_builder.write(os.linesep)
+        sql_builder.write("{0} = EXCLUDED.{0}".format(self.NEXT_CHANGE_MINIMUM_VERSION_COLUMN_NAME))
+        sql_builder.write(os.linesep)
 
         self.logger.debug("Upsert executing {0}".format(sql_builder.getvalue()))
         self.target_engine.execute(sql_builder.getvalue())

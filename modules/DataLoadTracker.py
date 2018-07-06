@@ -14,12 +14,13 @@ class DataLoadTracker:
     total_row_count = 0
     rows_per_second = 0
 
-    def __init__(self, configuration_name, configuration, is_full_load):
+    def __init__(self, configuration_name, configuration, is_full_load, change_tracking_info):
         self.configuration_name = configuration_name
         self.configuration = configuration
         self.is_full_load = is_full_load
         self.started = datetime.now()
         self.status = "Not Started"
+        self.change_tracking_info = change_tracking_info
 
     def start_batch(self):
         batch = self.Batch()
@@ -36,9 +37,11 @@ class DataLoadTracker:
         self.rows_per_second = self.total_row_count / self.total_execution_time.total_seconds()
 
     def get_statistics(self):
-        return "Rows: {0}, Total Execution Time: {1}. ({2:.2f} rows per second)".format(self.total_row_count,
-                                                                                            self.total_execution_time,
-                                                                                            self.rows_per_second)
+        load_type = 'full' if self.is_full_load else "incremental from version {0} ".format(self.change_tracking_info.this_sync_version)
+        return "Rows: {0} ({1}), Total Execution Time: {2}. ({3:.2f} rows per second) ".format(self.total_row_count,
+                                                                                               load_type,
+                                                                                               self.total_execution_time,
+                                                                                               self.rows_per_second)
 
     class Batch:
         row_count = 0
