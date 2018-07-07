@@ -1,4 +1,5 @@
 import logging
+from sqlalchemy import desc
 from modules.data_load_tracking.DataLoadExecution import DataLoadExecution, Base
 
 
@@ -13,7 +14,7 @@ class DataLoadTrackerRepository(object):
 
     def get_last_sync_version(self, model_name):
         session = self.session_maker()
-        result = session.query(DataLoadExecution).filter_by(model_name=model_name, status="Load Completed Successfully").order_by(DataLoadExecution.completed_on).first()
+        result = session.query(DataLoadExecution).filter_by(model_name=model_name, status="Completed Successfully").order_by(desc(DataLoadExecution.completed_on)).first()
 
         if result is None:
             return 0

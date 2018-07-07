@@ -32,7 +32,7 @@ class DataLoadTracker:
     def completed_successfully(self):
         self.completed = datetime.now()
         self.total_execution_time = self.completed - self.started
-
+        self.status = "Completed Successfully"
         for batch in self.batches:
             self.total_row_count = self.total_row_count + batch.row_count
 
@@ -91,7 +91,6 @@ class DataLoadTracker:
                 self.load_rows_per_second = self.row_count / self.load_execution_time.total_seconds()
 
 
-        # TODO: remove
         def load_skipped_due_to_zero_rows(self):
             self.status = "Skipped - Zero Rows"
             self.load_completed = datetime.now()

@@ -24,7 +24,6 @@ class DestinationTableManager(object):
     def table_exists(self, schema_name, table_name):
         return self.target_engine.dialect.has_table(self.target_engine, table_name, schema_name)
 
-
     def drop_table(self, schema_name, table_name):
         metadata = MetaData()
         self.logger.debug(
@@ -35,9 +34,6 @@ class DestinationTableManager(object):
 
         self.logger.debug(
             "Dropped table {0}.{1}".format(schema_name, table_name))
-
-
-
 
     def create_table(self, schema_name, table_name, columns_configuration, drop_first):
         metadata = MetaData()
@@ -63,7 +59,6 @@ class DestinationTableManager(object):
             self.logger.debug(
                 "Dropped table {0}.{1}".format(schema_name, table_name))
 
-
         self.logger.debug("Creating table {0}.{1}".format(schema_name, table_name))
         table.create(self.target_engine, checkfirst=False)
         self.logger.debug("Created table {0}.{1}".format(schema_name, table_name))
@@ -74,7 +69,6 @@ class DestinationTableManager(object):
         return Column(configuration['name'], self.column_type_resolver.resolve_postgres_type(configuration),
                       primary_key=configuration.get("primary_key", False),
                       nullable=configuration['nullable'])
-
 
     def rename_table(self, schema_name, source_table_name, target_table_name):
 
@@ -122,8 +116,9 @@ class DestinationTableManager(object):
         column_list = column_list + ",{0}".format(self.IS_DELETED_COLUMN_NAME)
         column_list = column_list + ",{0}".format(self.CHANGE_VERSION_COLUMN_NAME)
 
-
-        primary_key_column_array = [column_configuration['destination']['name'] for column_configuration in columns_configuration if 'primary_key' in column_configuration['destination'] and column_configuration['destination']['primary_key']]
+        primary_key_column_array = [column_configuration['destination']['name'] for column_configuration in
+                                    columns_configuration if 'primary_key' in column_configuration['destination'] and
+                                    column_configuration['destination']['primary_key']]
 
         primary_key_column_list = ','.join(map(str, primary_key_column_array))
 
@@ -134,15 +129,15 @@ class DestinationTableManager(object):
         sql_builder.write(os.linesep)
         sql_builder.write(" ON CONFLICT({0}) DO UPDATE SET ".format(primary_key_column_list))
 
-        for column_configuratiomn in columns_configuration:
-            sql_builder.write("{0} = EXCLUDED.{0},".format(column_configuratiomn['destination']['name']))
+        for column_configuration in columns_configuration:
+            sql_builder.write("{0} = EXCLUDED.{0},".format(column_configuration['destination']['name']))
             sql_builder.write(os.linesep)
 
         sql_builder.write("{0} = EXCLUDED.{0},".format(self.TIMESTAMP_COLUMN_NAME))
         sql_builder.write(os.linesep)
         sql_builder.write("{0} = EXCLUDED.{0},".format(self.IS_DELETED_COLUMN_NAME))
         sql_builder.write(os.linesep)
-        sql_builder.write("{0} = EXCLUDED.{0},".format(self.CHANGE_VERSION_COLUMN_NAME))
+        sql_builder.write("{0} = EXCLUDED.{0}".format(self.CHANGE_VERSION_COLUMN_NAME))
         sql_builder.write(os.linesep)
 
         self.logger.debug("Upsert executing {0}".format(sql_builder.getvalue()))

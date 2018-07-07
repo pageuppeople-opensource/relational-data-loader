@@ -8,6 +8,6 @@ class ChangeTrackingInfo:
         self.next_sync_version = next_sync_version
 
     def force_full_load(self):
-        return bool(self.next_sync_version == 0)
+        return bool(self.this_sync_version == 0 or self.next_sync_version == 0)
 
 
