@@ -123,4 +123,5 @@ class MsSqlDataSource(object):
         row = result.fetchone()
         sql_builder.close()
 
-        return ChangeTrackingInfo(row["this_sync_version"], row["next_sync_version"])
+        force_full_load = bool(row["this_sync_version"] == 0 or row["next_sync_version"] == 0)
+        return ChangeTrackingInfo(row["this_sync_version"], row["next_sync_version"], force_full_load)

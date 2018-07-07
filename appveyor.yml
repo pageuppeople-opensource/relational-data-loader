@@ -47,7 +47,7 @@ build_script:
 test_script:
   - test_full_refresh_from_csv.cmd
   - test_incremental_refresh_from_csv.cmd
-  - test_full_refresh_from_mssql.cmd
+  - test_incremental_refresh_from_mssql.cmd
 
 on_finish:
   #Enable this line to make the build pause after completion for RDP troubleshooting.

@@ -50,8 +50,8 @@ class DataLoadManager(object):
 
         data_load_tracker = DataLoadTracker(model_name, json_data, full_refresh, change_tracking_info, self.correlation_id)
 
-        self.logger.debug(" Change Tracking: this_sync_version: {0} next_sync_version: {1} force_full_load:{2}    : ".format(change_tracking_info.this_sync_version, change_tracking_info.next_sync_version, change_tracking_info.force_full_load()))
-        if not full_refresh and change_tracking_info.force_full_load():
+        self.logger.debug(" Change Tracking: this_sync_version: {0} next_sync_version: {1} force_full_load:{2}    : ".format(change_tracking_info.this_sync_version, change_tracking_info.next_sync_version, change_tracking_info.force_full_load))
+        if not full_refresh and change_tracking_info.force_full_load:
             self.logger.info("Change tracking has forced this to be a full load")
             full_refresh = True
 

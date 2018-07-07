@@ -64,4 +64,4 @@ class CsvDataSource(object):
         return data_frame
 
     def init_change_tracking(self, table_configuration, last_sync_version):
-        return ChangeTrackingInfo(0,0)
+        return ChangeTrackingInfo(0, 0, False)
