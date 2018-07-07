@@ -1,33 +1,34 @@
 import os
 import json
+import uuid
 import logging
 from modules.BatchDataLoader import BatchDataLoader
 from modules.DestinationTableManager import DestinationTableManager
-from modules.DataLoadTracker import DataLoadTracker
-
+from modules.data_load_tracking.DataLoadTracker import DataLoadTracker
 
 
 class DataLoadManager(object):
-    def __init__(self, configuration_path, data_source, logger=None):
+    def __init__(self, configuration_path, data_source, data_load_tracker_repository, logger=None):
         self.logger = logger or logging.getLogger(__name__)
         self.configuration_path = configuration_path
         self.data_source = data_source
-
+        self.data_load_tracker_repository = data_load_tracker_repository
+        self.correlation_id = uuid.uuid4()
     def start_imports(self, target_engine, full_refresh):
         for file in os.listdir(self.configuration_path):
             self.start_single_import(target_engine, file, full_refresh)
 
         self.logger.info("Execution completed.")
 
-    def start_single_import(self, target_engine, configuration_name, requested_full_refresh):
-        self.logger.debug("Using configuration file : {0}".format(configuration_name))
+    def start_single_import(self, target_engine, model_name, requested_full_refresh):
+        self.logger.debug("Using configuration file : {0}".format(model_name))
 
-        config_file = os.path.abspath(self.configuration_path + configuration_name)
+        config_file = os.path.abspath(self.configuration_path + model_name)
         self.logger.debug("Using configuration file : {0}".format(config_file))
         with open(config_file) as json_data:
             pipeline_configuration = json.load(json_data)
 
-        self.logger.info("Execute Starting for: {0} requested_full_refresh: {1}".format(configuration_name, requested_full_refresh))
+        self.logger.info("Execute Starting for: {0} requested_full_refresh: {1}".format(model_name, requested_full_refresh))
 
         destination_table_manager = DestinationTableManager(target_engine)
 
@@ -41,14 +42,13 @@ class DataLoadManager(object):
         self.data_source.assert_data_source_is_valid(pipeline_configuration['source_table'],
                                                      pipeline_configuration['columns'])
 
-        last_sync_version = destination_table_manager.get_last_sync_version(pipeline_configuration['target_schema'],
-                                                                            pipeline_configuration['load_table'])
+        last_sync_version = self.data_load_tracker_repository.get_last_sync_version(model_name)
 
         change_tracking_info = self.data_source.init_change_tracking(pipeline_configuration['source_table'],
                                                                      last_sync_version)
 
 
-        data_load_tracker = DataLoadTracker(configuration_name, json_data, full_refresh, change_tracking_info)
+        data_load_tracker = DataLoadTracker(model_name, json_data, full_refresh, change_tracking_info, self.correlation_id)
 
 
         self.logger.debug(" Change Tracking: this_sync_version: {0} next_sync_version: {1} force_full_load:{2}    : ".format(change_tracking_info.this_sync_version, change_tracking_info.next_sync_version, change_tracking_info.force_full_load()))
@@ -97,5 +97,6 @@ class DataLoadManager(object):
             destination_table_manager.drop_table(pipeline_configuration['target_schema'],
                                                  pipeline_configuration['stage_table'])
         data_load_tracker.completed_successfully()
-        self.logger.info("Import Complete for: {0}. {1}".format(configuration_name, data_load_tracker.get_statistics()))
+        self.data_load_tracker_repository.save(data_load_tracker)
+        self.logger.info("Import Complete for: {0}. {1}".format(model_name, data_load_tracker.get_statistics()))
 

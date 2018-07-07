@@ -2,7 +2,9 @@ import logging
 import argparse
 from sqlalchemy import create_engine
 from modules.DataLoadManager import DataLoadManager
+from modules.data_load_tracking.DataLoadTrackerRepository import DataLoadTrackerRepository
 from modules.data_sources.DataSourceFactory import DataSourceFactory
+from sqlalchemy.orm import sessionmaker
 
 _LOG_LEVEL_STRINGS = ['CRITICAL', 'ERROR', 'WARNING', 'INFO', 'DEBUG']
 
@@ -20,7 +22,10 @@ class RelationalDataLoader:
 
         destination_engine = create_engine(args['destination-engine'])
 
-        data_load_manager = DataLoadManager(args['configuration-folder'], data_source)
+        session_maker = sessionmaker(bind=destination_engine)
+        repository = DataLoadTrackerRepository(session_maker)
+        repository.create_tables(destination_engine)
+        data_load_manager = DataLoadManager(args['configuration-folder'], data_source, repository)
         data_load_manager.start_imports(destination_engine, args['full_refresh'])
 
     def configure_logging(self, log_level):

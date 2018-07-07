@@ -7,20 +7,22 @@ class DataLoadTracker:
     status = "Not Started"
     total_row_count = 0
     batches = []
-    configuration_name = None
+    model_name = None
     configuration = None
-    is_full_load = False
+    is_full_refresh = False
     total_execution_time = None
     total_row_count = 0
     rows_per_second = 0
+    correlation_id = None,
 
-    def __init__(self, configuration_name, configuration, is_full_load, change_tracking_info):
-        self.configuration_name = configuration_name
+    def __init__(self, model_name, configuration, is_full_refresh, change_tracking_info, correlation_id):
+        self.model_name = model_name
         self.configuration = configuration
-        self.is_full_load = is_full_load
+        self.is_full_refresh = is_full_refresh
         self.started = datetime.now()
         self.status = "Not Started"
         self.change_tracking_info = change_tracking_info
+        self.correlation_id = correlation_id
 
     def start_batch(self):
         batch = self.Batch()
@@ -37,7 +39,7 @@ class DataLoadTracker:
         self.rows_per_second = self.total_row_count / self.total_execution_time.total_seconds()
 
     def get_statistics(self):
-        load_type = 'full' if self.is_full_load else "incremental from version {0} ".format(self.change_tracking_info.this_sync_version)
+        load_type = 'full' if self.is_full_refresh else "incremental from version {0} ".format(self.change_tracking_info.this_sync_version)
         return "Rows: {0} ({1}), Total Execution Time: {2}. ({3:.2f} rows per second) ".format(self.total_row_count,
                                                                                                load_type,
                                                                                                self.total_execution_time,
@@ -89,6 +91,7 @@ class DataLoadTracker:
                 self.load_rows_per_second = self.row_count / self.load_execution_time.total_seconds()
 
 
+        # TODO: remove
         def load_skipped_due_to_zero_rows(self):
             self.status = "Skipped - Zero Rows"
             self.load_completed = datetime.now()
