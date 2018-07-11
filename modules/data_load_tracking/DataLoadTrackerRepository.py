@@ -12,13 +12,9 @@ class DataLoadTrackerRepository(object):
         engine.execute("CREATE SCHEMA IF NOT EXISTS {0}".format("data_pipeline"))
         Base.metadata.create_all(engine)
 
-    def get_last_sync_version(self, model_name):
+    def get_last_successful_data_load_execution(self, model_name):
         session = self.session_maker()
-        result = session.query(DataLoadExecution).filter_by(model_name=model_name, status="Completed Successfully").order_by(desc(DataLoadExecution.completed_on)).first()
-
-        if result is None:
-            return 0
-        return result.next_sync_version
+        return session.query(DataLoadExecution).filter_by(model_name=model_name, status="Completed Successfully").order_by(desc(DataLoadExecution.completed_on)).first()
 
 
     def save(self, data_load_tracker):
@@ -30,9 +26,9 @@ class DataLoadTrackerRepository(object):
                                                 next_sync_version=data_load_tracker.change_tracking_info.next_sync_version,
                                                 execution_time_ms=int(data_load_tracker.total_execution_time.total_seconds() * 1000),
                                                 rows_processed=data_load_tracker.total_row_count,
-                                                status=data_load_tracker.status)
-
-
+                                                status=data_load_tracker.status,
+                                                model_checksum=data_load_tracker.model_checksum,
+                                                full_refresh_reason = data_load_tracker.full_refresh_reason)
 
         session = self.session_maker()
         session.add(data_load_execution)

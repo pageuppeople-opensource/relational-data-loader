@@ -14,15 +14,18 @@ class DataLoadTracker:
     total_row_count = 0
     rows_per_second = 0
     correlation_id = None,
+    full_refresh_reason = "N/A"
 
-    def __init__(self, model_name, configuration, is_full_refresh, change_tracking_info, correlation_id):
+    def __init__(self, model_name, model_checksum, configuration, is_full_refresh, change_tracking_info, correlation_id, full_refresh_reason):
         self.model_name = model_name
+        self.model_checksum = model_checksum
         self.configuration = configuration
         self.is_full_refresh = is_full_refresh
         self.started = datetime.now()
         self.status = "Not Started"
         self.change_tracking_info = change_tracking_info
         self.correlation_id = correlation_id
+        self.full_refresh_reason = full_refresh_reason
 
     def start_batch(self):
         batch = self.Batch()

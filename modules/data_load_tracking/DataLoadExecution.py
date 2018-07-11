@@ -17,4 +17,5 @@ class DataLoadExecution(Base):
     rows_processed = Column(Integer, nullable=False)
     correlation_id = Column(String(250), nullable=True)
     status = Column(String(25), nullable=False)
-
+    model_checksum = Column(String(100), nullable=False)
+    full_refresh_reason = Column(String(100), nullable=False)
