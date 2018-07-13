@@ -54,7 +54,7 @@ class DataLoadManager(object):
         if last_successful_data_load_execution is None:
             last_sync_version = 0
             full_refresh_reason = "First Execution"
-            full_refresh = True,
+            full_refresh = True
         else:
             self.logger.debug("Previous Checksum {0}. Current Checksum {1}".format(last_successful_data_load_execution.model_checksum, model_checksum))
             last_sync_version = last_successful_data_load_execution.next_sync_version
