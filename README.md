@@ -18,15 +18,8 @@ In the above example, dwsource is a 64bit ODBC system dsn
 
 
 ### Examples
-#### CSV Source
 
-`py rdl.py csv://.\test_data\full_refresh postgresql+psycopg2://postgres:xxxx@localhost/dest_dw .\configuration\ --log-level INFO --full-refresh yes`
-`py rdl.py csv://.\test_data\incremental_refresh postgresql+psycopg2://postgres:xxxx@localhost/dest_dw .\configuration\ --log-level INFO --full-refresh no`
-
-
-#### MSSQL Source
-
-
+See `test_*.cmd` scripts for usage samples.
 
 ### Troubleshooting
 Run with  `--log-level DEBUG` on the command line.
