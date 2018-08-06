@@ -39,7 +39,7 @@ build_script:
   - psql -c "SELECT VERSION()"
   - createdb %DBNAME%
   - psql -d %DBNAME% -c "CREATE EXTENSION IF NOT EXISTS citext"
-
+  - C:\projects\relational-data-loader\venv\Scripts\activate.bat
   #Install the dependencies for rdl.
   - pip install -r requirements.txt
 
