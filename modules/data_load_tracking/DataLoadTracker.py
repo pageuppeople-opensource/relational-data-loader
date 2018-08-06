@@ -7,19 +7,25 @@ class DataLoadTracker:
     status = "Not Started"
     total_row_count = 0
     batches = []
-    configuration_name = None
+    model_name = None
     configuration = None
-    is_full_load = False
+    is_full_refresh = False
     total_execution_time = None
     total_row_count = 0
     rows_per_second = 0
+    correlation_id = None,
+    full_refresh_reason = "N/A"
 
-    def __init__(self, configuration_name, configuration, is_full_load):
-        self.configuration_name = configuration_name
+    def __init__(self, model_name, model_checksum, configuration, is_full_refresh, change_tracking_info, correlation_id, full_refresh_reason):
+        self.model_name = model_name
+        self.model_checksum = model_checksum
         self.configuration = configuration
-        self.is_full_load = is_full_load
+        self.is_full_refresh = is_full_refresh
         self.started = datetime.now()
         self.status = "Not Started"
+        self.change_tracking_info = change_tracking_info
+        self.correlation_id = correlation_id
+        self.full_refresh_reason = full_refresh_reason
 
     def start_batch(self):
         batch = self.Batch()
@@ -29,16 +35,18 @@ class DataLoadTracker:
     def completed_successfully(self):
         self.completed = datetime.now()
         self.total_execution_time = self.completed - self.started
-
+        self.status = "Completed Successfully"
         for batch in self.batches:
             self.total_row_count = self.total_row_count + batch.row_count
 
         self.rows_per_second = self.total_row_count / self.total_execution_time.total_seconds()
 
     def get_statistics(self):
-        return "Rows: {0}, Total Execution Time: {1}. ({2:.2f} rows per second)".format(self.total_row_count,
-                                                                                            self.total_execution_time,
-                                                                                            self.rows_per_second)
+        load_type = 'full' if self.is_full_refresh else "incremental from version {0} ".format(self.change_tracking_info.this_sync_version)
+        return "Rows: {0} ({1}), Total Execution Time: {2}. ({3:.2f} rows per second) ".format(self.total_row_count,
+                                                                                               load_type,
+                                                                                               self.total_execution_time,
+                                                                                               self.rows_per_second)
 
     class Batch:
         row_count = 0

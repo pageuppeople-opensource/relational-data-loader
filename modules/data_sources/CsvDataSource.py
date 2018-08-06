@@ -3,6 +3,7 @@ import pandas
 import os.path
 from modules.ColumnTypeResolver import ColumnTypeResolver
 from pathlib import Path
+from modules.data_sources.ChangeTrackingInfo import ChangeTrackingInfo
 
 
 class CsvDataSource(object):
@@ -10,6 +11,7 @@ class CsvDataSource(object):
         self.logger = logger or logging.getLogger(__name__)
         self.source_path = Path(connection_string[len(self.connection_string_prefix()):])
         self.column_type_resolver = ColumnTypeResolver()
+
     @staticmethod
     def can_handle_connection_string(connection_string):
         return connection_string.startswith(CsvDataSource.connection_string_prefix())
@@ -41,7 +43,7 @@ class CsvDataSource(object):
 
 
     # For now, the CSV data sources will get all rows in the CSV regardless of batch size. - Ie, they don't currently support paging.
-    def get_next_data_frame(self, table_configuration, columns, batch_configuration, batch_tracker, previous_batch_key):
+    def get_next_data_frame(self, table_configuration, columns, batch_configuration, batch_tracker, previous_batch_key, full_refresh, change_tracking_info):
 
         if previous_batch_key > 0:
             return None
@@ -55,9 +57,11 @@ class CsvDataSource(object):
 
         self.logger.debug("Starting read of file: {0}".format(csv_file))
 
-
         data_frame = pandas.read_csv(csv_file)
         self.logger.debug("Completed read")
 
         batch_tracker.extract_completed_successfully(len(data_frame))
         return data_frame
+
+    def init_change_tracking(self, table_configuration, last_sync_version):
+        return ChangeTrackingInfo(0, 0, False)
