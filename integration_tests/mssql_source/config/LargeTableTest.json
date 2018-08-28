@@ -68,7 +68,16 @@
         "type": "guid",
         "nullable": true
       }
+    },
+     {
+      "source_name": "BoolColumn",
+      "destination": {
+        "name": "bool_column_1",
+        "type": "boolean",
+        "nullable": true
+      }
     }
+
 
   ]
 }

@@ -1,5 +1,5 @@
 import citext
-from sqlalchemy import DateTime, Numeric, Integer, BigInteger
+from sqlalchemy import DateTime, Numeric, Integer, BigInteger, Boolean
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.dialects.postgresql import UUID
 
@@ -10,7 +10,8 @@ class ColumnTypeResolver(object):
                        'json': str,
                        'numeric': float,
                        'guid': str,
-                       'bigint': int}
+                       'bigint': int,
+                       'boolean': bool}
 
     POSTGRES_TYPE_MAP = {'string': citext.CIText,
                          'datetime': DateTime,
@@ -18,7 +19,8 @@ class ColumnTypeResolver(object):
                          'numeric': Numeric,
                          'guid': UUID,
                          'int': Integer,
-                         'bigint': BigInteger}
+                         'bigint': BigInteger,
+                         'boolean': Boolean}
 
     def resolve_postgres_type(self, column):
         return self.POSTGRES_TYPE_MAP[column['type']]

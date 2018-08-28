@@ -1,6 +1,6 @@
-id,StringColumn1,IntColumn1,DecimalColumn1,DateColumn1,DateTimeColumn1,GuidColumn1,BigIntColumn1
-1,"A Basic String",111,12.1212,01-Dec-1976,01-dec-1976 1:00 am,57BC8093-FE4C-477A-BBD7-FB5C02055A7E,2147483647121212
-2,,,,,,,
-3,"This Text Has a Quote Before ""Dave", 333,33.333, 01-01-01,,,
-4,"ം ഃ അ ആ ഇ ഈ ഉ ഊ ഋ ഌ എ ഏ",,,,,AABC8093-FE4C-477A-BBD7-FB5C02055A7E,
+id,StringColumn1,IntColumn1,DecimalColumn1,DateColumn1,DateTimeColumn1,GuidColumn1,BigIntColumn1,BoolColumn1
+1,"A Basic String",111,12.1212,01-Dec-1976,01-dec-1976 1:00 am,57BC8093-FE4C-477A-BBD7-FB5C02055A7E,2147483647121212,1
+2,,,,,,,,
+3,"This Text Has a Quote Before ""Dave", 333,33.333, 01-01-01,,,,1
+4,"ം ഃ അ ആ ഇ ഈ ഉ ഊ ഋ ഌ എ ഏ",,,,,AABC8093-FE4C-477A-BBD7-FB5C02055A7E,,0
 5,"This row will be updated in the incremental review test",,
