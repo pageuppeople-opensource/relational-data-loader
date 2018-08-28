@@ -77,7 +77,16 @@
         "type": "bigint",
         "nullable": true
       }
+    },
+     {
+      "source_name": "BoolColumn1",
+      "destination": {
+        "name": "bool_column",
+        "type": "boolean",
+        "nullable": true
+      }
     }
+
 
 
 

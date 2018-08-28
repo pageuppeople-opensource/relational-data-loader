@@ -46,6 +46,7 @@ The destination.type value controls both the data reader type and the destinatio
 | numeric                     | float       | sqlalchemy.Numeric                    | numeric        | Stores whole and decimal numbers                 |
 | guid                        | str         | sqlalchemy.dialects.postgresql.UUID   | uuid           | |
 | bigint                      | int         | sqlalchemy.BigInteger                 | BigInt         | Relies on 64big python. Limited to largest number of ~2147483647121212|
+| boolean                     | bool        | sqlalchemy.Boolean                    | Boolean         | |
 
 
 These are implemented in Column_Type_Resolver.py
