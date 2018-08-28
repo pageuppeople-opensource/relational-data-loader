@@ -2,7 +2,7 @@ SET client_encoding TO 'UTF8';
 DROP TABLE IF EXISTS results;
 
 CREATE TEMPORARY TABLE results AS
-  WITH expected(id, int_column_1, date_column_1, decimal_column_1, date_time_column_1, string_column_1, guid_column_1,big_int_column_1,bool_column) AS (
+  WITH expected(id, int_column_1, date_column_1, decimal_column_1, date_time_column_1, string_column_1, guid_column_1,big_int_column_1,bool_column_1) AS (
     SELECT 1, 111.0, '1976-12-01'::DATE, 12.1212, '1976-12-01 01:00:00.000000'::TIMESTAMP, 'A Basic String', '57bc8093-fe4c-477a-bbd7-fb5c02055a7e'::UUID,2147483647121212, True
     UNION ALL
     SELECT 2, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL
@@ -19,7 +19,7 @@ CREATE TEMPORARY TABLE results AS
   ),
 
   actual AS (
-    SELECT  id, int_column_1, date_column_1, decimal_column_1, date_time_column_1, string_column_1, guid_column_1,big_int_column_1,bool_column
+    SELECT  id, int_column_1, date_column_1, decimal_column_1, date_time_column_1, string_column_1, guid_column_1,big_int_column_1,bool_column_1
     FROM    rdl_integration_tests.load_source_data
   )
 

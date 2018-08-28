@@ -72,7 +72,7 @@
      {
       "source_name": "BoolColumn",
       "destination": {
-        "name": "bool_column",
+        "name": "bool_column_1",
         "type": "boolean",
         "nullable": true
       }

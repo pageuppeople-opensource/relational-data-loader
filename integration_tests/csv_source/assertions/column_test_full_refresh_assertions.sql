@@ -16,7 +16,7 @@ CREATE TEMPORARY TABLE results AS
   ),
 
   actual AS (
-    SELECT  id, int_column_1, date_column_1, decimal_column_1, date_time_column_1, string_column_1,guid_column_1,big_int_column_1,bool_column
+    SELECT  id, int_column_1, date_column_1, decimal_column_1, date_time_column_1, string_column_1,guid_column_1,big_int_column_1,bool_column_1
     FROM    rdl_integration_tests.load_source_data
   )
 
