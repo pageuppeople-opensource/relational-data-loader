@@ -7,7 +7,7 @@ import hashlib
 from modules.BatchDataLoader import BatchDataLoader
 from modules.DestinationTableManager import DestinationTableManager
 from modules.data_load_tracking.DataLoadTracker import DataLoadTracker
-
+from modules.BatchKeyTracker import BatchKeyTracker
 
 class DataLoadManager(object):
     def __init__(self, configuration_path, data_source, data_load_tracker_repository, logger=None):
@@ -97,9 +97,10 @@ class DataLoadManager(object):
                                          full_refresh,
                                          change_tracking_info)
 
-        previous_unique_column_value = 0
-        while previous_unique_column_value > -1:
-            previous_unique_column_value = batch_data_loader.load_batch(previous_unique_column_value)
+
+        batch_key_tracker = BatchKeyTracker(pipeline_configuration['source_table']['primary_keys']);
+        while batch_key_tracker.has_more_data:
+            batch_data_loader.load_batch(batch_key_tracker)
 
         if full_refresh:
             # Rename the stage table to the load table.
