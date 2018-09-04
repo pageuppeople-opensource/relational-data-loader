@@ -2,7 +2,7 @@
   "source_table": {
     "name": "LargeTable",
     "schema": "dbo",
-    "primary_key": "Id"
+    "primary_keys": ["Id"]
   },
   "target_schema": "rdl_integration_tests",
   "stage_table": "stage_large_data",

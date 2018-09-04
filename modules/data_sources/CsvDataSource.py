@@ -43,9 +43,11 @@ class CsvDataSource(object):
 
 
     # For now, the CSV data sources will get all rows in the CSV regardless of batch size. - Ie, they don't currently support paging.
-    def get_next_data_frame(self, table_configuration, columns, batch_configuration, batch_tracker, previous_batch_key, full_refresh, change_tracking_info):
+    def get_next_data_frame(self, table_configuration, columns, batch_configuration, batch_tracker, batch_key_tracker, full_refresh, change_tracking_info):
 
-        if previous_batch_key > 0:
+        # There is no incremental loading in CSV - therefore, we will check if we have loaded data before in that run
+        # if we have, we have loaded all the data.
+        if batch_key_tracker.bookmarks[batch_key_tracker.primary_keys[0]] > 0:
             return None
 
         csv_file = os.path.abspath(self.source_path / "{0}.csv".format(table_configuration['name']))

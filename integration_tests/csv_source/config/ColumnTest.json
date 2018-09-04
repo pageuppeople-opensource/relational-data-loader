@@ -3,7 +3,7 @@
   "source_table": {
     "name": "ColumnTest",
     "schema": "dbo",
-    "primary_key": "id"
+    "primary_keys": ["id"]
   },
   "target_schema": "rdl_integration_tests",
   "stage_table": "stage_source_data",
