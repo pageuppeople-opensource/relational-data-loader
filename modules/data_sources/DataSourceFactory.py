@@ -9,13 +9,14 @@ class DataSourceFactory(object):
         self.logger = logger or logging.getLogger(__name__)
         self.sources = [MsSqlDataSource, CsvDataSource]
 
+
     def create_source(self, connection_string):
         for source in self.sources:
             if source.can_handle_connection_string(connection_string):
-                self.logger.debug("Found handler {0} for connection string {1}".format(source, connection_string))
+                self.logger.debug("Found handler {0} for connection string.".format(source))
                 return source(connection_string)
 
-        raise RuntimeError('There are no data sources that can handle the connection string: {0} '.format(connection_string))
+        raise RuntimeError('There are no data sources that can handle this connection string')
 
     def is_prefix_supported(self, connection_string):
         for source in self.sources:
