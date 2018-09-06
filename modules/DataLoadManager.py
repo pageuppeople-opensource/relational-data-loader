@@ -37,9 +37,8 @@ class DataLoadManager(object):
                 json_file.seek(0)
                 pipeline_configuration = json.load(json_file)
             pass
-
-        except JSONDecodeError:
-            self.logger.info(f"Parsing failed for: '{model_name}'")
+        except JSONDecodeError as exception:
+            self.logger.error(f"Parsing failed with message: '{str(exception)}'")
             raise
 
         self.logger.info(f"Execute Starting for: {model_name} requested_full_refresh: {requested_full_refresh}")
