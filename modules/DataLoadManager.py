@@ -31,14 +31,15 @@ class DataLoadManager(object):
         self.logger.debug(f"Using configuration file : {config_file}")
 
         try:
-            self.logger.info(f"Parsing started for: '{model_name}'")
+            self.logger.info(f"Loading configuration file: '{model_name}'")
             with open(config_file) as json_file:
                 model_checksum = hashlib.md5(json_file.read().encode('utf-8')).hexdigest()
                 json_file.seek(0)
                 pipeline_configuration = json.load(json_file)
+                self.logger.info(f"Loaded configuration file: '{model_name}'")
             pass
         except JSONDecodeError as exception:
-            self.logger.error(f"Parsing failed with message: '{str(exception)}'")
+            self.logger.error(f"Loading configuration file failed with message: '{str(exception)}'")
             raise exception
 
         self.logger.info(f"Execute Starting for: {model_name} requested_full_refresh: {requested_full_refresh}")
