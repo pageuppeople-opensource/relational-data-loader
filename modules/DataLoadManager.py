@@ -3,6 +3,7 @@ import json
 import uuid
 import logging
 import hashlib
+from json import JSONDecodeError
 
 from modules.BatchDataLoader import BatchDataLoader
 from modules.DestinationTableManager import DestinationTableManager
@@ -28,10 +29,18 @@ class DataLoadManager(object):
 
         config_file = os.path.abspath(self.configuration_path + model_name)
         self.logger.debug("Using configuration file : {0}".format(config_file))
-        with open(config_file) as json_file:
-            model_checksum = hashlib.md5(json_file.read().encode('utf-8')).hexdigest()
-            json_file.seek(0)
-            pipeline_configuration = json.load(json_file)
+
+        try:
+            self.logger.info(f"Parsing started for: '{model_name}'")
+            with open(config_file) as json_file:
+                model_checksum = hashlib.md5(json_file.read().encode('utf-8')).hexdigest()
+                json_file.seek(0)
+                pipeline_configuration = json.load(json_file)
+            pass
+
+        except JSONDecodeError:
+            self.logger.info(f"Parsing failed for: '{model_name}'")
+            raise
 
         self.logger.info(
             "Execute Starting for: {0} requested_full_refresh: {1}".format(model_name, requested_full_refresh))
