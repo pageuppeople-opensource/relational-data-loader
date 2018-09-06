@@ -3,8 +3,8 @@ import json
 import uuid
 import logging
 import hashlib
-from json import JSONDecodeError
 
+from json import JSONDecodeError
 from modules.BatchDataLoader import BatchDataLoader
 from modules.DestinationTableManager import DestinationTableManager
 from modules.data_load_tracking.DataLoadTracker import DataLoadTracker
