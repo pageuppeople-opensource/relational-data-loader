@@ -39,7 +39,7 @@ class DataLoadManager(object):
             pass
         except JSONDecodeError as exception:
             self.logger.error(f"Parsing failed with message: '{str(exception)}'")
-            raise
+            raise exception
 
         self.logger.info(f"Execute Starting for: {model_name} requested_full_refresh: {requested_full_refresh}")
 
