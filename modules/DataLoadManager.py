@@ -110,7 +110,7 @@ class DataLoadManager(object):
                                             change_tracking_info)
 
 
-        batch_key_tracker = BatchKeyTracker(pipeline_configuration['source_table']['primary_keys']);
+        batch_key_tracker = BatchKeyTracker(pipeline_configuration['source_table']['primary_keys'])
         while batch_key_tracker.has_more_data:
             batch_data_loader.load_batch(batch_key_tracker)
 

@@ -76,7 +76,7 @@ class BatchDataLoader(object):
 
         # Internal columns - map them straight through
         if source_column_name.startswith("data_pipeline_"):
-            return source_column_name;
+            return source_column_name
 
         message = 'A source column with name {0} was not found in the column configuration'.format(source_column_name)
         raise ValueError(message)
@@ -86,7 +86,7 @@ class BatchDataLoader(object):
         for column in self.columns:
             if 'column_transformer' in column:
                 # transformer = self.create_column_transformer_type(column['column_transformer'])
-                transformer = ToUpper.execute;
+                transformer = ToUpper.execute
                 data_frame[column['source_name']] = data_frame[column['source_name']].map(transformer)
                 # print (data_frame)
         return data_frame
