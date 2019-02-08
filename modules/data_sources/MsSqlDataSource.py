@@ -103,29 +103,31 @@ class MsSqlDataSource(object):
     def init_change_tracking(self, table_configuration, last_sync_version):
 
         sql_builder = io.StringIO()
-        sql_builder.write(
-            "IF NOT EXISTS(SELECT 1 FROM sys.change_tracking_tables WHERE object_id = OBJECT_ID('{0}.{1}'))\n".format(
-                table_configuration['schema'], table_configuration['name']))
+        sql_builder.write("IF NOT EXISTS(SELECT 1 FROM sys.change_tracking_tables WHERE "
+                          f"object_id = OBJECT_ID('{table_configuration['schema']}.{table_configuration['table']}'))\n")
         sql_builder.write("BEGIN\n")
-        sql_builder.write("ALTER TABLE {0}.{1} ENABLE CHANGE_TRACKING WITH(TRACK_COLUMNS_UPDATED=OFF);\n".format(
-            table_configuration['schema'], table_configuration['name']))
+        sql_builder.write(f"ALTER TABLE {table_configuration['schema']}.{table_configuration['name']} "
+                          f"ENABLE CHANGE_TRACKING WITH(TRACK_COLUMNS_UPDATED=OFF);\n")
         sql_builder.write("END\n")
+
+        self.logger.debug(f"Enabling ChangeTracking for {table_configuration['schema']}.{table_configuration['name']}\n"
+                          f"{sql_builder.getvalue()}")
 
         self.database_engine.execute(text(sql_builder.getvalue()).execution_options(autocommit=True))
 
         sql_builder = io.StringIO()
-        sql_builder.write("DECLARE @last_sync_version bigint = {0}; \n".format(last_sync_version))
+        sql_builder.write(f"DECLARE @last_sync_version bigint = {last_sync_version}; \n")
         sql_builder.write("DECLARE @this_sync_version bigint = 0; \n")
         sql_builder.write("DECLARE @next_sync_version bigint = CHANGE_TRACKING_CURRENT_VERSION(); \n")
-        sql_builder.write("IF @last_sync_version >= CHANGE_TRACKING_MIN_VALID_VERSION(OBJECT_ID('{0}.{1}'))\n".format(
-            table_configuration['schema'], table_configuration['name']))
+        sql_builder.write(f"IF @last_sync_version >= CHANGE_TRACKING_MIN_VALID_VERSION("
+                          f"OBJECT_ID('{table_configuration['schema']}.{table_configuration['name']}'))\n")
         sql_builder.write("     SET @this_sync_version = @last_sync_version; \n")
         sql_builder.write(
             " SELECT @next_sync_version as next_sync_version, @this_sync_version as this_sync_version; \n")
 
-        self.logger.debug("Getting ChangeTrackingInformation for {0}.{1}. {2}".format(table_configuration['schema'],
-                                                                                      table_configuration['name'],
-                                                                                      sql_builder.getvalue()))
+        self.logger.debug("Getting ChangeTracking info for "
+                          f"{table_configuration['schema']}.{table_configuration['name']}.\n"
+                          f"{sql_builder.getvalue()}")
 
         result = self.database_engine.execute(sql_builder.getvalue())
         row = result.fetchone()
