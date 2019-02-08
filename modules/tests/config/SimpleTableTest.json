@@ -1,0 +1,38 @@
+{
+  "source_table": {
+    "name": "SimpleTest",
+    "schema": "dbo",
+    "primary_keys": ["Id"]
+  },
+  "target_schema": "rdl_unit_tests",
+  "stage_table": "stage_simple_pk",
+  "load_table": "load_simple_pk",
+
+  "batch": {
+    "size": 100000
+  },
+  "columns": [
+    {
+      "source_name": "Id",
+      "destination": {
+        "name": "id",
+        "type": "int",
+        "nullable": false,
+        "primary_key": true
+      }
+    },
+    {
+      "source_name": "StringCol",
+      "destination": {
+        "name": "string_col",
+        "type": "string(100)",
+        "nullable": true
+      }
+    }
+  ],
+  "operation_strings": [
+    "INSERT INTO SimpleTest (id, StringCol) SELECT 4, 'Tiles'",
+    "DELETE FROM SimpleTest WHERE Id=1",
+    "UPDATE SimpleTest SET StringCol='Fred' WHERE Id=2"
+  ]
+}

@@ -1,0 +1,8 @@
+IF EXISTS (SELECT * FROM sys.databases WHERE Name = '{db}')
+    DROP DATABASE [{db}];
+
+IF NOT EXISTS (SELECT * FROM sys.databases WHERE Name = '{db}')
+    CREATE DATABASE [{db}];
+
+ALTER DATABASE [{db}]
+SET CHANGE_TRACKING = ON (CHANGE_RETENTION = 2 DAYS, AUTO_CLEANUP = ON);
