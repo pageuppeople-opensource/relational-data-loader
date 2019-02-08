@@ -10,6 +10,7 @@ from modules.DestinationTableManager import DestinationTableManager
 from modules.data_load_tracking.DataLoadTracker import DataLoadTracker
 from modules.BatchKeyTracker import BatchKeyTracker
 
+
 class DataLoadManager(object):
     def __init__(self, configuration_path, data_source, data_load_tracker_repository, logger=None):
         self.logger = logger or logging.getLogger(__name__)
@@ -108,7 +109,6 @@ class DataLoadManager(object):
                                             target_engine,
                                             full_refresh,
                                             change_tracking_info)
-
 
         batch_key_tracker = BatchKeyTracker(pipeline_configuration['source_table']['primary_keys'])
         while batch_key_tracker.has_more_data:
