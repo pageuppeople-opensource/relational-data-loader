@@ -26,8 +26,8 @@ class MsSqlDataSource(object):
         return 'mssql+pyodbc://'
 
     @staticmethod
-    def prefix_column(column_name, full_refresh, primary_key_column_name):
-        if column_name == primary_key_column_name and not full_refresh:
+    def prefix_column(column_name, full_refresh, primary_key_column_names):
+        if column_name in primary_key_column_names and not full_refresh:
             return "chg.{0}".format(column_name)
         else:
             return "t.{0}".format(column_name)
