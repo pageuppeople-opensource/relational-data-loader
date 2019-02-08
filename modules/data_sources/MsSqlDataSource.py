@@ -49,18 +49,17 @@ class MsSqlDataSource(object):
             order_by = ", chg.".join(table_configuration['primary_keys'])
 
             sql_builder = io.StringIO()
-            sql_builder.write("SELECT TOP ({0}) {1}, ".format(batch_configuration['size'], column_names))
-            sql_builder.write(
-                "chg.SYS_CHANGE_VERSION as data_pipeline_change_version, CASE chg.SYS_CHANGE_OPERATION WHEN 'D' THEN 1 ELSE 0 END as data_pipeline_is_deleted \n")
-            sql_builder.write("FROM CHANGETABLE(CHANGES {0}.{1}, {2}) chg ".format(table_configuration['schema'],
-                                                                                   table_configuration['name'],
-                                                                                   change_tracking_info.this_sync_version))
-            sql_builder.write(" LEFT JOIN {0}.{1} t on {2} ".format(table_configuration['schema'],
-                                                                                table_configuration['name'],
-                                                                    self.build_change_table_on_clause(batch_key_tracker)))
-
-            sql_builder.write("WHERE {0}".format(self.build_where_clause(batch_key_tracker, "t")))
-            sql_builder.write("ORDER BY {0}".format(order_by))
+            sql_builder.write(f"SELECT TOP ({batch_configuration['size']}) {column_names}, ")
+            sql_builder.write("chg.SYS_CHANGE_VERSION as data_pipeline_change_version, "
+                              "CASE chg.SYS_CHANGE_OPERATION WHEN 'D' THEN 1 ELSE 0 END as data_pipeline_is_deleted \n")
+            sql_builder.write(f" FROM CHANGETABLE(CHANGES"
+                              f" {table_configuration['schema']}.{table_configuration['name']},"
+                              f" {change_tracking_info.this_sync_version})"
+                              f" AS chg")
+            sql_builder.write(f" LEFT JOIN {table_configuration['schema']}.{table_configuration['name']} t"
+                              f" on {self.build_change_table_on_clause(batch_key_tracker)}")
+            sql_builder.write(f" WHERE {self.build_where_clause(batch_key_tracker, 't')}")
+            sql_builder.write(f" ORDER BY {order_by}")
 
             return sql_builder.getvalue()
 
@@ -120,7 +119,7 @@ class MsSqlDataSource(object):
         sql_builder.write("DECLARE @next_sync_version bigint = CHANGE_TRACKING_CURRENT_VERSION(); \n")
         sql_builder.write("IF @last_sync_version >= CHANGE_TRACKING_MIN_VALID_VERSION(OBJECT_ID('{0}.{1}'))\n".format(
             table_configuration['schema'], table_configuration['name']))
-        sql_builder.write(" SET @this_sync_version = @last_sync_version; \n")
+        sql_builder.write("     SET @this_sync_version = @last_sync_version; \n")
         sql_builder.write(
             " SELECT @next_sync_version as next_sync_version, @this_sync_version as this_sync_version; \n")
 
