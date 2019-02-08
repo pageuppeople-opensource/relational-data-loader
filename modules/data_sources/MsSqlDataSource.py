@@ -28,9 +28,9 @@ class MsSqlDataSource(object):
     @staticmethod
     def prefix_column(column_name, full_refresh, primary_key_column_names):
         if column_name in primary_key_column_names and not full_refresh:
-            return "chg.{0}".format(column_name)
+            return f"chg.{column_name}"
         else:
-            return "t.{0}".format(column_name)
+            return f"t.{column_name}"
 
     def build_select_statement(self, table_configuration, columns, batch_configuration, batch_key_tracker, full_refresh,
                                change_tracking_info):
@@ -41,15 +41,10 @@ class MsSqlDataSource(object):
 
         if full_refresh:
             order_by = ", t.".join(table_configuration['primary_keys'])
-
-            return "SELECT TOP ({0}) {1} FROM {2}.{3} t WHERE {4} ORDER BY {5}".format(batch_configuration['size'],
-                                                                                       column_names,
-                                                                                       table_configuration[
-                                                                                           'schema'],
-                                                                                       table_configuration[
-                                                                                           'name'],
-                                                                                       self.build_where_clause(batch_key_tracker, "t"),
-                                                                                       order_by)
+            return f"SELECT TOP ({batch_configuration['size']}) {column_names} " \
+                f"FROM {table_configuration['schema']}.{table_configuration['name']} t " \
+                f"WHERE {self.build_where_clause(batch_key_tracker, 't')} " \
+                f"ORDER BY {order_by}"
         else:
             order_by = ", chg.".join(table_configuration['primary_keys'])
 
@@ -74,20 +69,21 @@ class MsSqlDataSource(object):
         columns_in_database = self.get_table_columns(table_configuration)
 
         for column in configured_columns:
-            self.assert_column_exists(column['source_name'], columns_in_database,
-                                      "{0}.{1}".format(table_configuration['schema'], table_configuration['name']))
+            self.assert_column_exists(column['source_name'],
+                                      columns_in_database,
+                                      f"{table_configuration['schema']}.{table_configuration['name']}")
 
     def assert_column_exists(self, column_name, columns_in_database, table_name):
         if column_name in columns_in_database:
             return True
 
-        message = 'Column {0} does not exist in source {1}'.format(column_name, table_name)
+        message = f'Column {column_name} does not exist in source table {table_name}'
         raise ValueError(message)
 
     def get_table_columns(self, table_configuration):
         metadata = MetaData()
-        self.logger.debug("Reading definition for source table {0}.{1}".format(table_configuration['schema'],
-                                                                               table_configuration['name']))
+        self.logger.debug(f"Reading definition for source table "
+                          f"{table_configuration['schema']}.{table_configuration['name']}")
         table = Table(table_configuration['name'], metadata, schema=table_configuration['schema'], autoload=True,
                       autoload_with=self.database_engine)
         return list(map(lambda column: column.name, table.columns))
@@ -96,7 +92,7 @@ class MsSqlDataSource(object):
                             full_refresh, change_tracking_info):
         sql = self.build_select_statement(table_configuration, columns, batch_configuration, batch_key_tracker,
                                           full_refresh, change_tracking_info, )
-        self.logger.debug("Starting read of SQL Statement: {0}".format(sql))
+        self.logger.debug(f"Starting read of SQL Statement: \n{sql}")
         data_frame = pandas.read_sql_query(sql, self.database_engine)
 
         self.logger.debug("Completed read")
@@ -150,7 +146,7 @@ class MsSqlDataSource(object):
                     sql_builder.write(" AND ")
 
                 sql_builder.write(
-                    " {0}.{1} > {2}".format(table_alias, primary_key, batch_key_tracker.bookmarks[primary_key]))
+                    f" {table_alias}.{primary_key} > {batch_key_tracker.bookmarks[primary_key]}")
                 has_value = True
 
             return sql_builder.getvalue()
@@ -167,7 +163,7 @@ class MsSqlDataSource(object):
                 if has_value:
                     sql_builder.write(" AND ")
 
-                sql_builder.write(" chg.{0} = t.{0}".format(primary_key))
+                sql_builder.write(f" chg.{primary_key} = t.{primary_key}")
                 has_value = True
 
             return sql_builder.getvalue()
