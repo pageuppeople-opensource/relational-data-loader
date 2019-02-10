@@ -9,7 +9,6 @@ class DataSourceFactory(object):
         self.logger = logger or logging.getLogger(__name__)
         self.sources = [MsSqlDataSource, CsvDataSource]
 
-
     def create_source(self, connection_string):
         for source in self.sources:
             if source.can_handle_connection_string(connection_string):
@@ -23,7 +22,6 @@ class DataSourceFactory(object):
             if source.can_handle_connection_string(connection_string):
                 return True
         return False
-
 
     def get_supported_source_prefixes(self):
         return list(map(lambda source: source.connection_string_prefix(), self.sources))

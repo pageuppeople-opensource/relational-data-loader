@@ -38,7 +38,7 @@ class RelationalDataLoader:
         return
 
     def log_level_string_to_int(self, log_level_string):
-        if not log_level_string in _LOG_LEVEL_STRINGS:
+        if log_level_string not in _LOG_LEVEL_STRINGS:
             message = 'invalid choice: {0} (choose from {1})'.format(log_level_string, _LOG_LEVEL_STRINGS)
             raise argparse.ArgumentTypeError(message)
 
@@ -50,7 +50,8 @@ class RelationalDataLoader:
 
     def raw_connection_string_to_valid_source_connection_string(self, connection_string):
         if not self.data_source_factory.is_prefix_supported(connection_string):
-            message = 'invalid connection string: {0} (connection strings must begin with {1})'.format(connection_string, self.data_source_factory.get_supported_source_prefixes())
+            message = 'invalid connection string: {0} (connection strings must begin with {1})'.format(
+                connection_string, self.data_source_factory.get_supported_source_prefixes())
             raise argparse.ArgumentTypeError(message)
         return connection_string
 
@@ -65,8 +66,10 @@ class RelationalDataLoader:
         parser.add_argument('destination-engine', metavar='destination-engine',
                             help='The destination engine. Eg: postgresql+psycopg2://postgres:xxxx@localhost/dest_dw')
 
-        parser.add_argument('configuration-folder', metavar='configuration-folder',
-                            help='The configuration folder. Eg C:\\_dev\\oscars-misc\\el-pipeline-spike\\configuration\\')
+        parser.add_argument(
+            'configuration-folder',
+            metavar='configuration-folder',
+            help='The configuration folder. Eg C:\\_dev\\oscars-misc\\el-pipeline-spike\\configuration\\')
 
         parser.add_argument('--log-level',
                             default='INFO',
@@ -78,7 +81,6 @@ class RelationalDataLoader:
                             default=False,
                             help='If true, a full refresh of the destination will be performed. This drops/re-creates '
                                  'the destination table(s).')
-
 
         return vars(parser.parse_args())
 

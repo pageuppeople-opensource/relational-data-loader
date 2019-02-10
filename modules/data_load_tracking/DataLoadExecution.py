@@ -4,6 +4,7 @@ from sqlalchemy.ext.declarative import declarative_base
 
 Base = declarative_base()
 
+
 class DataLoadExecution(Base):
     __tablename__ = 'data_load_execution'
     __table_args__ = {'schema': 'data_pipeline'}

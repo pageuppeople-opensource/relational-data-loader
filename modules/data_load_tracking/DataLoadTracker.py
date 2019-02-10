@@ -16,7 +16,15 @@ class DataLoadTracker:
     correlation_id = None,
     full_refresh_reason = "N/A"
 
-    def __init__(self, model_name, model_checksum, configuration, is_full_refresh, change_tracking_info, correlation_id, full_refresh_reason):
+    def __init__(
+            self,
+            model_name,
+            model_checksum,
+            configuration,
+            is_full_refresh,
+            change_tracking_info,
+            correlation_id,
+            full_refresh_reason):
         self.model_name = model_name
         self.model_checksum = model_checksum
         self.configuration = configuration
@@ -42,11 +50,10 @@ class DataLoadTracker:
         self.rows_per_second = self.total_row_count / self.total_execution_time.total_seconds()
 
     def get_statistics(self):
-        load_type = 'full' if self.is_full_refresh else "incremental from version {0} ".format(self.change_tracking_info.this_sync_version)
-        return "Rows: {0} ({1}), Total Execution Time: {2}. ({3:.2f} rows per second) ".format(self.total_row_count,
-                                                                                               load_type,
-                                                                                               self.total_execution_time,
-                                                                                               self.rows_per_second)
+        load_type = 'full' if self.is_full_refresh else "incremental from version {0} ".format(
+            self.change_tracking_info.this_sync_version)
+        return "Rows: {0} ({1}), Total Execution Time: {2}. ({3:.2f} rows per second) ".format(
+            self.total_row_count, load_type, self.total_execution_time, self.rows_per_second)
 
     class Batch:
         row_count = 0
@@ -93,16 +100,10 @@ class DataLoadTracker:
             else:
                 self.load_rows_per_second = self.row_count / self.load_execution_time.total_seconds()
 
-
         def load_skipped_due_to_zero_rows(self):
             self.status = "Skipped - Zero Rows"
             self.load_completed = datetime.now()
 
         def get_statistics(self):
-            return "Rows: {0}, Extract Execution Time: {1} ({2:.2f} rows per second). Load Execution Time {3} ({4:.2f} rows per second) Total Execution Time {5} ({6:.2f} rows per second)".format(self.row_count,
-                                                                                       self.extract_execution_time,
-                                                                                       self.extract_rows_per_second,
-                                                                                       self.load_execution_time,
-                                                                                       self.load_rows_per_second,
-                                                                                       self.total_execution_time,
-                                                                                       self.total_rows_per_second)
+            return "Rows: {0}, Extract Execution Time: {1} ({2:.2f} rows per second). Load Execution Time {3} ({4:.2f} rows per second) Total Execution Time {5} ({6:.2f} rows per second)".format(
+                self.row_count, self.extract_execution_time, self.extract_rows_per_second, self.load_execution_time, self.load_rows_per_second, self.total_execution_time, self.total_rows_per_second)
