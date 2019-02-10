@@ -44,7 +44,7 @@ class MsSqlDataSource(object):
             return f"SELECT TOP ({batch_configuration['size']}) {column_names} " \
                 f"FROM {table_configuration['schema']}.{table_configuration['name']} t " \
                 f"WHERE {self.build_where_clause(batch_key_tracker, 't')} " \
-                f"ORDER BY {order_by}"
+                f"ORDER BY {order_by};"
         else:
             order_by = ", chg.".join(table_configuration['primary_keys'])
 
