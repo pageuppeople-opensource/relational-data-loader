@@ -53,7 +53,7 @@ class TestMsSqlDataSource(unittest.TestCase):
     def tearDownClass(cls):
         TEAR_DOWN_STRING = """
             USE [master];
-            IF EXISTS (SELECT * FROM sys.databases WHERE Name = '{db}')
+            IF EXISTS (SELECT * FROM sys.databases WHERE Name = '{db}';)
                 DROP DATABASE [{db}];
         """.format(db=TEST_DB)
 
