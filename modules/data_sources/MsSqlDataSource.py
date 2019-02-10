@@ -104,7 +104,7 @@ class MsSqlDataSource(object):
 
         sql_builder = io.StringIO()
         sql_builder.write("IF NOT EXISTS(SELECT 1 FROM sys.change_tracking_tables WHERE "
-                          f"object_id = OBJECT_ID('{table_configuration['schema']}.{table_configuration['name']}'))\n")
+                          f"object_id = OBJECT_ID('{table_configuration['schema']}.{table_configuration['name']}'));\n")
         sql_builder.write("BEGIN\n")
         sql_builder.write(f"ALTER TABLE {table_configuration['schema']}.{table_configuration['name']} "
                           f"ENABLE CHANGE_TRACKING WITH(TRACK_COLUMNS_UPDATED=OFF);\n")
