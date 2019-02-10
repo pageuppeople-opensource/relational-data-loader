@@ -15,4 +15,4 @@ SELECT	1,'Frank'
 UNION ALL
 SELECT	2,'Walker'
 UNION ALL
-SELECT	3,'National'
+SELECT	3,'National';
