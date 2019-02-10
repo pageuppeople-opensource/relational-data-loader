@@ -33,7 +33,6 @@ class CsvDataSource(object):
         for column in configured_columns:
             self.assert_column_exists(column['source_name'], data_frame, csv_file)
 
-
     def assert_column_exists(self, column_name, data_frame, csv_file):
         if column_name in data_frame.columns:
             return True
@@ -41,9 +40,17 @@ class CsvDataSource(object):
         message = 'Column {0} does not exist in source {1}'.format(column_name, csv_file)
         raise ValueError(message)
 
-
-    # For now, the CSV data sources will get all rows in the CSV regardless of batch size. - Ie, they don't currently support paging.
-    def get_next_data_frame(self, table_configuration, columns, batch_configuration, batch_tracker, batch_key_tracker, full_refresh, change_tracking_info):
+    # For now, the CSV data sources will get all rows in the CSV regardless of
+    # batch size. - Ie, they don't currently support paging.
+    def get_next_data_frame(
+            self,
+            table_configuration,
+            columns,
+            batch_configuration,
+            batch_tracker,
+            batch_key_tracker,
+            full_refresh,
+            change_tracking_info):
 
         # There is no incremental loading in CSV - therefore, we will check if we have loaded data before in that run
         # if we have, we have loaded all the data.
