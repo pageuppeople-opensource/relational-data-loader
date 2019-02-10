@@ -1,5 +1,5 @@
 IF object_id('SimpleTest') IS NOT NULL
-	DROP TABLE SimpleTest
+	DROP TABLE SimpleTest;
 
 CREATE TABLE SimpleTest (
       Id INT PRIMARY KEY,
