@@ -23,7 +23,8 @@ class BatchDataLoader(object):
     def load_batch(self, batch_key_tracker):
         batch_tracker = self.data_load_tracker.start_batch()
 
-        self.logger.debug("ImportBatch Starting from previous_batch_key: {0}. Full Refresh: {1} this_sync_version: {2}".format(batch_key_tracker.bookmarks, self.full_refresh, self.change_tracking_info.this_sync_version))
+        self.logger.debug("ImportBatch Starting from previous_batch_key: {0}. Full Refresh: {1} this_sync_version: {2}".format(
+            batch_key_tracker.bookmarks, self.full_refresh, self.change_tracking_info.this_sync_version))
 
         data_frame = self.data_source.get_next_data_frame(self.source_table_configuration, self.columns,
                                                           self.batch_configuration, batch_tracker, batch_key_tracker,
@@ -42,7 +43,10 @@ class BatchDataLoader(object):
         for primary_key in batch_key_tracker.primary_keys:
             batch_key_tracker.set_bookmark(primary_key, data_frame.iloc[-1][primary_key])
 
-        self.logger.info("Batch keys {0} Completed. {1}".format(batch_key_tracker.bookmarks, batch_tracker.get_statistics()))
+        self.logger.info(
+            "Batch keys {0} Completed. {1}".format(
+                batch_key_tracker.bookmarks,
+                batch_tracker.get_statistics()))
 
     def write_data_frame_to_table(self, data_frame):
         qualified_target_table = "{0}.{1}".format(self.target_schema, self.target_table)
@@ -76,7 +80,7 @@ class BatchDataLoader(object):
 
         # Internal columns - map them straight through
         if source_column_name.startswith("data_pipeline_"):
-            return source_column_name;
+            return source_column_name
 
         message = 'A source column with name {0} was not found in the column configuration'.format(source_column_name)
         raise ValueError(message)
@@ -86,7 +90,7 @@ class BatchDataLoader(object):
         for column in self.columns:
             if 'column_transformer' in column:
                 # transformer = self.create_column_transformer_type(column['column_transformer'])
-                transformer = ToUpper.execute;
+                transformer = ToUpper.execute
                 data_frame[column['source_name']] = data_frame[column['source_name']].map(transformer)
                 # print (data_frame)
         return data_frame

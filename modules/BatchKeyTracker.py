@@ -11,5 +11,3 @@ class BatchKeyTracker(object):
 
     def set_bookmark(self, key, value):
         self.bookmarks[key] = value
-
-
