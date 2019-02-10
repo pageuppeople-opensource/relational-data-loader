@@ -59,7 +59,7 @@ class MsSqlDataSource(object):
             sql_builder.write(f" LEFT JOIN {table_configuration['schema']}.{table_configuration['name']} t"
                               f" on {self.build_change_table_on_clause(batch_key_tracker)}")
             sql_builder.write(f" WHERE {self.build_where_clause(batch_key_tracker, 'chg')}")
-            sql_builder.write(f" ORDER BY {order_by}")
+            sql_builder.write(f" ORDER BY {order_by};")
 
             return sql_builder.getvalue()
 
