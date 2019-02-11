@@ -73,9 +73,9 @@ class RelationalDataLoader:
 
         parser.add_argument(
             '--model-names', default='*', nargs='?',
-            help='Comma separated names of files in the configuration folder.'\
-                    'Eg CompoundPkTest.json,LargeTableTest.json. ' \
-                    'Use glob (*) to action all files in the folder.')
+            help='Comma separated names of files in the configuration folder.'
+            'Eg CompoundPkTest.json,LargeTableTest.json. '
+            'Use glob (*) to action all files in the folder.')
 
         parser.add_argument('--log-level',
                             default='INFO',
