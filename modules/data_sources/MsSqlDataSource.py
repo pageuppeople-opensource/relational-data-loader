@@ -27,6 +27,8 @@ class MsSqlDataSource(object):
 
     @staticmethod
     def prefix_column(column_name, full_refresh, primary_key_column_names):
+        if not isinstance(primary_key_column_names, (list, tuple)):
+            raise TypeError(f"Argument 'primary_key_column_names' must be a list or tuple")
         if column_name in primary_key_column_names and not full_refresh:
             return f"chg.{column_name}"
         else:
