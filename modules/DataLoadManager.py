@@ -27,7 +27,8 @@ class DataLoadManager(object):
             file_names = file_names.split(",")
 
         for file_name in file_names:
-            assert file_name in available_files
+            if file_name not in available_files:
+                raise FileNotFoundError(f"'{file_name}' does not exist in '{self.configuration_path}'")
             self.start_single_import(target_engine, file_name, full_refresh)
 
         self.logger.info("Execution completed.")
