@@ -19,7 +19,7 @@ class DataLoadManager(object):
         self.data_load_tracker_repository = data_load_tracker_repository
         self.correlation_id = uuid.uuid4()
 
-    def start_imports(self, target_engine, full_refresh, file_names):
+    def start_imports(self, target_engine, force_full_refresh, file_names):
         available_files = os.listdir(self.configuration_path)
         if file_names == "*":
             file_names = available_files
@@ -29,7 +29,7 @@ class DataLoadManager(object):
         for file_name in file_names:
             if file_name not in available_files:
                 raise FileNotFoundError(f"'{file_name}' does not exist in '{self.configuration_path}'")
-            self.start_single_import(target_engine, file_name, full_refresh)
+            self.start_single_import(target_engine, file_name, force_full_refresh)
 
         self.logger.info("Execution completed.")
 

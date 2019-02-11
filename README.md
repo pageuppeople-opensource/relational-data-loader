@@ -5,17 +5,19 @@
 A utility for taking data from MS-SQL and loading it into PostgreSQL
 
 ## Usage
-
-Execute  `py rdl.py SOURCE DESTINATION CONFIGURATION-FOLDER [log-level] [full-refresh]`
+`py rdl.py source-connection-string destination-engine configuration-folder [--help] [--log-level] [--force-full-refresh]`
 
 Where `SOURCE` takes the following formats
+
 **CSV:**  `csv://.\test_data\full_refresh`
+
 **MSSQL:**  `mssql+pyodbc://dwsource`
 
 In the above example, dwsource is a 64bit ODBC system dsn
 
-`DESTINATION` takes the following format
-**PostgreSQL:**  `postgresql+psycopg2://postgres:xxxx@localhost/dest_dw`
+`DESTINATION` is a [PostgreSQL Db Connection String](http://docs.sqlalchemy.org/en/latest/dialects/postgresql.html#module-sqlalchemy.dialects.postgresql.psycopg2)
+
+**PostgreSQL:**  `postgresql+psycopg2://username:password@host/dbname`
 
 ### Examples
 
