@@ -19,9 +19,16 @@ class DataLoadManager(object):
         self.data_load_tracker_repository = data_load_tracker_repository
         self.correlation_id = uuid.uuid4()
 
-    def start_imports(self, target_engine, full_refresh):
-        for file in os.listdir(self.configuration_path):
-            self.start_single_import(target_engine, file, full_refresh)
+    def start_imports(self, target_engine, full_refresh, file_names):
+        available_files = os.listdir(self.configuration_path)
+        if file_names == "*":
+            file_names = available_files
+        else:
+            file_names = file_names.split(",")
+
+        for file_name in file_names:
+            assert file_name in available_files
+            self.start_single_import(target_engine, file_name, full_refresh)
 
         self.logger.info("Execution completed.")
 

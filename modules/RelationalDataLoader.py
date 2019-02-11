@@ -26,7 +26,7 @@ class RelationalDataLoader:
         repository = DataLoadTrackerRepository(session_maker)
         repository.create_tables(destination_engine)
         data_load_manager = DataLoadManager(args['configuration-folder'], data_source, repository)
-        data_load_manager.start_imports(destination_engine, args['full_refresh'])
+        data_load_manager.start_imports(destination_engine, args['full_refresh'], args['model_names'])
 
     def configure_logging(self, log_level):
         formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -70,6 +70,12 @@ class RelationalDataLoader:
             'configuration-folder',
             metavar='configuration-folder',
             help='The configuration folder. Eg C:\\_dev\\oscars-misc\\el-pipeline-spike\\configuration\\')
+
+        parser.add_argument(
+            '--model-names', default='*', nargs='?',
+            help='Comma separated names of files in the configuration folder.'\
+                    'Eg CompoundPkTest.json,LargeTableTest.json. ' \
+                    'Use glob (*) to action all files in the folder.')
 
         parser.add_argument('--log-level',
                             default='INFO',
