@@ -85,8 +85,8 @@ class RelationalDataLoader:
 
         parser.add_argument("--full-refresh", type=self.str2bool, nargs='?',
                             default=False,
-                            help='If true, a full refresh of the destination will be performed. This drops/re-creates '
-                                 'the destination table(s).')
+                            help='If true, a full refresh of the destination will always be performed. This drops/re-creates '
+                                 'the destination table(s). If false, a full refresh will be avoided if possible. ')
 
         return vars(parser.parse_args())
 
