@@ -29,9 +29,31 @@ Run with  `--log-level DEBUG` on the command line.
 
 ### Testing
 
+## Integration
+
 The test batch files assume there is a user by the name of `postgres` on the system.
 It also sends through a nonense password - it is assumed that the target system is running in 'trust' mode.
 See [this](https://www.postgresql.org/docs/9.1/static/auth-pg-hba-conf.html) for details on trust mode
+
+## Unit
+
+### Setup
+
+Create a new SQL Server Login/User using the script below. Make sure you update it with your desired password and if you update the username / login, then also sync the same with the `modules\tests\config\connection.json` file.
+
+```sql
+USE master;
+GO
+IF NOT EXISTS(SELECT * FROM sys.syslogins WHERE NAME = 'rdl_test_user')
+    CREATE LOGIN [rdl_test_user] WITH PASSWORD=N'hunter2', CHECK_EXPIRATION=OFF, CHECK_POLICY=OFF;
+GO
+ALTER SERVER ROLE [dbcreator] ADD MEMBER [rdl_test_user]
+GO
+```
+
+### Execution
+
+Execution is as simply as `python3 run_tests.py`
 
 ### Destination.Type Values
 
