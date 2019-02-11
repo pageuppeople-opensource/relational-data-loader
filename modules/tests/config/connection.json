@@ -1,5 +1,5 @@
 {
-  "username": "analytics_data_pipeline_543_user",
-  "password": "password",
-  "server_string": "(local)"
+  "username": "rdl_test_user",
+  "password": "some_password",
+  "server_string": "(local)\\SQLEXPRESS"
 }

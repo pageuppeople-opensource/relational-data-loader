@@ -5,7 +5,7 @@ from sqlalchemy.sql import text
 from modules.data_sources.MsSqlDataSource import MsSqlDataSource
 import logging
 
-TEST_DB = "RelationalDataLoaderIntegrationTestSource"
+TEST_DB = "RDLUnitTestSource"
 MSSQL_STRING_FORMAT = "mssql+pyodbc://{username}:{password}@{server_string}/{db}?driver=SQL+Server+Native+Client+11.0"
 
 SQL_PATH = "./modules/tests/setup/"
