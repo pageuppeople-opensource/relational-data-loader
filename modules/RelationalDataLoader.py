@@ -85,7 +85,7 @@ class RelationalDataLoader:
                             '--model-names',
                             default='*',
                             nargs='?',
-                            help='Comma separated names of files, without extension, in the configuration folder. '
+                            help='Comma separated model names in the configuration folder. '
                                  'Eg \'CompoundPkTest,LargeTableTest\'. '
                                  'Skip parameter or use glob (*) to action all files in the folder.')
 

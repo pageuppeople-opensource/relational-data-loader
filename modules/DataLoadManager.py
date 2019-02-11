@@ -3,7 +3,7 @@ import json
 import uuid
 import logging
 import hashlib
-
+from pathlib import Path
 from json import JSONDecodeError
 from modules.BatchDataLoader import BatchDataLoader
 from modules.DestinationTableManager import DestinationTableManager
@@ -18,25 +18,30 @@ class DataLoadManager(object):
         self.data_source = data_source
         self.data_load_tracker_repository = data_load_tracker_repository
         self.correlation_id = uuid.uuid4()
+        self.model_pattern = '**/*.json'
 
-    def start_imports(self, target_engine, force_full_refresh, file_names):
-        available_files = os.listdir(self.configuration_path)
-        if file_names == "*":
-            file_names = available_files
-        else:
-            file_names = file_names.split(",")
+    def start_imports(self, target_engine, force_full_refresh, model_names):
+        model_folder = Path(self.configuration_path)
+        if not model_folder.is_dir():
+            raise NotADirectoryError(self.configuration_path)
 
-        for file_name in file_names:
-            if file_name not in available_files:
-                raise FileNotFoundError(f"'{file_name}' does not exist in '{self.configuration_path}'")
-            self.start_single_import(target_engine, file_name, force_full_refresh)
+        allow_all = model_names == '*'
+        allowed_models = model_names.split(',')
+        model_files = []
+        for model_file in model_folder.glob(self.model_pattern):
+            if model_file.is_file() and (allow_all or model_file.stem in allowed_models):
+                model_files.append(model_file)
+
+        for model_file in model_files:
+            self.start_single_import(target_engine, model_file, force_full_refresh)
 
         self.logger.info("Execution completed.")
 
-    def start_single_import(self, target_engine, model_name, requested_full_refresh):
+    def start_single_import(self, target_engine, model_file, requested_full_refresh):
+        model_name = model_file.stem
         self.logger.debug(f"Using configuration file : {model_name}")
 
-        config_file = os.path.abspath(self.configuration_path + model_name)
+        config_file = str(model_file.absolute().resolve())
         self.logger.debug(f"Using configuration file : {config_file}")
 
         try:
