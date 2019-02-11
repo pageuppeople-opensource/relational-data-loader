@@ -4,9 +4,3 @@ IF /I NOT "%APPVEYOR%"=="TRUE" py rdl.py mssql+pyodbc://(local)/RelationalDataLo
 if %errorlevel% neq 0 exit /b %errorlevel%
 psql -U postgres -d relational_data_loader_integration_tests -a -v ON_ERROR_STOP=1 -f ./integration_tests/mssql_source/assertions/large_table_test_full_refresh_assertions.sql
 if %errorlevel% neq 0 exit /b %errorlevel%
-
-
-
-
-
-
