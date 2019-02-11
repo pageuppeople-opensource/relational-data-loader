@@ -68,7 +68,7 @@ class RelationalDataLoader:
         parser.add_argument('source_connection_string',
                             metavar='source-connection-string',
                             type=self.raw_connection_string_to_valid_source_connection_string,
-                            help='The source connections string. Eg: mssql+pyodbc://dwsource or '
+                            help='The source connections string as a 64bit ODBC system dsn. Eg: mssql+pyodbc://dwsource or '
                                  'csv://c://some//Path//To//Csv//Files//')
 
         parser.add_argument('destination_connection_string',
@@ -78,8 +78,8 @@ class RelationalDataLoader:
 
         parser.add_argument('configuration_folder',
                             metavar='configuration-folder',
-                            help='The configuration folder. '
-                                 'Eg \'C:\\_dev\\oscars-misc\\el-pipeline-spike\\configuration\\\'')
+                            help='Absolute or relative path to the models. '
+                                 'Eg \'./models\', \'C:/path/to/models\'')
 
         parser.add_argument('-m',
                             '--model-names',

@@ -18,15 +18,15 @@ Relational Data Loader
 
 positional arguments:
   source-connection-string
-                        The source connections string. Eg:
+                        The source connections string as a 64bit ODBC system dsn. Eg:
                         mssql+pyodbc://dwsource or
                         csv://c://some//Path//To//Csv//Files//
   destination-connection-string
                         The destination database connection string. Provide in
                         PostgreSQL + Psycopg format. Eg: 'postgresql+psycopg2:
                         //username:password@host:port/dbname'
-  configuration-folder  The configuration folder. Eg 'C:\_dev\oscars-misc\el-
-                        pipeline-spike\configuration\'
+  configuration-folder  Absolute or relative path to the models. Eg
+                        './models', 'C:/path/to/models'
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -46,25 +46,13 @@ optional arguments:
                         destination databases.
 ```
 
-Where `SOURCE` takes the following formats
+_Notes:_
 
-**CSV:** `csv://.\test_data\full_refresh`
-
-**MSSQL:** `mssql+pyodbc://dwsource`
-
-In the above example, dwsource is a 64bit ODBC system dsn
-
-`DESTINATION` is a [PostgreSQL Db Connection String](http://docs.sqlalchemy.org/en/latest/dialects/postgresql.html#module-sqlalchemy.dialects.postgresql.psycopg2)
-
-**PostgreSQL:** `postgresql+psycopg2://username:password@host/dbname`
+- `destination-connection-string` is a [PostgreSQL Db Connection String](http://docs.sqlalchemy.org/en/latest/dialects/postgresql.html#module-sqlalchemy.dialects.postgresql.psycopg2)
 
 ### Examples
 
 See `test_*.cmd` scripts for usage samples.
-
-### Troubleshooting
-
-Run with `--log-level DEBUG` on the command line.
 
 ## Development
 
@@ -96,11 +84,11 @@ _Execution:_
 
 Execution is as simply as `python3 run_tests.py`
 
-----
-
 ### `Destination.Type` Values
 
-The destination.type value controls both the data reader type and the destination column type. They are mapped as followed
+The destination.type value controls both the data reader type and the destination column type. These are implemented in Column_Type_Resolver.py.
+
+They are mapped as follows:
 
 | destination.type            | pandas type | sqlalchemy type                      | dw column type | notes                                                                  |
 | --------------------------- | ----------- | ------------------------------------ | -------------- | ---------------------------------------------------------------------- |
@@ -113,5 +101,3 @@ The destination.type value controls both the data reader type and the destinatio
 | guid                        | str         | sqlalchemy.dialects.postgresql.UUID  | uuid           |                                                                        |
 | bigint                      | int         | sqlalchemy.BigInteger                | BigInt         | Relies on 64big python. Limited to largest number of ~2147483647121212 |
 | boolean                     | bool        | sqlalchemy.Boolean                   | Boolean        |                                                                        |
-
-These are implemented in Column_Type_Resolver.py
