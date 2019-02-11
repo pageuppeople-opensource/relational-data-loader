@@ -18,7 +18,8 @@ class DataLoadManager(object):
         self.data_source = data_source
         self.data_load_tracker_repository = data_load_tracker_repository
         self.correlation_id = uuid.uuid4()
-        self.model_pattern = '**/*.json'
+        self.model_pattern = '**/{model_name}.json'
+        self.all_model_pattern = self.model_pattern.format(model_name='*')
 
     def start_imports(self, target_engine, force_full_refresh, model_names):
         model_folder = Path(self.configuration_path)
@@ -27,10 +28,20 @@ class DataLoadManager(object):
 
         allow_all = model_names == '*'
         allowed_models = model_names.split(',')
-        model_files = []
-        for model_file in model_folder.glob(self.model_pattern):
-            if model_file.is_file() and (allow_all or model_file.stem in allowed_models):
-                model_files.append(model_file)
+        all_model_files = [model_file for model_file in model_folder.glob(self.all_model_pattern)]
+
+        if allow_all:
+            model_files = all_model_files
+        else:
+            model_files = []
+            for model_name in allowed_models:
+                named_model_pattern = self.model_pattern.format(model_name=model_name)
+                model_file_objs = [model_file for model_file in model_folder.glob(named_model_pattern)]
+                if len(model_file_objs) == 0:
+                    raise FileNotFoundError(f"'{named_model_pattern}' does not exist in '{self.configuration_path}'")
+                if len(model_file_objs) > 1:
+                    raise KeyError(f"Multiple models with name '{model_name}' exist in '{self.configuration_path}'")
+                model_files.append(model_file_objs[0])
 
         for model_file in model_files:
             self.start_single_import(target_engine, model_file, force_full_refresh)
