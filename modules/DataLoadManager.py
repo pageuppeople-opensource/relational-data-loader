@@ -27,7 +27,9 @@ class DataLoadManager(object):
             raise NotADirectoryError(self.configuration_path)
 
         force_full_refresh_all_models = force_full_refresh_models == '*'
-        force_full_refresh_model_list = force_full_refresh_models.split(',')
+        force_full_refresh_model_list = []
+        if force_full_refresh_models is not None:
+            force_full_refresh_model_list = force_full_refresh_models.split(',')
         all_model_files = {}
         for model_file in model_folder.glob(self.all_model_pattern):
             all_model_files[model_file.stem] = (model_file, force_full_refresh_all_models)

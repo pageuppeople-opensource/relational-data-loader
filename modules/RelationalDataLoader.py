@@ -84,7 +84,6 @@ class RelationalDataLoader:
 
         parser.add_argument('-f',
                             '--force-full-refresh-models',
-                            default='',
                             nargs='?',
                             help='Comma separated model names in the configuration folder. These models would be '
                                  'forcefully refreshed dropping and recreating the destination tables. All others '
