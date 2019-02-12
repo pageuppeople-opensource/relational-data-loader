@@ -38,12 +38,12 @@ class TestMsSqlDataSource(unittest.TestCase):
         cls.table_configurations = []
 
         for file_name in CONFIG_FILES:
-            with open(CONFIG_PATH+file_name, "r") as f:
+            with open(CONFIG_PATH + file_name, "r") as f:
                 json_data = json.loads(f.read())
                 cls.table_configurations.append(json_data)
 
         for file_obj in SQL_ORDERED_FILES:
-            with open(SQL_PATH+file_obj["file_name"], "r") as f:
+            with open(SQL_PATH + file_obj["file_name"], "r") as f:
                 set_up_db_string = f.read()
                 temp_eng = create_engine(gen_connection_string.format(db=file_obj["db"]),
                                          connect_args={'autocommit': True})
@@ -104,10 +104,10 @@ class TestMsSqlDataSource(unittest.TestCase):
         col = "foo"
         col_fail = "BAR"
         p_key_cols = ["foo", "bar"]
-        self.assertEqual("chg."+col, MsSqlDataSource.prefix_column(col, False, p_key_cols))
-        self.assertEqual("t."+col_fail, MsSqlDataSource.prefix_column(col_fail, False, p_key_cols))
-        self.assertEqual("t."+col, MsSqlDataSource.prefix_column(col, True, p_key_cols))
-        self.assertEqual("t."+col_fail, MsSqlDataSource.prefix_column(col_fail, True, p_key_cols))
+        self.assertEqual("chg." + col, MsSqlDataSource.prefix_column(col, False, p_key_cols))
+        self.assertEqual("t." + col_fail, MsSqlDataSource.prefix_column(col_fail, False, p_key_cols))
+        self.assertEqual("t." + col, MsSqlDataSource.prefix_column(col, True, p_key_cols))
+        self.assertEqual("t." + col_fail, MsSqlDataSource.prefix_column(col_fail, True, p_key_cols))
         self.assertRaises(TypeError, MsSqlDataSource.prefix_column, (col, True, "some string"))
 
 
