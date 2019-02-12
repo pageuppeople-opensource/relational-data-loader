@@ -9,8 +9,7 @@ A utility for taking data from MS-SQL and loading it into PostgreSQL
 `py rdl.py --help`
 
 ```text
-usage: rdl.py [-h] [-m [MODEL_NAMES]] [-l [LOG_LEVEL]]
-              [-f [FORCE_FULL_REFRESH]]
+usage: rdl.py [-h] [-m [FORCE_FULL_REFRESH_MODELS]] [-l [LOG_LEVEL]]
               source-connection-string destination-connection-string
               configuration-folder
 
@@ -18,8 +17,8 @@ Relational Data Loader
 
 positional arguments:
   source-connection-string
-                        The source connections string as a 64bit ODBC system dsn. Eg:
-                        mssql+pyodbc://dwsource or
+                        The source connections string as a 64bit ODBC system
+                        dsn. Eg: mssql+pyodbc://dwsource or
                         csv://c://some//Path//To//Csv//Files//
   destination-connection-string
                         The destination database connection string. Provide in
@@ -30,20 +29,17 @@ positional arguments:
 
 optional arguments:
   -h, --help            show this help message and exit
-  -m [MODEL_NAMES], --model-names [MODEL_NAMES]
+  -m [FORCE_FULL_REFRESH_MODELS], --force-full-refresh-models [FORCE_FULL_REFRESH_MODELS]
                         Comma separated model names in the configuration
-                        folder. Eg 'CompoundPkTest,LargeTableTest'. Skip
-                        parameter or use glob (*) to action all files in the
-                        folder.
+                        folder. These models would be forcefully refreshed
+                        dropping and recreating the destination tables. All
+                        others models would only be refreshed if required as
+                        per the state of the source and destination tables.Eg
+                        'CompoundPkTest,LargeTableTest'. Use glob (*) to force
+                        full refresh of all models.
   -l [LOG_LEVEL], --log-level [LOG_LEVEL]
                         Set the logging output level. ['CRITICAL', 'ERROR',
                         'WARNING', 'INFO', 'DEBUG']
-  -f [FORCE_FULL_REFRESH], --force-full-refresh [FORCE_FULL_REFRESH]
-                        If true, a full refresh of the destination will be
-                        performed. This drops/re-creates the destination
-                        table(s). If false, a full refresh will only be
-                        performed if required as per the state of source and
-                        destination databases.
 ```
 
 _Notes:_

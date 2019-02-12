@@ -21,30 +21,29 @@ class DataLoadManager(object):
         self.model_pattern = '**/{model_name}.json'
         self.all_model_pattern = self.model_pattern.format(model_name='*')
 
-    def start_imports(self, target_engine, force_full_refresh, model_names):
+    def start_imports(self, target_engine, force_full_refresh_models):
         model_folder = Path(self.configuration_path)
         if not model_folder.is_dir():
             raise NotADirectoryError(self.configuration_path)
 
-        allow_all = model_names == '*'
-        allowed_models = model_names.split(',')
-        all_model_files = [model_file for model_file in model_folder.glob(self.all_model_pattern)]
+        force_full_refresh_all_models = force_full_refresh_models == '*'
+        force_full_refresh_model_list = force_full_refresh_models.split(',')
+        all_model_files = {}
+        for model_file in model_folder.glob(self.all_model_pattern):
+            all_model_files[model_file.stem] = (model_file, force_full_refresh_all_models)
 
-        if allow_all:
-            model_files = all_model_files
-        else:
-            model_files = []
-            for model_name in allowed_models:
+        if not force_full_refresh_all_models:
+            for model_name in force_full_refresh_model_list:
                 named_model_pattern = self.model_pattern.format(model_name=model_name)
                 model_file_objs = [model_file for model_file in model_folder.glob(named_model_pattern)]
                 if len(model_file_objs) == 0:
                     raise FileNotFoundError(f"'{named_model_pattern}' does not exist in '{self.configuration_path}'")
                 if len(model_file_objs) > 1:
                     raise KeyError(f"Multiple models with name '{model_name}' exist in '{self.configuration_path}'")
-                model_files.append(model_file_objs[0])
+                all_model_files[model_file.stem] = (model_file_objs[0], True)
 
-        for model_file in model_files:
-            self.start_single_import(target_engine, model_file, force_full_refresh)
+        for (model_file, request_full_refresh) in all_model_files.values():
+            self.start_single_import(target_engine, model_file, request_full_refresh)
 
         self.logger.info("Execution completed.")
 

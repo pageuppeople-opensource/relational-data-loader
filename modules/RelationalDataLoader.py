@@ -26,7 +26,7 @@ class RelationalDataLoader:
         repository = DataLoadTrackerRepository(session_maker)
         repository.create_tables(destination_db)
         data_load_manager = DataLoadManager(args.configuration_folder, source_db, repository)
-        data_load_manager.start_imports(destination_db, args.force_full_refresh, args.model_names)
+        data_load_manager.start_imports(destination_db, args.force_full_refresh_models)
 
     def configure_root_logger(self, log_level):
         # get the root logger
@@ -82,27 +82,20 @@ class RelationalDataLoader:
                                  'Eg \'./models\', \'C:/path/to/models\'')
 
         parser.add_argument('-m',
-                            '--model-names',
-                            default='*',
+                            '--force-full-refresh-models',
                             nargs='?',
-                            help='Comma separated model names in the configuration folder. '
+                            help='Comma separated model names in the configuration folder. These models would be '
+                                 'forcefully refreshed dropping and recreating the destination tables. All others '
+                                 'models would only be refreshed if required as per the state of the source and '
+                                 'destination tables. '
                                  'Eg \'CompoundPkTest,LargeTableTest\'. '
-                                 'Skip parameter or use glob (*) to action all files in the folder.')
+                                 'Use glob (*) to force full refresh of all models.')
 
         parser.add_argument('-l', '--log-level',
                             default='INFO',
                             type=self.log_level_string_to_int,
                             nargs='?',
                             help='Set the logging output level. {0}'.format(_LOG_LEVEL_STRINGS))
-
-        parser.add_argument('-f', '--force-full-refresh',
-                            default=False,
-                            type=self.str2bool,
-                            nargs='?',
-                            help='If true, a full refresh of the destination will be performed. This drops/re-creates '
-                                 'the destination table(s).\n'
-                                 'If false, a full refresh will only be performed if required as per the state of '
-                                 'source and destination databases.')
 
         return parser.parse_args()
 
