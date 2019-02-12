@@ -82,7 +82,7 @@ class RelationalDataLoader:
                             help='Absolute or relative path to the models. '
                                  'Eg \'./models\', \'C:/path/to/models\'')
 
-        parser.add_argument('-m',
+        parser.add_argument('-f',
                             '--force-full-refresh-models',
                             nargs='?',
                             help='Comma separated model names in the configuration folder. These models would be '

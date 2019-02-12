@@ -29,7 +29,7 @@ positional arguments:
 
 optional arguments:
   -h, --help            show this help message and exit
-  -m [FORCE_FULL_REFRESH_MODELS], --force-full-refresh-models [FORCE_FULL_REFRESH_MODELS]
+  -f [FORCE_FULL_REFRESH_MODELS], --force-full-refresh-models [FORCE_FULL_REFRESH_MODELS]
                         Comma separated model names in the configuration
                         folder. These models would be forcefully refreshed
                         dropping and recreating the destination tables. All
