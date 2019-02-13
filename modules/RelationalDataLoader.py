@@ -85,12 +85,13 @@ class RelationalDataLoader:
         parser.add_argument('-f',
                             '--force-full-refresh-models',
                             nargs='?',
+                            const='*',
                             help='Comma separated model names in the configuration folder. These models would be '
                                  'forcefully refreshed dropping and recreating the destination tables. All others '
                                  'models would only be refreshed if required as per the state of the source and '
                                  'destination tables. '
                                  'Eg \'CompoundPkTest,LargeTableTest\'. '
-                                 'Use glob (*) to force full refresh of all models.')
+                                 'Leave blank or use glob (*) to force full refresh of all models.')
 
         parser.add_argument('-l', '--log-level',
                             default='INFO',

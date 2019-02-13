@@ -9,7 +9,7 @@ A utility for taking data from MS-SQL and loading it into PostgreSQL
 `py rdl.py --help`
 
 ```text
-usage: rdl.py [-h] [-m [FORCE_FULL_REFRESH_MODELS]] [-l [LOG_LEVEL]]
+usage: rdl.py [-h] [-f [FORCE_FULL_REFRESH_MODELS]] [-l [LOG_LEVEL]]
               source-connection-string destination-connection-string
               configuration-folder
 
@@ -34,9 +34,9 @@ optional arguments:
                         folder. These models would be forcefully refreshed
                         dropping and recreating the destination tables. All
                         others models would only be refreshed if required as
-                        per the state of the source and destination tables.Eg
-                        'CompoundPkTest,LargeTableTest'. Use glob (*) to force
-                        full refresh of all models.
+                        per the state of the source and destination tables. Eg
+                        'CompoundPkTest,LargeTableTest'. Leave blank or use
+                        glob (*) to force full refresh of all models.
   -l [LOG_LEVEL], --log-level [LOG_LEVEL]
                         Set the logging output level. ['CRITICAL', 'ERROR',
                         'WARNING', 'INFO', 'DEBUG']
