@@ -18,13 +18,14 @@ class RelationalDataLoader:
         args = self.get_arguments()
 
         self.configure_root_logger(args.log_level)
+
         source_db = self.data_source_factory.create_source(args.source_connection_string)
 
         destination_db = create_engine(args.destination_connection_string)
-
         session_maker = sessionmaker(bind=destination_db)
         repository = DataLoadTrackerRepository(session_maker)
         repository.create_tables(destination_db)
+
         data_load_manager = DataLoadManager(args.configuration_folder, source_db, repository)
         data_load_manager.start_imports(destination_db, args.force_full_refresh_models)
 
