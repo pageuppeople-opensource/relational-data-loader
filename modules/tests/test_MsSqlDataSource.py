@@ -32,9 +32,6 @@ class TestMsSqlDataSource(unittest.TestCase):
 
         with open(CONFIG_PATH + "connection.json") as f:
             gen_connection_string = MSSQL_STRING_FORMAT.format(**json.loads(f.read()), db="{db}")
-
-        TestMsSqlDataSource.MSSQL_DATA_SOURCE = MsSqlDataSource(gen_connection_string.format(db=TEST_DB))
-
         cls.table_configurations = []
 
         for file_name in CONFIG_FILES:
@@ -48,6 +45,8 @@ class TestMsSqlDataSource(unittest.TestCase):
                 temp_eng = create_engine(gen_connection_string.format(db=file_obj["db"]),
                                          connect_args={'autocommit': True})
                 temp_eng.execute(set_up_db_string.format(db=TEST_DB))
+
+        TestMsSqlDataSource.MSSQL_DATA_SOURCE = MsSqlDataSource(gen_connection_string.format(db=TEST_DB))
 
     @classmethod
     def tearDownClass(cls):

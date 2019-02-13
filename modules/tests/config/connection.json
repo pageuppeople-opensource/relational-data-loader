@@ -1,5 +1,5 @@
 {
   "username": "rdl_test_user",
-  "password": "some_password",
-  "server_string": "(local)\\SQLEXPRESS"
+  "password": "hunter2",
+  "server_string": "(local)"
 }
