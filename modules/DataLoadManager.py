@@ -3,7 +3,7 @@ import json
 import uuid
 import logging
 import hashlib
-
+from pathlib import Path
 from json import JSONDecodeError
 from modules.BatchDataLoader import BatchDataLoader
 from modules.DestinationTableManager import DestinationTableManager
@@ -18,17 +18,42 @@ class DataLoadManager(object):
         self.data_source = data_source
         self.data_load_tracker_repository = data_load_tracker_repository
         self.correlation_id = uuid.uuid4()
+        self.model_pattern = '**/{model_name}.json'
+        self.all_model_pattern = self.model_pattern.format(model_name='*')
 
-    def start_imports(self, target_engine, full_refresh):
-        for file in os.listdir(self.configuration_path):
-            self.start_single_import(target_engine, file, full_refresh)
+    def start_imports(self, target_engine, force_full_refresh_models):
+        model_folder = Path(self.configuration_path)
+        if not model_folder.is_dir():
+            raise NotADirectoryError(self.configuration_path)
+
+        force_full_refresh_all_models = force_full_refresh_models == '*'
+        force_full_refresh_model_list = []
+        if force_full_refresh_models is not None:
+            force_full_refresh_model_list = force_full_refresh_models.split(',')
+        all_model_files = {}
+        for model_file in model_folder.glob(self.all_model_pattern):
+            all_model_files[model_file.stem] = (model_file, force_full_refresh_all_models)
+
+        if not force_full_refresh_all_models:
+            for model_name in force_full_refresh_model_list:
+                named_model_pattern = self.model_pattern.format(model_name=model_name)
+                model_file_objs = [model_file for model_file in model_folder.glob(named_model_pattern)]
+                if len(model_file_objs) == 0:
+                    raise FileNotFoundError(f"'{named_model_pattern}' does not exist in '{self.configuration_path}'")
+                if len(model_file_objs) > 1:
+                    raise KeyError(f"Multiple models with name '{model_name}' exist in '{self.configuration_path}'")
+                all_model_files[model_file.stem] = (model_file_objs[0], True)
+
+        for (model_file, request_full_refresh) in all_model_files.values():
+            self.start_single_import(target_engine, model_file, request_full_refresh)
 
         self.logger.info("Execution completed.")
 
-    def start_single_import(self, target_engine, model_name, requested_full_refresh):
+    def start_single_import(self, target_engine, model_file, requested_full_refresh):
+        model_name = model_file.stem
         self.logger.debug(f"Using configuration file : {model_name}")
 
-        config_file = os.path.abspath(self.configuration_path + model_name)
+        config_file = str(model_file.absolute().resolve())
         self.logger.debug(f"Using configuration file : {config_file}")
 
         try:

@@ -8,8 +8,8 @@ environment:
   PGHOST: "localhost"
   DBNAME: relational_data_loader_integration_tests
   matrix:
-    - PYTHON: "C:\\Python36-x64" #This needs to be a double slash
-      PYTHON_VERSION: "3.6.x"
+    - PYTHON: "C:\\Python37-x64" #This needs to be a double slash
+      PYTHON_VERSION: "3.7.x"
       PYTHON_ARCH: "64"
 
 services:
@@ -47,7 +47,10 @@ build_script:
 
 test_script:
   - test_full_refresh_from_csv.cmd
+  - test_full_refresh_from_mssql.cmd
   - test_incremental_refresh_from_csv.cmd
+  - test_incremental_refresh_from_mssql.cmd
+  - test_full_refresh_from_mssql.cmd
   - test_incremental_refresh_from_mssql.cmd
 
 on_finish:
