@@ -57,7 +57,7 @@ See `test_*.cmd` scripts for usage samples.
 #### Integration
 
 The test batch files assume there is a user by the name of `postgres` on the system.
-It also sends through a nonense password - it is assumed that the target system is running in 'trust' mode.
+It also sends through a nonsense password -- it is assumed that the target system is running in 'trust' mode.
 _See [Postgres docs](https://www.postgresql.org/docs/9.1/static/auth-pg-hba-conf.html) for details on trust mode._
 
 #### Unit
