@@ -82,7 +82,7 @@ Execution is as simply as `python3 run_tests.py`
 
 ### `Destination.Type` Values
 
-The destination.type value controls both the data reader type and the destination column type. These are implemented in Column_Type_Resolver.py.
+The destination.type value controls both the data reader type and the destination column type. These are implemented in ColumnTypeResolver.py.
 
 They are mapped as follows:
 
