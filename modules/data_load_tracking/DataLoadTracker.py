@@ -12,7 +12,6 @@ class DataLoadTracker:
     configuration = None
     is_full_refresh = False
     total_execution_time = None
-    total_row_count = 0
     rows_per_second = 0
     correlation_id = None,
     full_refresh_reason = "N/A"
@@ -106,5 +105,10 @@ class DataLoadTracker:
             self.load_completed = datetime.now()
 
         def get_statistics(self):
-            return "Rows: {0}, Extract Execution Time: {1} ({2:.2f} rows per second). Load Execution Time {3} ({4:.2f} rows per second) Total Execution Time {5} ({6:.2f} rows per second)".format(
-                self.row_count, self.extract_execution_time, self.extract_rows_per_second, self.load_execution_time, self.load_rows_per_second, self.total_execution_time, self.total_rows_per_second)
+            return f"Rows: {self.row_count}; " \
+                   f"Extract Execution Time: {self.extract_execution_time} " \
+                   f"@ {self.extract_rows_per_second:.2f} rows per second; " \
+                   f"Load Execution Time: {self.load_execution_time} " \
+                   f"@ {self.load_rows_per_second:.2f} rows per second; " \
+                   f"Total Execution Time: {self.total_execution_time} " \
+                   f"@ {self.total_rows_per_second:.2f} rows per second."
