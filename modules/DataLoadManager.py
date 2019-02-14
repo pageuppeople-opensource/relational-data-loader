@@ -71,18 +71,17 @@ class DataLoadManager(object):
             self.logger.error(f"Failed to read model file '{model_file_full_path}' with error: '{str(exception)}'")
             raise exception
 
-        last_sync_version = 0
-        destination_table_manager = DestinationTableManager(target_engine)
-
         self.data_source.assert_data_source_is_valid(pipeline_configuration['source_table'],
                                                      pipeline_configuration['columns'])
 
+        last_sync_version = 0
         last_successful_data_load_execution = self.data_load_tracker_repository.get_last_successful_data_load_execution(
             model_name)
 
         if last_successful_data_load_execution is not None:
             last_sync_version = last_successful_data_load_execution.next_sync_version
 
+        destination_table_manager = DestinationTableManager(target_engine)
         change_tracking_info = self.data_source.init_change_tracking(pipeline_configuration['source_table'],
                                                                      last_sync_version)
 
