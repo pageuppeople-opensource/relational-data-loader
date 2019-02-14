@@ -7,6 +7,7 @@ environment:
   PGPORT: 5432
   PGHOST: "localhost"
   DBNAME: relational_data_loader_integration_tests
+  MSSQLSTR: "{'username': '','password': '','server_string': '(local)\SQL2016'}"
   matrix:
     - PYTHON: "C:\\Python37-x64" #This needs to be a double slash
       PYTHON_VERSION: "3.7.x"
@@ -20,6 +21,7 @@ init:
   - set PATH=C:\program Files\PostgreSQL\10\bin\;%PATH%
   - ps: Set-Content "c:\program files\postgresql\10\data\pg_hba.conf" "host   all   all   ::1/128        trust"
   - ps: Add-Content "c:\program files\postgresql\10\data\pg_hba.conf" "host   all   all   127.0.0.1/32   trust"
+  - ps: Set-Content ".\modules\tests\config\connection.json" %MSSQLSTR%
   #Enable this line to enable RDP for the build.
   #- ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
 
@@ -48,8 +50,19 @@ test_script:
   - test_full_refresh_from_mssql.cmd
   - test_incremental_refresh_from_csv.cmd
   - test_incremental_refresh_from_mssql.cmd
+
   - test_full_refresh_from_mssql.cmd
   - test_incremental_refresh_from_mssql.cmd
+
+  - sqlcmd -b -E -f 65001 -S "(local)\SQL2016" -d RelationalDataLoaderIntegrationTestSource -i .\integration_tests\mssql_source\source_database_setup\change_compound_pk.sql
+
+  - test_incremental_refresh_from_mssql.cmd
+
+  - sqlcmd -b -E -f 65001 -S "(local)\SQL2016" -d RelationalDataLoaderIntegrationTestSource -i .\integration_tests\mssql_source\source_database_setup\change_large_table.sql
+
+  - test_full_refresh_from_mssql.cmd
+
+  - py ./run_tests.py
 
 on_finish:
   #Enable this line to make the build pause after completion for RDP troubleshooting.
