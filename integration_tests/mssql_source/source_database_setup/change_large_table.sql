@@ -9,7 +9,7 @@ INSERT LargeTable
         GuidColumn,
         BoolColumn
         )
-SELECT 999999999999999,
+SELECT 2000000,
         'test change',
         '1999-01-1',
         '1999-02-1',
