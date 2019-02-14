@@ -13,11 +13,11 @@ from modules.Shared import Constants
 
 
 class DataLoadManager(object):
-    def __init__(self, configuration_path, source_db, destination_db, data_load_tracker_repository, logger=None):
+    def __init__(self, configuration_path, source_db, target_db, data_load_tracker_repository, logger=None):
         self.logger = logger or logging.getLogger(__name__)
         self.configuration_path = configuration_path
         self.source_db = source_db
-        self.destination_db = destination_db
+        self.target_db = target_db
         self.data_load_tracker_repository = data_load_tracker_repository
         self.correlation_id = uuid.uuid4()
         self.model_pattern = '**/{model_name}.json'
@@ -83,7 +83,7 @@ class DataLoadManager(object):
         if last_successful_data_load_execution is not None:
             last_sync_version = last_successful_data_load_execution.next_sync_version
 
-        destination_table_manager = DestinationTableManager(self.destination_db)
+        destination_table_manager = DestinationTableManager(self.target_db)
         change_tracking_info = self.source_db.init_change_tracking(pipeline_configuration['source_table'],
                                                                    last_sync_version)
 
@@ -120,7 +120,7 @@ class DataLoadManager(object):
                                             columns,
                                             data_load_tracker,
                                             pipeline_configuration['batch'],
-                                            self.destination_db,
+                                            self.target_db,
                                             full_refresh,
                                             change_tracking_info)
 
