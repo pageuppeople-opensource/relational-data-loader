@@ -44,7 +44,8 @@ class DataLoadManager(object):
                     raise FileNotFoundError(f"'{named_model_pattern}' does not exist in '{self.configuration_path}'")
                 if len(model_file_objs) > 1:
                     raise KeyError(f"Multiple models with name '{model_name}' exist in '{self.configuration_path}'")
-                all_model_files[model_file.stem] = (model_file_objs[0], True)
+                model_file = model_file_objs[0]
+                all_model_files[model_file.stem] = (model_file, True)
 
         for (model_file, request_full_refresh) in all_model_files.values():
             self.start_single_import(model_file, request_full_refresh)
