@@ -1,10 +1,3 @@
-WITH
-        Numbers (n)
-        AS
-        (
-                SELECT 999999999999999
-        )
-
 INSERT LargeTable
         (
         Id,
@@ -24,5 +17,3 @@ SELECT 999999999999999,
         'foobar',
         newid(),
         1
-
-FROM Numbers
