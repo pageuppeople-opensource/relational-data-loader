@@ -45,7 +45,7 @@
         "nullable": true
       }
     },
-     {
+    {
       "source_name": "StringColumn1",
       "destination": {
         "name": "string_column_1",
@@ -69,7 +69,7 @@
         "nullable": true
       }
     },
-     {
+    {
       "source_name": "BoolColumn",
       "destination": {
         "name": "bool_column_1",
@@ -77,7 +77,5 @@
         "nullable": true
       }
     }
-
-
   ]
 }

@@ -2,7 +2,7 @@
   "source_table": {
     "name": "CompoundPk",
     "schema": "dbo",
-    "primary_keys": ["Id1","Id2"]
+    "primary_keys": ["Id1", "Id2"]
   },
   "target_schema": "rdl_integration_tests",
   "stage_table": "stage_compound_pk",
@@ -21,7 +21,7 @@
         "primary_key": true
       }
     },
-      {
+    {
       "source_name": "Id2",
       "destination": {
         "name": "id_2",
@@ -30,6 +30,5 @@
         "primary_key": true
       }
     }
-
   ]
 }

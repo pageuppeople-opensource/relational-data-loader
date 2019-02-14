@@ -142,14 +142,14 @@ class MsSqlDataSource(object):
         # in that case @last_sync_version < CHANGE_TRACKING_MIN_VALID_VERSION
         # therefore if @last_sync_version >= CHANGE_TRACKING_MIN_VALID_VERSION, we do not need to do a full load
         get_change_tracking_info_sql.write(f"IF @last_sync_version >= CHANGE_TRACKING_MIN_VALID_VERSION("
-                          f"OBJECT_ID('{table_configuration['schema']}.{table_configuration['name']}'))\n")
+                                           f"OBJECT_ID('{table_configuration['schema']}.{table_configuration['name']}'))\n")
         get_change_tracking_info_sql.write("BEGIN\n")
         get_change_tracking_info_sql.write("     SET @force_full_load = 0; \n")
         get_change_tracking_info_sql.write("     SET @this_sync_version = @last_sync_version; \n")
         get_change_tracking_info_sql.write("END\n")
         get_change_tracking_info_sql.write("SELECT @next_sync_version as next_sync_version,"
-                          "@force_full_load as force_full_load,"
-                          "@this_sync_version as this_sync_version; \n")
+                                           "@force_full_load as force_full_load,"
+                                           "@this_sync_version as this_sync_version; \n")
 
         self.logger.debug("Getting ChangeTracking info for "
                           f"{table_configuration['schema']}.{table_configuration['name']}.\n"

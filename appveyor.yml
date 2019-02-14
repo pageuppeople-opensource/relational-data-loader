@@ -24,7 +24,6 @@ init:
   #- ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
 
 install:
-
   #Setup Python
   - SET PATH=%PYTHON%;%PYTHON%\Scripts;%PATH% #Swap path to python to latest version (as per matrix above)
   - python --version
@@ -43,7 +42,6 @@ build_script:
   - C:\projects\relational-data-loader\venv\Scripts\activate.bat
   #Install the dependencies for rdl.
   - pip install -r requirements.txt
-
 
 test_script:
   - test_full_refresh_from_csv.cmd
