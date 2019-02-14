@@ -21,8 +21,6 @@ init:
   - set PATH=C:\program Files\PostgreSQL\10\bin\;%PATH%
   - ps: Set-Content "c:\program files\postgresql\10\data\pg_hba.conf" "host   all   all   ::1/128        trust"
   - ps: Add-Content "c:\program files\postgresql\10\data\pg_hba.conf" "host   all   all   127.0.0.1/32   trust"
-  - ps: New-Item ".\modules\tests\config\connection.json" -ItemType file
-  - ps: Set-Content ".\modules\tests\config\connection.json" %MSSQLSTR%
   #Enable this line to enable RDP for the build.
   #- ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
 
@@ -31,6 +29,9 @@ install:
   - SET PATH=%PYTHON%;%PYTHON%\Scripts;%PATH% #Swap path to python to latest version (as per matrix above)
   - python --version
   - python -m venv c:\projects\relational-data-loader\venv\
+  - ps: Tree . /F
+  - ps: New-Item ".\modules\tests\config\connection.json" -ItemType file
+  - ps: Set-Content ".\modules\tests\config\connection.json" %MSSQLSTR%
 
 build_script:
   #Setup the source MSSQL database
