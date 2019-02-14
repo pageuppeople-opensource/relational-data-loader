@@ -29,7 +29,6 @@ install:
   - SET PATH=%PYTHON%;%PYTHON%\Scripts;%PATH% #Swap path to python to latest version (as per matrix above)
   - python --version
   - python -m venv c:\projects\relational-data-loader\venv\
-  - ps: Tree . /F
   - ps: New-Item ".\modules\tests\config\connection.json" -ItemType file
   - ps: Set-Content ".\modules\tests\config\connection.json" %MSSQLSTR%
 
