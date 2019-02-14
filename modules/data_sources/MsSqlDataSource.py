@@ -141,8 +141,9 @@ class MsSqlDataSource(object):
         # our record of the db may become so far out of sync that we are unable to salvage our db
         # in that case @last_sync_version < CHANGE_TRACKING_MIN_VALID_VERSION
         # therefore if @last_sync_version >= CHANGE_TRACKING_MIN_VALID_VERSION, we do not need to do a full load
-        get_change_tracking_info_sql.write(f"IF @last_sync_version >= CHANGE_TRACKING_MIN_VALID_VERSION("
-                                           f"OBJECT_ID('{table_configuration['schema']}.{table_configuration['name']}'))\n")
+        get_change_tracking_info_sql.write(
+            f"IF @last_sync_version >= CHANGE_TRACKING_MIN_VALID_VERSION("
+            f"OBJECT_ID('{table_configuration['schema']}.{table_configuration['name']}'))\n")
         get_change_tracking_info_sql.write("BEGIN\n")
         get_change_tracking_info_sql.write("     SET @force_full_load = 0; \n")
         get_change_tracking_info_sql.write("     SET @this_sync_version = @last_sync_version; \n")
