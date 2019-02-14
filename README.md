@@ -52,6 +52,33 @@ See `test_*.cmd` scripts for usage samples.
 
 ## Development
 
+### Linting
+
+Use autopep8 before pushing commits
+
+`>>>autopep8 --in-place --aggressive --aggressive -r --max-line-length=120 .`
+
+Use the following vscode settings by either:
+
+- System wide: Ctrl+Shift+P, "open settings (json)"
+- For this project only: add the following to ./vscode/settings.json
+
+```json
+{
+    "python.pythonPath": (your python venv here),
+    "files.trimFinalNewlines": true,
+    "files.trimTrailingWhitespace": true,
+    "files.insertFinalNewline": true,
+    "files.eol": "\n",
+    "editor.renderWhitespace": "all",
+    "editor.tabCompletion": "on",
+    "editor.trimAutoWhitespace": true,
+    "editor.insertSpaces": true,
+    "editor.rulers": [80, 120],
+    "editor.formatOnSave": true
+}
+```
+
 ### Testing
 
 #### Integration
