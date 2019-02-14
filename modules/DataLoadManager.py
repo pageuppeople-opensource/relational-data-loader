@@ -85,13 +85,17 @@ class DataLoadManager(object):
         change_tracking_info = self.data_source.init_change_tracking(pipeline_configuration['source_table'],
                                                                      last_sync_version)
 
+        last_successful_execution_exists = last_successful_data_load_execution is not None
+        model_changed = (not last_successful_execution_exists) or \
+                        (last_successful_data_load_execution.model_checksum != model_checksum)
+
         full_refresh_reason, full_refresh = DataLoadManager.is_full_refresh(
             user_requested=requested_full_refresh,
             destination_table_exists=destination_table_manager.table_exists(
                 pipeline_configuration['target_schema'],
                 pipeline_configuration['load_table']),
-            last_successful_execution_exists=last_successful_data_load_execution is not None,
-            model_changed=last_successful_data_load_execution.model_checksum != model_checksum,
+            last_successful_execution_exists=last_successful_execution_exists,
+            model_changed=model_changed,
             invalid_change_tracking=change_tracking_info.force_full_load
         )
 
