@@ -4,8 +4,15 @@ class Constants:
 
     class FullRefreshReason:
         NOT_APPLICABLE = 'N/A'
-        USER_REQUESTED = 'User Requested'  # previously known as 'Command Line Argument'
+        USER_REQUESTED = 'User Requested'
         DESTINATION_TABLE_ABSENT = 'Destination table does not exist'
         FIRST_EXECUTION = 'First Execution'
         MODEL_CHANGED = 'Model Changed'
         INVALID_CHANGE_TRACKING = 'Change Tracking Invalid'
+
+    class ExecutionStatus:
+        NOT_STARTED = 'Not Started'
+        EXTRACT_COMPLETED_SUCCESSFULLY = 'Extract Completed Successfully'
+        LOAD_COMPLETED_SUCCESSFULLY = 'Load Completed Successfully'
+        SKIPPED_AS_ZERO_ROWS = 'Skipped - Zero Rows'
+        COMPLETED_SUCCESSFULLY = 'Completed Successfully'

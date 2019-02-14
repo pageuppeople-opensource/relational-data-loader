@@ -5,17 +5,17 @@ from modules.column_transformers.StringTransformers import ToUpper
 
 
 class BatchDataLoader(object):
-    def __init__(self, data_source, source_table_configuration, target_schema, target_table, columns, data_load_tracker,
-                 batch_configuration, target_engine, full_refresh, change_tracking_info, logger=None):
+    def __init__(self, source_db, source_table_configuration, target_schema, target_table, columns, data_load_tracker,
+                 batch_configuration, target_db, full_refresh, change_tracking_info, logger=None):
         self.logger = logger or logging.getLogger(__name__)
         self.source_table_configuration = source_table_configuration
         self.columns = columns
-        self.data_source = data_source
+        self.source_db = source_db
         self.target_schema = target_schema
         self.target_table = target_table
         self.data_load_tracker = data_load_tracker
         self.batch_configuration = batch_configuration
-        self.target_engine = target_engine
+        self.target_db = target_db
         self.full_refresh = full_refresh
         self.change_tracking_info = change_tracking_info
 
@@ -23,12 +23,13 @@ class BatchDataLoader(object):
     def load_batch(self, batch_key_tracker):
         batch_tracker = self.data_load_tracker.start_batch()
 
-        self.logger.debug("ImportBatch Starting from previous_batch_key: {0}. Full Refresh: {1} this_sync_version: {2}".format(
-            batch_key_tracker.bookmarks, self.full_refresh, self.change_tracking_info.this_sync_version))
+        self.logger.debug(f"ImportBatch Starting from previous_batch_key: '{batch_key_tracker.bookmarks}'. "
+                          f"Full Refresh: '{self.full_refresh}' "
+                          f"this_sync_version: '{self.change_tracking_info.this_sync_version}'")
 
-        data_frame = self.data_source.get_next_data_frame(self.source_table_configuration, self.columns,
-                                                          self.batch_configuration, batch_tracker, batch_key_tracker,
-                                                          self.full_refresh, self.change_tracking_info)
+        data_frame = self.source_db.get_next_data_frame(self.source_table_configuration, self.columns,
+                                                        self.batch_configuration, batch_tracker, batch_key_tracker,
+                                                        self.full_refresh, self.change_tracking_info)
 
         if data_frame is None or len(data_frame) == 0:
             self.logger.debug("There are no more rows to import.")
@@ -56,7 +57,7 @@ class BatchDataLoader(object):
         # Float_format is used to truncate any insignificant digits. Unfortunately it gives us an artificial limitation
 
         data.seek(0)
-        raw = self.target_engine.raw_connection()
+        raw = self.target_db.raw_connection()
         curs = raw.cursor()
 
         column_array = list(

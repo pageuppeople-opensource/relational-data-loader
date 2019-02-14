@@ -13,16 +13,16 @@ class DestinationTableManager(object):
     IS_DELETED_COLUMN_NAME = "data_pipeline_is_deleted"
     CHANGE_VERSION_COLUMN_NAME = "data_pipeline_change_version"
 
-    def __init__(self, target_engine, logger=None):
+    def __init__(self, target_db, logger=None):
         self.logger = logger or logging.getLogger(__name__)
-        self.target_engine = target_engine
+        self.target_db = target_db
         self.column_type_resolver = ColumnTypeResolver()
 
     def create_schema(self, schema_name):
-        self.target_engine.execute("CREATE SCHEMA IF NOT EXISTS {0}".format(schema_name))
+        self.target_db.execute("CREATE SCHEMA IF NOT EXISTS {0}".format(schema_name))
 
     def table_exists(self, schema_name, table_name):
-        return self.target_engine.dialect.has_table(self.target_engine, table_name, schema_name)
+        return self.target_db.dialect.has_table(self.target_db, table_name, schema_name)
 
     def drop_table(self, schema_name, table_name):
         metadata = MetaData()
@@ -30,7 +30,7 @@ class DestinationTableManager(object):
             "Dropping table {0}.{1}".format(schema_name, table_name))
 
         table = Table(table_name, metadata, schema=schema_name)
-        table.drop(self.target_engine, checkfirst=True)
+        table.drop(self.target_db, checkfirst=True)
 
         self.logger.debug(
             "Dropped table {0}.{1}".format(schema_name, table_name))
@@ -55,12 +55,12 @@ class DestinationTableManager(object):
         if drop_first:
             self.logger.debug(
                 "Dropping table {0}.{1}".format(schema_name, table_name))
-            table.drop(self.target_engine, checkfirst=True)
+            table.drop(self.target_db, checkfirst=True)
             self.logger.debug(
                 "Dropped table {0}.{1}".format(schema_name, table_name))
 
         self.logger.debug("Creating table {0}.{1}".format(schema_name, table_name))
-        table.create(self.target_engine, checkfirst=False)
+        table.create(self.target_db, checkfirst=False)
         self.logger.debug("Created table {0}.{1}".format(schema_name, table_name))
 
         return
@@ -85,7 +85,7 @@ class DestinationTableManager(object):
         # Step 1
         sql = "DROP TABLE IF EXISTS {0}.{1} CASCADE;  ".format(schema_name, old_load_table_name)
         self.logger.debug("Table Rename, executing {0} ".format(sql))
-        self.target_engine.execute(sql)
+        self.target_db.execute(sql)
 
         # Step 2
         sql_builder = io.StringIO()
@@ -101,13 +101,13 @@ class DestinationTableManager(object):
 
         sql_builder.write("COMMIT TRANSACTION; ")
         self.logger.debug("Table Rename, executing {0}".format(sql_builder.getvalue()))
-        self.target_engine.execute(sql_builder.getvalue())
+        self.target_db.execute(sql_builder.getvalue())
 
         sql_builder.close()
 
         sql = "DROP TABLE IF EXISTS {0}.{1} CASCADE ".format(schema_name, old_load_table_name)
         self.logger.debug("Table Rename, executing {0}".format(sql))
-        self.target_engine.execute(sql)
+        self.target_db.execute(sql)
 
     def upsert_table(self, schema_name, source_table_name, target_table_name, columns_configuration):
         column_array = list(map(lambda column: column['destination']['name'], columns_configuration))
@@ -141,7 +141,7 @@ class DestinationTableManager(object):
         sql_builder.write(os.linesep)
 
         self.logger.debug("Upsert executing {0}".format(sql_builder.getvalue()))
-        self.target_engine.execute(sql_builder.getvalue())
+        self.target_db.execute(sql_builder.getvalue())
         self.logger.debug("Upsert completed {0}")
 
         sql_builder.close()

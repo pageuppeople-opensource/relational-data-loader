@@ -26,8 +26,8 @@ class RelationalDataLoader:
         repository = DataLoadTrackerRepository(session_maker)
         repository.create_tables(destination_db)
 
-        data_load_manager = DataLoadManager(args.configuration_folder, source_db, repository)
-        data_load_manager.start_imports(destination_db, args.force_full_refresh_models)
+        data_load_manager = DataLoadManager(args.configuration_folder, source_db, destination_db, repository)
+        data_load_manager.start_imports(args.force_full_refresh_models)
 
     def configure_root_logger(self, log_level):
         # get the root logger

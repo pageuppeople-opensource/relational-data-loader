@@ -1,4 +1,5 @@
 from datetime import datetime
+from modules.Shared import Constants
 
 
 class DataLoadTracker:
@@ -30,7 +31,7 @@ class DataLoadTracker:
         self.configuration = configuration
         self.is_full_refresh = is_full_refresh
         self.started = datetime.now()
-        self.status = "Not Started"
+        self.status = Constants.ExecutionStatus.NOT_STARTED
         self.change_tracking_info = change_tracking_info
         self.correlation_id = correlation_id
         self.full_refresh_reason = full_refresh_reason
@@ -43,9 +44,9 @@ class DataLoadTracker:
     def completed_successfully(self):
         self.completed = datetime.now()
         self.total_execution_time = self.completed - self.started
-        self.status = "Completed Successfully"
+        self.status = Constants.ExecutionStatus.COMPLETED_SUCCESSFULLY
         for batch in self.batches:
-            self.total_row_count = self.total_row_count + batch.row_count
+            self.total_row_count += batch.row_count
 
         self.rows_per_second = self.total_row_count / self.total_execution_time.total_seconds()
 
@@ -60,7 +61,7 @@ class DataLoadTracker:
         extract_started = None
         extract_completed = None
         load_completed = None
-        status = "Not Started"
+        status = Constants.ExecutionStatus.NOT_STARTED
 
         extract_execution_time = None
         extract_rows_per_second = 0
@@ -71,10 +72,10 @@ class DataLoadTracker:
 
         def __init__(self):
             self.extract_started = datetime.now()
-            self.status = "Not Started"
+            self.status = Constants.ExecutionStatus.NOT_STARTED
 
         def extract_completed_successfully(self, row_count):
-            self.status = "Extract Completed Successfully"
+            self.status = Constants.ExecutionStatus.EXTRACT_COMPLETED_SUCCESSFULLY
             self.row_count = row_count
             self.extract_completed = datetime.now()
             self.extract_execution_time = self.extract_completed - self.extract_started
@@ -84,7 +85,7 @@ class DataLoadTracker:
                 self.extract_rows_per_second = self.row_count / self.extract_execution_time.total_seconds()
 
         def load_completed_successfully(self):
-            self.status = "Load Completed Successfully"
+            self.status = Constants.ExecutionStatus.LOAD_COMPLETED_SUCCESSFULLY
             self.load_completed = datetime.now()
             self.load_execution_time = self.load_completed - self.extract_completed
 
@@ -101,7 +102,7 @@ class DataLoadTracker:
                 self.load_rows_per_second = self.row_count / self.load_execution_time.total_seconds()
 
         def load_skipped_due_to_zero_rows(self):
-            self.status = "Skipped - Zero Rows"
+            self.status = Constants.ExecutionStatus.SKIPPED_AS_ZERO_ROWS
             self.load_completed = datetime.now()
 
         def get_statistics(self):

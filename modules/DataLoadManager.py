@@ -13,16 +13,17 @@ from modules.Shared import Constants
 
 
 class DataLoadManager(object):
-    def __init__(self, configuration_path, data_source, data_load_tracker_repository, logger=None):
+    def __init__(self, configuration_path, source_db, target_db, data_load_tracker_repository, logger=None):
         self.logger = logger or logging.getLogger(__name__)
         self.configuration_path = configuration_path
-        self.data_source = data_source
+        self.source_db = source_db
+        self.target_db = target_db
         self.data_load_tracker_repository = data_load_tracker_repository
         self.correlation_id = uuid.uuid4()
         self.model_pattern = '**/{model_name}.json'
         self.all_model_pattern = self.model_pattern.format(model_name='*')
 
-    def start_imports(self, target_engine, force_full_refresh_models):
+    def start_imports(self, force_full_refresh_models):
         model_folder = Path(self.configuration_path)
         if not model_folder.is_dir():
             raise NotADirectoryError(self.configuration_path)
@@ -43,14 +44,15 @@ class DataLoadManager(object):
                     raise FileNotFoundError(f"'{named_model_pattern}' does not exist in '{self.configuration_path}'")
                 if len(model_file_objs) > 1:
                     raise KeyError(f"Multiple models with name '{model_name}' exist in '{self.configuration_path}'")
-                all_model_files[model_file.stem] = (model_file_objs[0], True)
+                model_file = model_file_objs[0]
+                all_model_files[model_file.stem] = (model_file, True)
 
         for (model_file, request_full_refresh) in all_model_files.values():
-            self.start_single_import(target_engine, model_file, request_full_refresh)
+            self.start_single_import(model_file, request_full_refresh)
 
         self.logger.info("Execution completed.")
 
-    def start_single_import(self, target_engine, model_file, requested_full_refresh):
+    def start_single_import(self, model_file, requested_full_refresh):
         model_name = model_file.stem
         self.logger.debug(f"Model name: {model_name}")
 
@@ -71,8 +73,8 @@ class DataLoadManager(object):
             self.logger.error(f"Failed to read model file '{model_file_full_path}' with error: '{str(exception)}'")
             raise exception
 
-        self.data_source.assert_data_source_is_valid(pipeline_configuration['source_table'],
-                                                     pipeline_configuration['columns'])
+        self.source_db.assert_data_source_is_valid(pipeline_configuration['source_table'],
+                                                   pipeline_configuration['columns'])
 
         last_sync_version = 0
         last_successful_data_load_execution = self.data_load_tracker_repository.get_last_successful_data_load_execution(
@@ -81,9 +83,9 @@ class DataLoadManager(object):
         if last_successful_data_load_execution is not None:
             last_sync_version = last_successful_data_load_execution.next_sync_version
 
-        destination_table_manager = DestinationTableManager(target_engine)
-        change_tracking_info = self.data_source.init_change_tracking(pipeline_configuration['source_table'],
-                                                                     last_sync_version)
+        destination_table_manager = DestinationTableManager(self.target_db)
+        change_tracking_info = self.source_db.init_change_tracking(pipeline_configuration['source_table'],
+                                                                   last_sync_version)
 
         last_successful_execution_exists = last_successful_data_load_execution is not None
         model_changed = (not last_successful_execution_exists) or \
@@ -100,7 +102,7 @@ class DataLoadManager(object):
         )
 
         if full_refresh:
-            self.logger.info(f"Performaing full refresh for reason '{full_refresh_reason}'")
+            self.logger.info(f"Performing full refresh for reason '{full_refresh_reason}'")
 
         data_load_tracker = DataLoadTracker(model_name, model_checksum, model_file, full_refresh, change_tracking_info,
                                             self.correlation_id, full_refresh_reason)
@@ -115,14 +117,14 @@ class DataLoadManager(object):
                                                columns, drop_first=True)
 
         # Import the data.
-        batch_data_loader = BatchDataLoader(self.data_source,
+        batch_data_loader = BatchDataLoader(self.source_db,
                                             pipeline_configuration['source_table'],
                                             pipeline_configuration['target_schema'],
                                             pipeline_configuration['stage_table'],
                                             columns,
                                             data_load_tracker,
                                             pipeline_configuration['batch'],
-                                            target_engine,
+                                            self.target_db,
                                             full_refresh,
                                             change_tracking_info)
 
