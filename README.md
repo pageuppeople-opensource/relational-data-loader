@@ -54,9 +54,9 @@ See `test_*.cmd` scripts for usage samples.
 
 ### Linting
 
-Use autopep8 before pushing commits
+Use autopep8 before pushing commits (include the "." for the folder)
 
-`>>>autopep8 --in-place --aggressive --aggressive -r --max-line-length=120 .`
+`>>>autopep8 --in-place --aggressive --aggressive --recursive --max-line-length=120 .`
 
 Use the following vscode settings by either:
 
