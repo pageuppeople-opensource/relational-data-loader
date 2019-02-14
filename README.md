@@ -65,7 +65,7 @@ _See [Postgres docs](https://www.postgresql.org/docs/9.1/static/auth-pg-hba-conf
 
 _Setup:_
 
-Create a new SQL Server Login/User using the script below. Make sure you update it with your desired password and if you update the username/login, please ensure the changes are reflected in: `modules\tests\config\connection.json`.
+Create a new SQL Server Login/User using the script below. Make sure you update it with your desired password and if you update the username/login, please ensure the changes are reflected in: `modules/tests/config/connection.json`, which can be created using `modules/tests/config/connection.json.template`.
 
 ```sql
 USE master;
