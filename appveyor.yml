@@ -7,7 +7,7 @@ environment:
   PGPORT: 5432
   PGHOST: "localhost"
   DBNAME: relational_data_loader_integration_tests
-  MSSQLSTR: "{'username': '','password': '','server_string': '(local)\SQL2016'}"
+  MSSQLSTR: "{'username': '','password': '','server_string': '(local)\\SQL2016'}"
   matrix:
     - PYTHON: "C:\\Python37-x64" #This needs to be a double slash
       PYTHON_VERSION: "3.7.x"
