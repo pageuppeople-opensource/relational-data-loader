@@ -23,8 +23,9 @@ class BatchDataLoader(object):
     def load_batch(self, batch_key_tracker):
         batch_tracker = self.data_load_tracker.start_batch()
 
-        self.logger.debug("ImportBatch Starting from previous_batch_key: {0}. Full Refresh: {1} this_sync_version: {2}".format(
-            batch_key_tracker.bookmarks, self.full_refresh, self.change_tracking_info.this_sync_version))
+        self.logger.debug(f"ImportBatch Starting from previous_batch_key: '{batch_key_tracker.bookmarks}'. "
+                          f"Full Refresh: '{self.full_refresh}' "
+                          f"this_sync_version: '{self.change_tracking_info.this_sync_version}'")
 
         data_frame = self.data_source.get_next_data_frame(self.source_table_configuration, self.columns,
                                                           self.batch_configuration, batch_tracker, batch_key_tracker,
