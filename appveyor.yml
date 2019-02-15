@@ -29,7 +29,6 @@ install:
   - SET PATH=%PYTHON%;%PYTHON%\Scripts;%PATH% #Swap path to python to latest version (as per matrix above)
   - python --version
   - python -m venv c:\projects\relational-data-loader\venv\
-  - ps: Set-Content ".\modules\tests\config\connection.json" %MSSQLSTR%
 
 build_script:
   #Setup the source MSSQL database
@@ -62,7 +61,7 @@ test_script:
 
   - test_full_refresh_from_mssql.cmd
 
-  - py ./run_tests.py
+  - test_run_unit_tests.cmd
 
 on_finish:
   #Enable this line to make the build pause after completion for RDP troubleshooting.
