@@ -29,8 +29,9 @@ class TestMsSqlDataSource(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
 
-        with open(CONFIG_PATH + "connection.json") as f:
-            gen_connection_string = MSSQL_STRING_FORMAT.format(**json.loads(f.read()), db="{db}")
+        with open(CONFIG_PATH + "connection.json", "r", encoding="utf8") as f:
+            config_json = json.loads(f.read(), encoding="utf8")
+            gen_connection_string = MSSQL_STRING_FORMAT.format(**config_json, db="{db}")
         cls.table_configurations = []
 
         for file_name in CONFIG_FILES:
@@ -107,6 +108,7 @@ class TestMsSqlDataSource(unittest.TestCase):
         self.assertEqual("t." + col, MsSqlDataSource.prefix_column(col, True, p_key_cols))
         self.assertEqual("t." + col_fail, MsSqlDataSource.prefix_column(col_fail, True, p_key_cols))
         self.assertRaises(TypeError, MsSqlDataSource.prefix_column, (col, True, "some string"))
+        self.assertTrue(False)
 
 
 if __name__ == '__main__':
