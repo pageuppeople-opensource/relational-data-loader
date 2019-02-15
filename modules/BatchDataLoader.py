@@ -44,14 +44,11 @@ class BatchDataLoader(object):
         for primary_key in batch_key_tracker.primary_keys:
             batch_key_tracker.set_bookmark(primary_key, data_frame.iloc[-1][primary_key])
 
-        self.logger.info(
-            "Batch keys {0} Completed. {1}".format(
-                batch_key_tracker.bookmarks,
-                batch_tracker.get_statistics()))
+        self.logger.info(f"Batch keys '{batch_key_tracker.bookmarks}' completed. {batch_tracker.get_statistics()}")
 
     def write_data_frame_to_table(self, data_frame):
-        qualified_target_table = "{0}.{1}".format(self.target_schema, self.target_table)
-        self.logger.debug("Starting write to table {0}".format(qualified_target_table))
+        qualified_target_table = f'{self.target_schema}.{self.target_table}'
+        self.logger.debug(f"Starting write to table '{qualified_target_table}'")
         data = StringIO()
         data_frame.to_csv(data, header=False, index=False, na_rep='', float_format='%.16g')
         # Float_format is used to truncate any insignificant digits. Unfortunately it gives us an artificial limitation
@@ -64,12 +61,12 @@ class BatchDataLoader(object):
             map(lambda source_colum_name: self.get_destination_column_name(source_colum_name), data_frame.columns))
         column_list = ','.join(map(str, column_array))
 
-        sql = "COPY {0}({1}) FROM STDIN with csv".format(qualified_target_table, column_list)
-        self.logger.debug("Writing to table using command {0}".format(sql))
+        sql = f"COPY {qualified_target_table}({column_list}) FROM STDIN with csv"
+        self.logger.debug(f"Writing to table using command '{sql}'")
 
         curs.copy_expert(sql=sql, file=data)
 
-        self.logger.debug("Completed write to table {0}".format(qualified_target_table))
+        self.logger.debug(f"Completed write to table '{qualified_target_table}'")
 
         curs.connection.commit()
         return
@@ -83,7 +80,7 @@ class BatchDataLoader(object):
         if source_column_name.startswith("data_pipeline_"):
             return source_column_name
 
-        message = 'A source column with name {0} was not found in the column configuration'.format(source_column_name)
+        message = f"A source column with name '{source_column_name}' was not found in the column configuration"
         raise ValueError(message)
 
     def attach_column_transformers(self, data_frame):

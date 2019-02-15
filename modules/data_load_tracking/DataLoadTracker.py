@@ -50,10 +50,11 @@ class DataLoadTracker:
         self.rows_per_second = self.total_row_count / self.total_execution_time.total_seconds()
 
     def get_statistics(self):
-        load_type = 'full' if self.is_full_refresh else "incremental from version {0} ".format(
-            self.change_tracking_info.this_sync_version)
-        return "Rows: {0} ({1}), Total Execution Time: {2}. ({3:.2f} rows per second) ".format(
-            self.total_row_count, load_type, self.total_execution_time, self.rows_per_second)
+        load_type = 'Full' if self.is_full_refresh else f"Incremental from " \
+                                                        f"version '{self.change_tracking_info.this_sync_version}'"
+        return f"Rows: {self.total_row_count}," \
+               f"Load type: {load_type}, " \
+               f"Total Execution Time: {self.total_execution_time} @ {self.rows_per_second:.2f} rows per second "
 
     class Batch:
         row_count = 0

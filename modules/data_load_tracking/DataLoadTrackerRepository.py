@@ -1,6 +1,7 @@
 import logging
 from sqlalchemy import desc
 from modules.data_load_tracking.DataLoadExecution import DataLoadExecution, Base
+from modules.Shared import Constants
 
 
 class DataLoadTrackerRepository(object):
@@ -8,8 +9,8 @@ class DataLoadTrackerRepository(object):
         self.logger = logger or logging.getLogger(__name__)
         self.session_maker = session_maker
 
-    def create_tables(self, engine):
-        engine.execute("CREATE SCHEMA IF NOT EXISTS {0}".format("data_pipeline"))
+    def ensure_schema_exists(self, engine):
+        engine.execute(f"CREATE SCHEMA IF NOT EXISTS {Constants.DATA_PIPELINE_EXECUTION_SCHEMA_NAME}")
         Base.metadata.create_all(engine)
 
     def get_last_successful_data_load_execution(self, model_name):
