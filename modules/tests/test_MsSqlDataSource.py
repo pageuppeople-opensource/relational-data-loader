@@ -29,8 +29,9 @@ class TestMsSqlDataSource(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
 
-        with open(CONFIG_PATH + "connection.json") as f:
-            gen_connection_string = MSSQL_STRING_FORMAT.format(**json.loads(f.read()), db="{db}")
+        with open(CONFIG_PATH + "connection.json", "r", encoding="utf8") as f:
+            config_json = json.loads(f.read(), encoding="utf8")
+            gen_connection_string = MSSQL_STRING_FORMAT.format(**config_json, db="{db}")
         cls.table_configurations = []
 
         for file_name in CONFIG_FILES:
