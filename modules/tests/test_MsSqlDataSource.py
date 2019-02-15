@@ -108,6 +108,7 @@ class TestMsSqlDataSource(unittest.TestCase):
         self.assertEqual("t." + col, MsSqlDataSource.prefix_column(col, True, p_key_cols))
         self.assertEqual("t." + col_fail, MsSqlDataSource.prefix_column(col_fail, True, p_key_cols))
         self.assertRaises(TypeError, MsSqlDataSource.prefix_column, (col, True, "some string"))
+        self.assertTrue(False)
 
 
 if __name__ == '__main__':
