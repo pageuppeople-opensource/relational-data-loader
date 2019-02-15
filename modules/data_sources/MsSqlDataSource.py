@@ -110,6 +110,7 @@ class MsSqlDataSource(object):
             f"ALTER TABLE {table_configuration['schema']}.{table_configuration['name']} " \
             f"ENABLE CHANGE_TRACKING WITH(TRACK_COLUMNS_UPDATED=OFF);\n" \
             "END\n"
+
         self.logger.debug(f"Initializing ChangeTracking for "
                           f"{table_configuration['schema']}.{table_configuration['name']}:\n"
                           f"{init_change_tracking_sql}")
