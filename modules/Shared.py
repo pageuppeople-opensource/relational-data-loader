@@ -1,5 +1,5 @@
 class Constants:
-    APP_NAME = 'relational-data-loader'
+    APP_NAME = 'Relational Data Loader'
     DATA_PIPELINE_EXECUTION_SCHEMA_NAME = 'data_pipeline'
 
     class FullRefreshReason:

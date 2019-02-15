@@ -2,6 +2,7 @@ import logging
 import argparse
 from sqlalchemy import create_engine
 from modules.DataLoadManager import DataLoadManager
+from modules.Shared import Constants
 from modules.data_load_tracking.DataLoadTrackerRepository import DataLoadTrackerRepository
 from modules.data_sources.DataSourceFactory import DataSourceFactory
 from sqlalchemy.orm import sessionmaker
@@ -64,7 +65,7 @@ class RelationalDataLoader:
         return connection_string
 
     def get_arguments(self):
-        parser = argparse.ArgumentParser(description='Relational Data Loader')
+        parser = argparse.ArgumentParser(description=Constants.APP_NAME)
 
         parser.add_argument(
             'source_connection_string',
