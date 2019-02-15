@@ -19,21 +19,19 @@ class DestinationTableManager(object):
         self.column_type_resolver = ColumnTypeResolver()
 
     def create_schema(self, schema_name):
-        self.target_db.execute("CREATE SCHEMA IF NOT EXISTS {0}".format(schema_name))
+        self.target_db.execute(f"CREATE SCHEMA IF NOT EXISTS {schema_name}")
 
     def table_exists(self, schema_name, table_name):
         return self.target_db.dialect.has_table(self.target_db, table_name, schema_name)
 
     def drop_table(self, schema_name, table_name):
         metadata = MetaData()
-        self.logger.debug(
-            "Dropping table {0}.{1}".format(schema_name, table_name))
+        self.logger.debug(f"Dropping table {schema_name}.{table_name}")
 
         table = Table(table_name, metadata, schema=schema_name)
         table.drop(self.target_db, checkfirst=True)
 
-        self.logger.debug(
-            "Dropped table {0}.{1}".format(schema_name, table_name))
+        self.logger.debug(f"Dropped table {schema_name}.{table_name}")
 
     def create_table(self, schema_name, table_name, columns_configuration, drop_first):
         metadata = MetaData()
@@ -53,15 +51,13 @@ class DestinationTableManager(object):
             Column(self.CHANGE_VERSION_COLUMN_NAME, BigInteger))
 
         if drop_first:
-            self.logger.debug(
-                "Dropping table {0}.{1}".format(schema_name, table_name))
+            self.logger.debug(f"Dropping table {schema_name}.{table_name}")
             table.drop(self.target_db, checkfirst=True)
-            self.logger.debug(
-                "Dropped table {0}.{1}".format(schema_name, table_name))
+            self.logger.debug(f"Dropped table {schema_name}.{table_name}")
 
-        self.logger.debug("Creating table {0}.{1}".format(schema_name, table_name))
+        self.logger.debug(f"Creating table {schema_name}.{table_name}")
         table.create(self.target_db, checkfirst=False)
-        self.logger.debug("Created table {0}.{1}".format(schema_name, table_name))
+        self.logger.debug(f"Created table {schema_name}.{table_name}")
 
         return
 
@@ -80,11 +76,11 @@ class DestinationTableManager(object):
         # 5. commit
         # 6. Drop target_old if it exists.
 
-        old_load_table_name = "{0}__old".format(target_table_name)
+        old_load_table_name = f"{target_table_name}__old"
 
         # Step 1
-        sql = "DROP TABLE IF EXISTS {0}.{1} CASCADE;  ".format(schema_name, old_load_table_name)
-        self.logger.debug("Table Rename, executing {0} ".format(sql))
+        sql = f"DROP TABLE IF EXISTS {schema_name}.{old_load_table_name} CASCADE;  "
+        self.logger.debug(f"Table Rename, executing '{sql}'")
         self.target_db.execute(sql)
 
         # Step 2
@@ -92,29 +88,27 @@ class DestinationTableManager(object):
         sql_builder.write("BEGIN TRANSACTION; ")
 
         # Step 3
-        sql_builder.write(
-            "ALTER TABLE IF EXISTS {0}.{1} RENAME TO {2}; ".format(schema_name, target_table_name, old_load_table_name))
+        sql_builder.write(f"ALTER TABLE IF EXISTS {schema_name}.{target_table_name} RENAME TO {old_load_table_name}; ")
 
         # Step 4
-        sql_builder.write(
-            "ALTER TABLE {0}.{1} RENAME TO {2}; ".format(schema_name, source_table_name, target_table_name))
+        sql_builder.write(f"ALTER TABLE {schema_name}.{source_table_name} RENAME TO {target_table_name}; ")
 
         sql_builder.write("COMMIT TRANSACTION; ")
-        self.logger.debug("Table Rename, executing {0}".format(sql_builder.getvalue()))
+        self.logger.debug(f"Table Rename, executing '{sql_builder.getvalue()}'")
         self.target_db.execute(sql_builder.getvalue())
 
         sql_builder.close()
 
-        sql = "DROP TABLE IF EXISTS {0}.{1} CASCADE ".format(schema_name, old_load_table_name)
-        self.logger.debug("Table Rename, executing {0}".format(sql))
+        sql = f"DROP TABLE IF EXISTS {schema_name}.{old_load_table_name} CASCADE "
+        self.logger.debug(f"Table Rename, executing '{sql}'")
         self.target_db.execute(sql)
 
     def upsert_table(self, schema_name, source_table_name, target_table_name, columns_configuration):
         column_array = list(map(lambda column: column['destination']['name'], columns_configuration))
         column_list = ','.join(map(str, column_array))
-        column_list = column_list + ",{0}".format(self.TIMESTAMP_COLUMN_NAME)
-        column_list = column_list + ",{0}".format(self.IS_DELETED_COLUMN_NAME)
-        column_list = column_list + ",{0}".format(self.CHANGE_VERSION_COLUMN_NAME)
+        column_list = column_list + f",{self.TIMESTAMP_COLUMN_NAME}"
+        column_list = column_list + f",{self.IS_DELETED_COLUMN_NAME}"
+        column_list = column_list + f",{self.CHANGE_VERSION_COLUMN_NAME}"
 
         primary_key_column_array = [column_configuration['destination']['name'] for column_configuration in
                                     columns_configuration if 'primary_key' in column_configuration['destination'] and
@@ -123,11 +117,11 @@ class DestinationTableManager(object):
         primary_key_column_list = ','.join(map(str, primary_key_column_array))
 
         sql_builder = io.StringIO()
-        sql_builder.write("INSERT INTO {0}.{1} ({2})".format(schema_name, target_table_name, column_list))
+        sql_builder.write(f"INSERT INTO {schema_name}.{target_table_name} ({column_list})")
         sql_builder.write(os.linesep)
-        sql_builder.write(" SELECT {0} FROM {1}.{2}".format(column_list, schema_name, source_table_name))
+        sql_builder.write(f" SELECT {column_list} FROM {schema_name}.{source_table_name}")
         sql_builder.write(os.linesep)
-        sql_builder.write(" ON CONFLICT({0}) DO UPDATE SET ".format(primary_key_column_list))
+        sql_builder.write(f" ON CONFLICT({primary_key_column_list}) DO UPDATE SET ")
 
         for column_configuration in columns_configuration:
             sql_builder.write("{0} = EXCLUDED.{0},".format(column_configuration['destination']['name']))
@@ -140,8 +134,8 @@ class DestinationTableManager(object):
         sql_builder.write("{0} = EXCLUDED.{0}".format(self.CHANGE_VERSION_COLUMN_NAME))
         sql_builder.write(os.linesep)
 
-        self.logger.debug("Upsert executing {0}".format(sql_builder.getvalue()))
+        self.logger.debug(f"UPSERT executing '{sql_builder.getvalue()}'")
         self.target_db.execute(sql_builder.getvalue())
-        self.logger.debug("Upsert completed {0}")
+        self.logger.debug("UPSERT completed")
 
         sql_builder.close()

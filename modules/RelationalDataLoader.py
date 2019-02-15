@@ -24,7 +24,7 @@ class RelationalDataLoader:
         destination_db = create_engine(args.destination_connection_string)
         session_maker = sessionmaker(bind=destination_db)
         repository = DataLoadTrackerRepository(session_maker)
-        repository.create_tables(destination_db)
+        repository.ensure_schema_exists(destination_db)
 
         data_load_manager = DataLoadManager(args.configuration_folder, source_db, destination_db, repository)
         data_load_manager.start_imports(args.force_full_refresh_models)
@@ -47,7 +47,7 @@ class RelationalDataLoader:
 
     def log_level_string_to_int(self, log_level_string):
         if log_level_string not in _LOG_LEVEL_STRINGS:
-            message = 'invalid choice: {0} (choose from {1})'.format(log_level_string, _LOG_LEVEL_STRINGS)
+            message = f"Invalid choice: '{log_level_string}', choose from '{_LOG_LEVEL_STRINGS}'"
             raise argparse.ArgumentTypeError(message)
 
         log_level_int = getattr(logging, log_level_string, logging.INFO)
@@ -58,8 +58,8 @@ class RelationalDataLoader:
 
     def raw_connection_string_to_valid_source_connection_string(self, connection_string):
         if not self.data_source_factory.is_prefix_supported(connection_string):
-            message = 'invalid connection string: {0} (connection strings must begin with {1})'.format(
-                connection_string, self.data_source_factory.get_supported_source_prefixes())
+            message = f"Invalid connection string: '{connection_string}'. " \
+                      f"Connection strings must begin with '{self.data_source_factory.get_supported_source_prefixes()}'"
             raise argparse.ArgumentTypeError(message)
         return connection_string
 
@@ -98,7 +98,7 @@ class RelationalDataLoader:
                             default='INFO',
                             type=self.log_level_string_to_int,
                             nargs='?',
-                            help='Set the logging output level. {0}'.format(_LOG_LEVEL_STRINGS))
+                            help=f'Set the logging output level. {_LOG_LEVEL_STRINGS}')
 
         return parser.parse_args()
 
