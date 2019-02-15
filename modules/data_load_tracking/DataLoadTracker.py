@@ -5,7 +5,7 @@ from modules.Shared import Constants
 class DataLoadTracker:
     started = None
     completed = None
-    status = "Not Started"
+    status = Constants.ExecutionStatus.NOT_STARTED
     total_row_count = 0
     batches = []
     model_name = None
@@ -14,7 +14,7 @@ class DataLoadTracker:
     total_execution_time = None
     rows_per_second = 0
     correlation_id = None,
-    full_refresh_reason = "N/A"
+    full_refresh_reason = Constants.FullRefreshReason.NOT_APPLICABLE
 
     def __init__(
             self,

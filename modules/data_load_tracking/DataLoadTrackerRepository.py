@@ -17,7 +17,7 @@ class DataLoadTrackerRepository(object):
         session = self.session_maker()
         return session.query(DataLoadExecution).filter_by(
             model_name=model_name,
-            status="Completed Successfully").order_by(
+            status=Constants.ExecutionStatus.COMPLETED_SUCCESSFULLY).order_by(
             desc(
                 DataLoadExecution.completed_on)).first()
 
