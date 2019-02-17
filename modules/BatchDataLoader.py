@@ -1,5 +1,4 @@
 import logging
-import importlib
 from io import StringIO
 from modules.column_transformers.StringTransformers import ToUpper
 
@@ -87,14 +86,8 @@ class BatchDataLoader(object):
         self.logger.debug("Attaching column transformers")
         for column in self.columns:
             if 'column_transformer' in column:
-                # transformer = self.create_column_transformer_type(column['column_transformer'])
+                # transformer = Utils.create_type_instance(column['column_transformer'])
                 transformer = ToUpper.execute
                 data_frame[column['source_name']] = data_frame[column['source_name']].map(transformer)
                 # print (data_frame)
         return data_frame
-
-    def create_column_transformer_type(self, type_name):
-        module = importlib.import_module(type_name)
-        class_ = getattr(module, type_name)
-        instance = class_()
-        return instance

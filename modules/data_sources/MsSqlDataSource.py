@@ -93,9 +93,9 @@ class MsSqlDataSource(object):
                             full_refresh, change_tracking_info):
         sql = self.build_select_statement(table_config, columns, batch_config, batch_key_tracker,
                                           full_refresh, change_tracking_info)
+
         self.logger.debug(f"Starting read of SQL Statement: \n{sql}")
         data_frame = pandas.read_sql_query(sql, self.database_engine)
-
         self.logger.debug("Completed read")
 
         batch_tracker.extract_completed_successfully(len(data_frame))

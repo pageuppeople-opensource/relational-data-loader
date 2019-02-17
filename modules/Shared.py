@@ -1,3 +1,6 @@
+import importlib
+
+
 class Constants:
     APP_NAME = 'Relational Data Loader'
     DATA_PIPELINE_EXECUTION_SCHEMA_NAME = 'data_pipeline'
@@ -16,3 +19,12 @@ class Constants:
         LOAD_COMPLETED_SUCCESSFULLY = 'Load Completed Successfully'
         SKIPPED_AS_ZERO_ROWS = 'Skipped - Zero Rows'
         COMPLETED_SUCCESSFULLY = 'Completed Successfully'
+
+
+class Utils:
+    @staticmethod
+    def create_type_instance(type_name):
+        module = importlib.import_module(type_name)
+        class_ = getattr(module, type_name)
+        instance = class_()
+        return instance

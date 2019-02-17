@@ -72,19 +72,17 @@ class DataLoadManager(object):
             self.logger.error(f"Failed to read model file '{model_file_full_path}' with error: '{str(exception)}'")
             raise exception
 
-        self.source_db.assert_data_source_is_valid(model_config['source_table'],
-                                                   model_config['columns'])
+        self.source_db.assert_data_source_is_valid(model_config['source_table'], model_config['columns'])
 
         last_sync_version = 0
-        last_successful_data_load_execution = self.data_load_tracker_repository.get_last_successful_data_load_execution(
-            model_name)
+        last_successful_data_load_execution = \
+            self.data_load_tracker_repository.get_last_successful_data_load_execution(model_name)
 
         if last_successful_data_load_execution is not None:
             last_sync_version = last_successful_data_load_execution.next_sync_version
 
         destination_table_manager = DestinationTableManager(self.target_db)
-        change_tracking_info = self.source_db.init_change_tracking(model_config['source_table'],
-                                                                   last_sync_version)
+        change_tracking_info = self.source_db.init_change_tracking(model_config['source_table'], last_sync_version)
 
         last_successful_execution_exists = last_successful_data_load_execution is not None
         model_changed = (not last_successful_execution_exists) or \

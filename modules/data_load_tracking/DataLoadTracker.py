@@ -77,8 +77,10 @@ class DataLoadTracker:
 
         def extract_completed_successfully(self, row_count):
             self.status = Constants.ExecutionStatus.EXTRACT_COMPLETED_SUCCESSFULLY
-            self.row_count = row_count
             self.extract_completed = datetime.now()
+
+            self.row_count = row_count
+
             self.extract_execution_time = self.extract_completed - self.extract_started
             if self.extract_execution_time.total_seconds() == 0:
                 self.extract_rows_per_second = self.row_count
@@ -88,19 +90,18 @@ class DataLoadTracker:
         def load_completed_successfully(self):
             self.status = Constants.ExecutionStatus.LOAD_COMPLETED_SUCCESSFULLY
             self.load_completed = datetime.now()
+
             self.load_execution_time = self.load_completed - self.extract_completed
-
-            self.total_execution_time = self.load_completed - self.extract_started
-
-            if self.total_execution_time.total_seconds() == 0:
-                self.total_rows_per_second = self.row_count
-            else:
-                self.total_rows_per_second = self.row_count / self.total_execution_time.total_seconds()
-
             if self.load_execution_time.total_seconds() == 0:
                 self.load_rows_per_second = self.row_count
             else:
                 self.load_rows_per_second = self.row_count / self.load_execution_time.total_seconds()
+
+            self.total_execution_time = self.load_completed - self.extract_started
+            if self.total_execution_time.total_seconds() == 0:
+                self.total_rows_per_second = self.row_count
+            else:
+                self.total_rows_per_second = self.row_count / self.total_execution_time.total_seconds()
 
         def load_skipped_due_to_zero_rows(self):
             self.status = Constants.ExecutionStatus.SKIPPED_AS_ZERO_ROWS
