@@ -9,7 +9,7 @@ class DataLoadTracker:
     total_row_count = 0
     batches = []
     model_name = None
-    configuration = None
+    model_config = None
     is_full_refresh = False
     total_execution_time = None
     rows_per_second = 0
@@ -18,16 +18,16 @@ class DataLoadTracker:
 
     def __init__(
             self,
+            correlation_id,
             model_name,
             model_checksum,
-            configuration,
+            model_config,
             is_full_refresh,
-            change_tracking_info,
-            correlation_id,
-            full_refresh_reason):
+            full_refresh_reason,
+            change_tracking_info):
         self.model_name = model_name
         self.model_checksum = model_checksum
-        self.configuration = configuration
+        self.model_config = model_config
         self.is_full_refresh = is_full_refresh
         self.started = datetime.now()
         self.status = Constants.ExecutionStatus.NOT_STARTED
@@ -50,8 +50,9 @@ class DataLoadTracker:
         self.rows_per_second = self.total_row_count / self.total_execution_time.total_seconds()
 
     def get_statistics(self):
-        load_type = 'Full' if self.is_full_refresh else f"Incremental from " \
-                                                        f"version '{self.change_tracking_info.this_sync_version}'"
+        load_type = 'FULL' if self.is_full_refresh else f"INCREMENTAL from " \
+                                                        f"version '{self.change_tracking_info.this_sync_version}' " \
+                                                        f"to '{self.change_tracking_info.next_sync_version}'"
         return f"Rows: {self.total_row_count}," \
                f"Load type: {load_type}, " \
                f"Total Execution Time: {self.total_execution_time} @ {self.rows_per_second:.2f} rows per second "

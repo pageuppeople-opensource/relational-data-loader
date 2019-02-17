@@ -97,14 +97,14 @@ class DataLoadManager(object):
                 model_config['load_table']),
             last_successful_execution_exists=last_successful_execution_exists,
             model_changed=model_changed,
-            invalid_change_tracking=change_tracking_info.force_full_load
+            change_tracking_requests_full_load=change_tracking_info.force_full_load
         )
 
         if full_refresh:
             self.logger.info(f"Performing full refresh for reason '{full_refresh_reason}'")
 
-        data_load_tracker = DataLoadTracker(model_name, model_checksum, model_file, full_refresh, change_tracking_info,
-                                            self.correlation_id, full_refresh_reason)
+        data_load_tracker = DataLoadTracker(self.correlation_id, model_name, model_checksum, model_config,
+                                            full_refresh, full_refresh_reason, change_tracking_info)
 
         destination_table_manager.create_schema(model_config['target_schema'])
 
@@ -156,7 +156,7 @@ class DataLoadManager(object):
                         destination_table_exists,
                         last_successful_execution_exists,
                         model_changed,
-                        invalid_change_tracking):
+                        change_tracking_requests_full_load):
 
         if user_requested:
             return Constants.FullRefreshReason.USER_REQUESTED, True
@@ -170,7 +170,7 @@ class DataLoadManager(object):
         if last_successful_execution_exists and model_changed:
             return Constants.FullRefreshReason.MODEL_CHANGED, True
 
-        if invalid_change_tracking:
+        if change_tracking_requests_full_load:
             return Constants.FullRefreshReason.INVALID_CHANGE_TRACKING, True
 
         return Constants.FullRefreshReason.NOT_APPLICABLE, False

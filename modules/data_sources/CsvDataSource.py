@@ -20,8 +20,8 @@ class CsvDataSource(object):
     def connection_string_prefix():
         return 'csv://'
 
-    def assert_data_source_is_valid(self, table_configuration, configured_columns):
-        csv_file = os.path.abspath(self.source_path / f"{table_configuration['name']}.csv")
+    def assert_data_source_is_valid(self, table_config, configured_columns):
+        csv_file = os.path.abspath(self.source_path / f"{table_config['name']}.csv")
         self.logger.debug(f"Path to CSV file: '{csv_file}'")
 
         if not os.path.exists(csv_file):
@@ -44,9 +44,9 @@ class CsvDataSource(object):
     # batch size. - Ie, they don't currently support paging.
     def get_next_data_frame(
             self,
-            table_configuration,
+            table_config,
             columns,
-            batch_configuration,
+            batch_config,
             batch_tracker,
             batch_key_tracker,
             full_refresh,
@@ -57,7 +57,7 @@ class CsvDataSource(object):
         if batch_key_tracker.bookmarks[batch_key_tracker.primary_keys[0]] > 0:
             return None
 
-        csv_file = os.path.abspath(self.source_path / f"{table_configuration['name']}.csv")
+        csv_file = os.path.abspath(self.source_path / f"{table_config['name']}.csv")
         self.logger.debug(f"Path to CSV file: '{csv_file}'")
 
         if not os.path.exists(csv_file):
@@ -72,5 +72,5 @@ class CsvDataSource(object):
         batch_tracker.extract_completed_successfully(len(data_frame))
         return data_frame
 
-    def init_change_tracking(self, table_configuration, last_sync_version):
+    def init_change_tracking(self, table_config, last_sync_version):
         return ChangeTrackingInfo(0, 0, False)

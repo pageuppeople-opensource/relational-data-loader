@@ -24,7 +24,7 @@ CONFIG_FILES = ["SimpleTableTest.json"]
 
 class TestMsSqlDataSource(unittest.TestCase):
     MSSQL_DATA_SOURCE = None
-    table_configurations = []
+    table_configs = []
 
     @classmethod
     def setUpClass(cls):
@@ -32,12 +32,12 @@ class TestMsSqlDataSource(unittest.TestCase):
         with open(CONFIG_PATH + "connection.json", "r", encoding="utf8") as f:
             config_json = json.loads(f.read(), encoding="utf8")
             gen_connection_string = MSSQL_STRING_FORMAT.format(**config_json, db="{db}")
-        cls.table_configurations = []
+        cls.table_configs = []
 
         for file_name in CONFIG_FILES:
             with open(CONFIG_PATH + file_name, "r") as f:
                 json_data = json.loads(f.read())
-                cls.table_configurations.append(json_data)
+                cls.table_configs.append(json_data)
 
         for file_obj in SQL_ORDERED_FILES:
             with open(SQL_PATH + file_obj["file_name"], "r") as f:
@@ -62,7 +62,7 @@ class TestMsSqlDataSource(unittest.TestCase):
     def test_init_change_tracking(self):
 
         last_sync_version = 'NULL'
-        for table in TestMsSqlDataSource.table_configurations:
+        for table in TestMsSqlDataSource.table_configs:
             print("TESTING ON TABLE: " + table["source_table"]["name"])
             print("FIRST TEST: INITIALISE TABLE")
             results = TestMsSqlDataSource.MSSQL_DATA_SOURCE.init_change_tracking(

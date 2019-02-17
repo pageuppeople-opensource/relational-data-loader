@@ -5,16 +5,16 @@ from modules.column_transformers.StringTransformers import ToUpper
 
 
 class BatchDataLoader(object):
-    def __init__(self, source_db, source_table_configuration, target_schema, target_table, columns, data_load_tracker,
-                 batch_configuration, target_db, full_refresh, change_tracking_info, logger=None):
+    def __init__(self, source_db, source_table_config, target_schema, target_table, columns, data_load_tracker,
+                 batch_config, target_db, full_refresh, change_tracking_info, logger=None):
         self.logger = logger or logging.getLogger(__name__)
-        self.source_table_configuration = source_table_configuration
+        self.source_table_config = source_table_config
         self.columns = columns
         self.source_db = source_db
         self.target_schema = target_schema
         self.target_table = target_table
         self.data_load_tracker = data_load_tracker
-        self.batch_configuration = batch_configuration
+        self.batch_config = batch_config
         self.target_db = target_db
         self.full_refresh = full_refresh
         self.change_tracking_info = change_tracking_info
@@ -27,8 +27,8 @@ class BatchDataLoader(object):
                           f"Full Refresh: '{self.full_refresh}' "
                           f"this_sync_version: '{self.change_tracking_info.this_sync_version}'")
 
-        data_frame = self.source_db.get_next_data_frame(self.source_table_configuration, self.columns,
-                                                        self.batch_configuration, batch_tracker, batch_key_tracker,
+        data_frame = self.source_db.get_next_data_frame(self.source_table_config, self.columns,
+                                                        self.batch_config, batch_tracker, batch_key_tracker,
                                                         self.full_refresh, self.change_tracking_info)
 
         if data_frame is None or len(data_frame) == 0:

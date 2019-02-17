@@ -34,31 +34,31 @@ class MsSqlDataSource(object):
         else:
             return f"t.{column_name}"
 
-    def build_select_statement(self, table_configuration, columns, batch_configuration, batch_key_tracker, full_refresh,
+    def build_select_statement(self, table_config, columns, batch_config, batch_key_tracker, full_refresh,
                                change_tracking_info):
         column_array = list(
-            map(lambda cfg: self.prefix_column(cfg['source_name'], full_refresh, table_configuration['primary_keys']),
+            map(lambda cfg: self.prefix_column(cfg['source_name'], full_refresh, table_config['primary_keys']),
                 columns))
         column_names = ", ".join(column_array)
 
         if full_refresh:
-            order_by = ", t.".join(table_configuration['primary_keys'])
-            return f"SELECT TOP ({batch_configuration['size']}) {column_names} " \
-                f"FROM {table_configuration['schema']}.{table_configuration['name']} t " \
+            order_by = ", t.".join(table_config['primary_keys'])
+            return f"SELECT TOP ({batch_config['size']}) {column_names} " \
+                f"FROM {table_config['schema']}.{table_config['name']} t " \
                 f"WHERE {self.build_where_clause(batch_key_tracker, 't')} " \
                 f"ORDER BY {order_by};"
         else:
-            order_by = ", chg.".join(table_configuration['primary_keys'])
+            order_by = ", chg.".join(table_config['primary_keys'])
 
             sql_builder = io.StringIO()
-            sql_builder.write(f"SELECT TOP ({batch_configuration['size']}) {column_names}, ")
+            sql_builder.write(f"SELECT TOP ({batch_config['size']}) {column_names}, ")
             sql_builder.write("chg.SYS_CHANGE_VERSION as data_pipeline_change_version, "
                               "CASE chg.SYS_CHANGE_OPERATION WHEN 'D' THEN 1 ELSE 0 END as data_pipeline_is_deleted \n")
             sql_builder.write(f" FROM CHANGETABLE(CHANGES"
-                              f" {table_configuration['schema']}.{table_configuration['name']},"
+                              f" {table_config['schema']}.{table_config['name']},"
                               f" {change_tracking_info.this_sync_version})"
                               f" AS chg")
-            sql_builder.write(f" LEFT JOIN {table_configuration['schema']}.{table_configuration['name']} t"
+            sql_builder.write(f" LEFT JOIN {table_config['schema']}.{table_config['name']} t"
                               f" on {self.build_change_table_on_clause(batch_key_tracker)}")
             sql_builder.write(f" WHERE {self.build_where_clause(batch_key_tracker, 'chg')}")
             sql_builder.write(f" ORDER BY {order_by};")
@@ -66,13 +66,13 @@ class MsSqlDataSource(object):
             return sql_builder.getvalue()
 
     # Returns an array of configured_columns containing only columns that this data source supports. Logs invalid ones.
-    def assert_data_source_is_valid(self, table_configuration, configured_columns):
-        columns_in_database = self.get_table_columns(table_configuration)
+    def assert_data_source_is_valid(self, table_config, configured_columns):
+        columns_in_database = self.get_table_columns(table_config)
 
         for column in configured_columns:
             self.assert_column_exists(column['source_name'],
                                       columns_in_database,
-                                      f"{table_configuration['schema']}.{table_configuration['name']}")
+                                      f"{table_config['schema']}.{table_config['name']}")
 
     def assert_column_exists(self, column_name, columns_in_database, table_name):
         if column_name in columns_in_database:
@@ -81,17 +81,17 @@ class MsSqlDataSource(object):
         message = f'Column {column_name} does not exist in source table {table_name}'
         raise ValueError(message)
 
-    def get_table_columns(self, table_configuration):
+    def get_table_columns(self, table_config):
         metadata = MetaData()
         self.logger.debug(f"Reading definition for source table "
-                          f"{table_configuration['schema']}.{table_configuration['name']}")
-        table = Table(table_configuration['name'], metadata, schema=table_configuration['schema'], autoload=True,
+                          f"{table_config['schema']}.{table_config['name']}")
+        table = Table(table_config['name'], metadata, schema=table_config['schema'], autoload=True,
                       autoload_with=self.database_engine)
         return list(map(lambda column: column.name, table.columns))
 
-    def get_next_data_frame(self, table_configuration, columns, batch_configuration, batch_tracker, batch_key_tracker,
+    def get_next_data_frame(self, table_config, columns, batch_config, batch_tracker, batch_key_tracker,
                             full_refresh, change_tracking_info):
-        sql = self.build_select_statement(table_configuration, columns, batch_configuration, batch_key_tracker,
+        sql = self.build_select_statement(table_config, columns, batch_config, batch_key_tracker,
                                           full_refresh, change_tracking_info)
         self.logger.debug(f"Starting read of SQL Statement: \n{sql}")
         data_frame = pandas.read_sql_query(sql, self.database_engine)
@@ -102,17 +102,17 @@ class MsSqlDataSource(object):
 
         return data_frame
 
-    def init_change_tracking(self, table_configuration, last_sync_version):
+    def init_change_tracking(self, table_config, last_sync_version):
 
         init_change_tracking_sql = "IF NOT EXISTS(SELECT 1 FROM sys.change_tracking_tables " \
-            f"WHERE object_id = OBJECT_ID('{table_configuration['schema']}.{table_configuration['name']}'))\n" \
+            f"WHERE object_id = OBJECT_ID('{table_config['schema']}.{table_config['name']}'))\n" \
             "BEGIN\n" \
-            f"ALTER TABLE {table_configuration['schema']}.{table_configuration['name']} " \
+            f"ALTER TABLE {table_config['schema']}.{table_config['name']} " \
             f"ENABLE CHANGE_TRACKING WITH(TRACK_COLUMNS_UPDATED=OFF);\n" \
             "END\n"
 
         self.logger.debug(f"Initializing ChangeTracking for "
-                          f"{table_configuration['schema']}.{table_configuration['name']}:\n"
+                          f"{table_config['schema']}.{table_config['name']}:\n"
                           f"{init_change_tracking_sql}")
         self.database_engine.execute(text(init_change_tracking_sql).execution_options(autocommit=True))
 
@@ -140,11 +140,11 @@ class MsSqlDataSource(object):
         # CHANGE_TRACKING_MIN_VALID_VERSION is the minimum tracking number that we can use to update our db from
         # e.g. if a bunch of changes happen to the db, the tracking number will increase, at some point
         # our record of the db may become so far out of sync that we are unable to salvage our db
-        # in that case @last_sync_version < CHANGE_TRACKING_MIN_VALID_VERSION
+        # in that case @last_sync_version < CHANGE_TRACKING_MIN_VALID_VERSION and we need to do a full load
         # therefore if @last_sync_version >= CHANGE_TRACKING_MIN_VALID_VERSION, we do not need to do a full load
-        get_change_tracking_info_sql.write(
-            f"IF @last_sync_version >= CHANGE_TRACKING_MIN_VALID_VERSION("
-            f"OBJECT_ID('{table_configuration['schema']}.{table_configuration['name']}'))\n")
+        get_change_tracking_info_sql.write(f"DECLARE @min_valid_version bigint = CHANGE_TRACKING_MIN_VALID_VERSION("
+                                           f"OBJECT_ID('{table_config['schema']}.{table_config['name']}')); \n")
+        get_change_tracking_info_sql.write(f"IF @last_sync_version >= @min_valid_version\n")
         get_change_tracking_info_sql.write("BEGIN\n")
         get_change_tracking_info_sql.write("     SET @force_full_load = 0; \n")
         get_change_tracking_info_sql.write("     SET @this_sync_version = @last_sync_version; \n")
@@ -154,7 +154,7 @@ class MsSqlDataSource(object):
                                            "@this_sync_version as this_sync_version; \n")
 
         self.logger.debug("Getting ChangeTracking info for "
-                          f"{table_configuration['schema']}.{table_configuration['name']}.\n"
+                          f"{table_config['schema']}.{table_config['name']}.\n"
                           f"{get_change_tracking_info_sql.getvalue()}")
 
         result = self.database_engine.execute(get_change_tracking_info_sql.getvalue())
