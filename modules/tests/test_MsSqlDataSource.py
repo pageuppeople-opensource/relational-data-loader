@@ -23,7 +23,7 @@ CONFIG_FILES = ["SimpleTableTest.json"]
 
 
 class TestMsSqlDataSource(unittest.TestCase):
-    MSSQL_DATA_SOURCE = None
+    data_source = None
     table_configs = []
 
     @classmethod
@@ -46,7 +46,7 @@ class TestMsSqlDataSource(unittest.TestCase):
                                          connect_args={'autocommit': True})
                 temp_eng.execute(set_up_db_string.format(db=TEST_DB))
 
-        TestMsSqlDataSource.MSSQL_DATA_SOURCE = MsSqlDataSource(gen_connection_string.format(db=TEST_DB))
+        TestMsSqlDataSource.data_source = MsSqlDataSource(gen_connection_string.format(db=TEST_DB))
 
     @classmethod
     def tearDownClass(cls):
@@ -56,8 +56,8 @@ class TestMsSqlDataSource(unittest.TestCase):
                 DROP DATABASE [{db}];
         """.format(db=TEST_DB)
 
-        TestMsSqlDataSource.MSSQL_DATA_SOURCE.database_engine.execute(text(TEAR_DOWN_STRING))
-        TestMsSqlDataSource.MSSQL_DATA_SOURCE = None
+        TestMsSqlDataSource.data_source.database_engine.execute(text(TEAR_DOWN_STRING))
+        TestMsSqlDataSource.data_source = None
 
     def test_init_change_tracking(self):
 
@@ -65,34 +65,37 @@ class TestMsSqlDataSource(unittest.TestCase):
         for table in TestMsSqlDataSource.table_configs:
             print("TESTING ON TABLE: " + table["source_table"]["name"])
             print("FIRST TEST: INITIALISE TABLE")
-            results = TestMsSqlDataSource.MSSQL_DATA_SOURCE.init_change_tracking(
+            results = TestMsSqlDataSource.data_source.init_change_tracking(
                 table["source_table"], last_sync_version)
             self.assertEqual(results.force_full_load, True)
-            last_sync_version = results.next_sync_version
 
             print("SECOND TEST: NO CHANGES")
-            results = TestMsSqlDataSource.MSSQL_DATA_SOURCE.init_change_tracking(
+            last_sync_version = results.next_sync_version
+            results = TestMsSqlDataSource.data_source.init_change_tracking(
                 table["source_table"], last_sync_version)
             self.assertEqual(results.force_full_load, False)
-            last_sync_version = results.next_sync_version
 
             print("OPERATION TESTS")
+            last_sync_version = results.next_sync_version
+            results = None
             for operation_string in table["operation_strings"]:
-                TestMsSqlDataSource.MSSQL_DATA_SOURCE.database_engine.execute(
+                TestMsSqlDataSource.data_source.database_engine.execute(
                     text(operation_string).execution_options(autocommit=True))
 
-                results = TestMsSqlDataSource.MSSQL_DATA_SOURCE.init_change_tracking(
+                results = TestMsSqlDataSource.data_source.init_change_tracking(
                     table["source_table"], last_sync_version)
                 self.assertEqual(results.force_full_load, False, msg="Failed on: " + operation_string)
                 last_sync_version = results.next_sync_version
 
             print("EXTRA TEST: NO CHANGES")
-            results = TestMsSqlDataSource.MSSQL_DATA_SOURCE.init_change_tracking(
+            last_sync_version = results.next_sync_version
+            results = TestMsSqlDataSource.data_source.init_change_tracking(
                 table["source_table"], last_sync_version)
             self.assertEqual(results.force_full_load, False)
 
             print("EXTRA TEST: LOST TRACK")
-            results = TestMsSqlDataSource.MSSQL_DATA_SOURCE.init_change_tracking(table["source_table"], -1)
+            last_sync_version = -1
+            results = TestMsSqlDataSource.data_source.init_change_tracking(table["source_table"], last_sync_version)
             self.assertEqual(results.force_full_load, True)
 
     def test_can_handle_connection_string(self):
