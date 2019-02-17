@@ -51,21 +51,18 @@ class MsSqlDataSource(object):
                 f"ORDER BY {order_by};"
         else:
             order_by = f", {MsSqlDataSource.CHANGE_TABLE_ALIAS}.".join(table_config['primary_keys'])
-
-            sql_builder = io.StringIO()
-            sql_builder.write(f"SELECT TOP ({batch_config['size']}) {column_names}, ")
-            sql_builder.write(f"{MsSqlDataSource.CHANGE_TABLE_ALIAS}.SYS_CHANGE_VERSION as data_pipeline_change_version, "
-                              f"CASE {MsSqlDataSource.CHANGE_TABLE_ALIAS}.SYS_CHANGE_OPERATION WHEN 'D' THEN 1 ELSE 0 END as data_pipeline_is_deleted \n")
-            sql_builder.write(f" FROM CHANGETABLE(CHANGES"
-                              f" {table_config['schema']}.{table_config['name']},"
-                              f" {change_tracking_info.this_sync_version})"
-                              f" AS {MsSqlDataSource.CHANGE_TABLE_ALIAS}")
-            sql_builder.write(f" LEFT JOIN {table_config['schema']}.{table_config['name']} AS {MsSqlDataSource.SOURCE_TABLE_ALIAS}"
-                              f" ON {self.build_change_table_on_clause(batch_key_tracker)}")
-            sql_builder.write(f" WHERE {self.build_where_clause(batch_key_tracker, MsSqlDataSource.CHANGE_TABLE_ALIAS)}")
-            sql_builder.write(f" ORDER BY {order_by};")
-
-            return sql_builder.getvalue()
+            return f"SELECT TOP ({batch_config['size']}) {column_names}, " \
+                f"{MsSqlDataSource.CHANGE_TABLE_ALIAS}.SYS_CHANGE_VERSION AS data_pipeline_change_version, " \
+                f"CASE {MsSqlDataSource.CHANGE_TABLE_ALIAS}.SYS_CHANGE_OPERATION WHEN 'D' THEN 1 ELSE 0 " \
+                f"END AS data_pipeline_is_deleted \n" \
+                f" FROM CHANGETABLE(CHANGES" \
+                f" {table_config['schema']}.{table_config['name']}," \
+                f" {change_tracking_info.this_sync_version})" \
+                f" AS {MsSqlDataSource.CHANGE_TABLE_ALIAS}" \
+                f" LEFT JOIN {table_config['schema']}.{table_config['name']} AS {MsSqlDataSource.SOURCE_TABLE_ALIAS}" \
+                f" ON {self.build_change_table_on_clause(batch_key_tracker)}" \
+                f" WHERE {self.build_where_clause(batch_key_tracker, MsSqlDataSource.CHANGE_TABLE_ALIAS)}" \
+                f" ORDER BY {order_by};"
 
     # Returns an array of configured_columns containing only columns that this data source supports. Logs invalid ones.
     def assert_data_source_is_valid(self, table_config, configured_columns):
@@ -108,10 +105,10 @@ class MsSqlDataSource(object):
 
         init_change_tracking_sql = "IF NOT EXISTS(SELECT 1 FROM sys.change_tracking_tables " \
             f"WHERE object_id = OBJECT_ID('{table_config['schema']}.{table_config['name']}'))\n" \
-            "BEGIN\n" \
+                                   "BEGIN\n" \
             f"ALTER TABLE {table_config['schema']}.{table_config['name']} " \
             f"ENABLE CHANGE_TRACKING WITH(TRACK_COLUMNS_UPDATED=OFF);\n" \
-            "END\n"
+                                   "END\n"
 
         self.logger.debug(f"Initializing ChangeTracking for "
                           f"{table_config['schema']}.{table_config['name']}:\n"
