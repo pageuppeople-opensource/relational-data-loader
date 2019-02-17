@@ -20,6 +20,11 @@ class Constants:
         SKIPPED_AS_ZERO_ROWS = 'Skipped - Zero Rows'
         COMPLETED_SUCCESSFULLY = 'Completed Successfully'
 
+    class AuditColumnNames:
+        TIMESTAMP = "data_pipeline_timestamp"
+        IS_DELETED = "data_pipeline_is_deleted"
+        CHANGE_VERSION = "data_pipeline_change_version"
+
 
 class Utils:
     @staticmethod

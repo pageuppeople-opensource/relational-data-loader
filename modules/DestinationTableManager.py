@@ -6,13 +6,10 @@ from modules.ColumnTypeResolver import ColumnTypeResolver
 from sqlalchemy import MetaData, DateTime, Boolean, BigInteger
 from sqlalchemy.schema import Column, Table
 from sqlalchemy.sql import func
+from modules.Shared import Constants
 
 
 class DestinationTableManager(object):
-    TIMESTAMP_COLUMN_NAME = "data_pipeline_timestamp"
-    IS_DELETED_COLUMN_NAME = "data_pipeline_is_deleted"
-    CHANGE_VERSION_COLUMN_NAME = "data_pipeline_change_version"
-
     def __init__(self, target_db, logger=None):
         self.logger = logger or logging.getLogger(__name__)
         self.target_db = target_db
@@ -42,13 +39,13 @@ class DestinationTableManager(object):
             table.append_column(self.create_column(column_configuration['destination']))
 
         table.append_column(
-            Column(self.TIMESTAMP_COLUMN_NAME, DateTime(timezone=True), server_default=func.now()))
+            Column(Constants.AuditColumnNames.TIMESTAMP, DateTime(timezone=True), server_default=func.now()))
 
         table.append_column(
-            Column(self.IS_DELETED_COLUMN_NAME, Boolean, server_default='f', default=False))
+            Column(Constants.AuditColumnNames.IS_DELETED, Boolean, server_default='f', default=False))
 
         table.append_column(
-            Column(self.CHANGE_VERSION_COLUMN_NAME, BigInteger))
+            Column(Constants.AuditColumnNames.CHANGE_VERSION, BigInteger))
 
         if drop_first:
             self.logger.debug(f"Dropping table {schema_name}.{table_name}")
@@ -106,9 +103,9 @@ class DestinationTableManager(object):
     def upsert_table(self, schema_name, source_table_name, target_table_name, columns_configuration):
         column_array = list(map(lambda column: column['destination']['name'], columns_configuration))
         column_list = ','.join(map(str, column_array))
-        column_list = column_list + f",{self.TIMESTAMP_COLUMN_NAME}"
-        column_list = column_list + f",{self.IS_DELETED_COLUMN_NAME}"
-        column_list = column_list + f",{self.CHANGE_VERSION_COLUMN_NAME}"
+        column_list = column_list + f",{Constants.AuditColumnNames.TIMESTAMP}"
+        column_list = column_list + f",{Constants.AuditColumnNames.IS_DELETED}"
+        column_list = column_list + f",{Constants.AuditColumnNames.CHANGE_VERSION}"
 
         primary_key_column_array = [column_configuration['destination']['name'] for column_configuration in
                                     columns_configuration if 'primary_key' in column_configuration['destination'] and

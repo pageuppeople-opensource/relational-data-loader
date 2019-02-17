@@ -7,6 +7,7 @@ from sqlalchemy.schema import Table
 from modules.ColumnTypeResolver import ColumnTypeResolver
 from modules.data_sources.ChangeTrackingInfo import ChangeTrackingInfo
 from sqlalchemy.sql import text
+from modules.Shared import Constants
 
 
 class MsSqlDataSource(object):
@@ -44,25 +45,25 @@ class MsSqlDataSource(object):
         column_names = ", ".join(column_array)
 
         if full_refresh:
-            select_sql = f"SELECT TOP ({batch_config['size']}) {column_names} "
-            from_sql = f"FROM {table_config['schema']}.{table_config['name']} AS {MsSqlDataSource.SOURCE_TABLE_ALIAS} "
-            where_sql = f"WHERE {self.build_where_clause(batch_key_tracker, MsSqlDataSource.SOURCE_TABLE_ALIAS)} "
+            select_sql = f"SELECT TOP ({batch_config['size']}) {column_names}"
+            from_sql = f"FROM {table_config['schema']}.{table_config['name']} AS {MsSqlDataSource.SOURCE_TABLE_ALIAS}"
+            where_sql = f"WHERE {self.build_where_clause(batch_key_tracker, MsSqlDataSource.SOURCE_TABLE_ALIAS)}"
             order_by_sql = "ORDER BY " + f", {MsSqlDataSource.SOURCE_TABLE_ALIAS}.".join(table_config['primary_keys'])
         else:
             select_sql = f"SELECT TOP ({batch_config['size']}) {column_names}, " \
-                f"{MsSqlDataSource.CHANGE_TABLE_ALIAS}.SYS_CHANGE_VERSION AS data_pipeline_change_version, " \
+                f"{MsSqlDataSource.CHANGE_TABLE_ALIAS}.SYS_CHANGE_VERSION AS {Constants.AuditColumnNames.CHANGE_VERSION}, " \
                 f"CASE {MsSqlDataSource.CHANGE_TABLE_ALIAS}.SYS_CHANGE_OPERATION WHEN 'D' THEN 1 ELSE 0 " \
-                f"END AS data_pipeline_is_deleted \n"
-            from_sql = f" FROM CHANGETABLE(CHANGES" \
+                f"END AS {Constants.AuditColumnNames.IS_DELETED}"
+            from_sql = f"FROM CHANGETABLE(CHANGES" \
                 f" {table_config['schema']}.{table_config['name']}," \
                 f" {change_tracking_info.this_sync_version})" \
                 f" AS {MsSqlDataSource.CHANGE_TABLE_ALIAS}" \
                 f" LEFT JOIN {table_config['schema']}.{table_config['name']} AS {MsSqlDataSource.SOURCE_TABLE_ALIAS}" \
                 f" ON {self.build_change_table_on_clause(batch_key_tracker)}"
-            where_sql = f" WHERE {self.build_where_clause(batch_key_tracker, MsSqlDataSource.CHANGE_TABLE_ALIAS)}"
+            where_sql = f"WHERE {self.build_where_clause(batch_key_tracker, MsSqlDataSource.CHANGE_TABLE_ALIAS)}"
             order_by_sql = "ORDER BY " + f", {MsSqlDataSource.CHANGE_TABLE_ALIAS}.".join(table_config['primary_keys'])
 
-        return f"{select_sql} {from_sql} {where_sql} {order_by_sql};"
+        return f"{select_sql} \n {from_sql} \n {where_sql} \n {order_by_sql};"
 
     # Returns an array of configured_columns containing only columns that this data source supports. Logs invalid ones.
     def assert_data_source_is_valid(self, table_config, configured_columns):
