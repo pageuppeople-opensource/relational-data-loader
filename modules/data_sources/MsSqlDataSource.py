@@ -10,6 +10,8 @@ from sqlalchemy.sql import text
 
 
 class MsSqlDataSource(object):
+    SOURCE_TABLE_ALIAS = 'src'
+    CHANGE_TABLE_ALIAS = 'chg'
 
     def __init__(self, connection_string, logger=None):
         self.logger = logger or logging.getLogger(__name__)
@@ -30,9 +32,9 @@ class MsSqlDataSource(object):
         if not isinstance(primary_key_column_names, (list, tuple)):
             raise TypeError(f"Argument 'primary_key_column_names' must be a list or tuple")
         if column_name in primary_key_column_names and not full_refresh:
-            return f"chg.{column_name}"
+            return f"{MsSqlDataSource.CHANGE_TABLE_ALIAS}.{column_name}"
         else:
-            return f"t.{column_name}"
+            return f"{MsSqlDataSource.SOURCE_TABLE_ALIAS}.{column_name}"
 
     def build_select_statement(self, table_config, columns, batch_config, batch_key_tracker, full_refresh,
                                change_tracking_info):
@@ -42,25 +44,25 @@ class MsSqlDataSource(object):
         column_names = ", ".join(column_array)
 
         if full_refresh:
-            order_by = ", t.".join(table_config['primary_keys'])
+            order_by = f", {MsSqlDataSource.SOURCE_TABLE_ALIAS}.".join(table_config['primary_keys'])
             return f"SELECT TOP ({batch_config['size']}) {column_names} " \
-                f"FROM {table_config['schema']}.{table_config['name']} t " \
-                f"WHERE {self.build_where_clause(batch_key_tracker, 't')} " \
+                f"FROM {table_config['schema']}.{table_config['name']} AS {MsSqlDataSource.SOURCE_TABLE_ALIAS} " \
+                f"WHERE {self.build_where_clause(batch_key_tracker, MsSqlDataSource.SOURCE_TABLE_ALIAS)} " \
                 f"ORDER BY {order_by};"
         else:
-            order_by = ", chg.".join(table_config['primary_keys'])
+            order_by = f", {MsSqlDataSource.CHANGE_TABLE_ALIAS}.".join(table_config['primary_keys'])
 
             sql_builder = io.StringIO()
             sql_builder.write(f"SELECT TOP ({batch_config['size']}) {column_names}, ")
-            sql_builder.write("chg.SYS_CHANGE_VERSION as data_pipeline_change_version, "
-                              "CASE chg.SYS_CHANGE_OPERATION WHEN 'D' THEN 1 ELSE 0 END as data_pipeline_is_deleted \n")
+            sql_builder.write(f"{MsSqlDataSource.CHANGE_TABLE_ALIAS}.SYS_CHANGE_VERSION as data_pipeline_change_version, "
+                              f"CASE {MsSqlDataSource.CHANGE_TABLE_ALIAS}.SYS_CHANGE_OPERATION WHEN 'D' THEN 1 ELSE 0 END as data_pipeline_is_deleted \n")
             sql_builder.write(f" FROM CHANGETABLE(CHANGES"
                               f" {table_config['schema']}.{table_config['name']},"
                               f" {change_tracking_info.this_sync_version})"
-                              f" AS chg")
-            sql_builder.write(f" LEFT JOIN {table_config['schema']}.{table_config['name']} t"
-                              f" on {self.build_change_table_on_clause(batch_key_tracker)}")
-            sql_builder.write(f" WHERE {self.build_where_clause(batch_key_tracker, 'chg')}")
+                              f" AS {MsSqlDataSource.CHANGE_TABLE_ALIAS}")
+            sql_builder.write(f" LEFT JOIN {table_config['schema']}.{table_config['name']} AS {MsSqlDataSource.SOURCE_TABLE_ALIAS}"
+                              f" ON {self.build_change_table_on_clause(batch_key_tracker)}")
+            sql_builder.write(f" WHERE {self.build_where_clause(batch_key_tracker, MsSqlDataSource.CHANGE_TABLE_ALIAS)}")
             sql_builder.write(f" ORDER BY {order_by};")
 
             return sql_builder.getvalue()
@@ -191,7 +193,8 @@ class MsSqlDataSource(object):
                 if has_value:
                     sql_builder.write(" AND ")
 
-                sql_builder.write(f" chg.{primary_key} = t.{primary_key}")
+                sql_builder.write(f" {MsSqlDataSource.CHANGE_TABLE_ALIAS}.{primary_key} ="
+                                  f" {MsSqlDataSource.SOURCE_TABLE_ALIAS}.{primary_key}")
                 has_value = True
 
             return sql_builder.getvalue()

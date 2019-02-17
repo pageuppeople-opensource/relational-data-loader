@@ -103,10 +103,14 @@ class TestMsSqlDataSource(unittest.TestCase):
         col = "foo"
         col_fail = "BAR"
         p_key_cols = ["foo", "bar"]
-        self.assertEqual("chg." + col, MsSqlDataSource.prefix_column(col, False, p_key_cols))
-        self.assertEqual("t." + col_fail, MsSqlDataSource.prefix_column(col_fail, False, p_key_cols))
-        self.assertEqual("t." + col, MsSqlDataSource.prefix_column(col, True, p_key_cols))
-        self.assertEqual("t." + col_fail, MsSqlDataSource.prefix_column(col_fail, True, p_key_cols))
+        self.assertEqual(f"{MsSqlDataSource.CHANGE_TABLE_ALIAS}.{col}",
+                         MsSqlDataSource.prefix_column(col, False, p_key_cols))
+        self.assertEqual(f"{MsSqlDataSource.SOURCE_TABLE_ALIAS}.{col_fail}",
+                         MsSqlDataSource.prefix_column(col_fail, False, p_key_cols))
+        self.assertEqual(f"{MsSqlDataSource.SOURCE_TABLE_ALIAS}.{col}",
+                         MsSqlDataSource.prefix_column(col, True, p_key_cols))
+        self.assertEqual(f"{MsSqlDataSource.SOURCE_TABLE_ALIAS}.{col_fail}",
+                         MsSqlDataSource.prefix_column(col_fail, True, p_key_cols))
         self.assertRaises(TypeError, MsSqlDataSource.prefix_column, (col, True, "some string"))
 
 
