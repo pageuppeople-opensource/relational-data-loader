@@ -124,11 +124,11 @@ class DestinationTableManager(object):
             sql_builder.write("{0} = EXCLUDED.{0},".format(column_configuration['destination']['name']))
             sql_builder.write(os.linesep)
 
-        sql_builder.write("{0} = EXCLUDED.{0},".format(self.TIMESTAMP_COLUMN_NAME))
+        sql_builder.write("{0} = EXCLUDED.{0},".format(Constants.AuditColumnNames.TIMESTAMP))
         sql_builder.write(os.linesep)
-        sql_builder.write("{0} = EXCLUDED.{0},".format(self.IS_DELETED_COLUMN_NAME))
+        sql_builder.write("{0} = EXCLUDED.{0},".format(Constants.AuditColumnNames.IS_DELETED))
         sql_builder.write(os.linesep)
-        sql_builder.write("{0} = EXCLUDED.{0}".format(self.CHANGE_VERSION_COLUMN_NAME))
+        sql_builder.write("{0} = EXCLUDED.{0}".format(Constants.AuditColumnNames.CHANGE_VERSION))
         sql_builder.write(os.linesep)
 
         self.logger.debug(f"UPSERT executing '{sql_builder.getvalue()}'")
