@@ -117,7 +117,7 @@ class MsSqlDataSource(object):
         self.database_engine.execute(text(init_change_tracking_sql).execution_options(autocommit=True))
 
         # in the following we check if we have lost tracking of the table.
-        #
+        # TODO TODO PleaseDo
 
         # sync_version: the current version of change tracking at source database.
         # it's value IS sourced from CHANGE_TRACKING_CURRENT_VERSION()
