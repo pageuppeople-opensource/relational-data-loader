@@ -1,0 +1,4 @@
+# Automatically add oscars to all pull requests
+# For reference: https://github.blog/2017-07-06-introducing-code-owners/
+
+* @PageUpPeopleOrg/oscars
