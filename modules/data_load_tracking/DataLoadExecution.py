@@ -14,7 +14,7 @@ class DataLoadExecution(Base):
     correlation_id = Column(UUID(as_uuid=True), nullable=True)
     model_name = Column(String(250), nullable=False)
     status = Column(String(25), nullable=False)
-    this_sync_version = Column(BigInteger, nullable=False)
+    last_sync_version = Column(BigInteger, nullable=False)
     next_sync_version = Column(BigInteger, nullable=False)
     is_full_refresh = Column(Boolean, nullable=False)
     full_refresh_reason = Column(String(100), nullable=False)

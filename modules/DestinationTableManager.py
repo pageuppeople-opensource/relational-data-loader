@@ -114,22 +114,16 @@ class DestinationTableManager(object):
         primary_key_column_list = ','.join(map(str, primary_key_column_array))
 
         sql_builder = io.StringIO()
-        sql_builder.write(f"INSERT INTO {schema_name}.{target_table_name} ({column_list})")
-        sql_builder.write(os.linesep)
-        sql_builder.write(f" SELECT {column_list} FROM {schema_name}.{source_table_name}")
-        sql_builder.write(os.linesep)
+        sql_builder.write(f"INSERT INTO {schema_name}.{target_table_name} ({column_list}) \n")
+        sql_builder.write(f" SELECT {column_list} FROM {schema_name}.{source_table_name} \n")
         sql_builder.write(f" ON CONFLICT({primary_key_column_list}) DO UPDATE SET ")
 
         for column_configuration in columns_configuration:
-            sql_builder.write("{0} = EXCLUDED.{0},".format(column_configuration['destination']['name']))
-            sql_builder.write(os.linesep)
+            sql_builder.write("{0} = EXCLUDED.{0},\n".format(column_configuration['destination']['name']))
 
-        sql_builder.write("{0} = EXCLUDED.{0},".format(Constants.AuditColumnNames.TIMESTAMP))
-        sql_builder.write(os.linesep)
-        sql_builder.write("{0} = EXCLUDED.{0},".format(Constants.AuditColumnNames.IS_DELETED))
-        sql_builder.write(os.linesep)
-        sql_builder.write("{0} = EXCLUDED.{0}".format(Constants.AuditColumnNames.CHANGE_VERSION))
-        sql_builder.write(os.linesep)
+        sql_builder.write("{0} = EXCLUDED.{0},\n".format(Constants.AuditColumnNames.TIMESTAMP))
+        sql_builder.write("{0} = EXCLUDED.{0},\n".format(Constants.AuditColumnNames.IS_DELETED))
+        sql_builder.write("{0} = EXCLUDED.{0}\n".format(Constants.AuditColumnNames.CHANGE_VERSION))
 
         self.logger.debug(f"UPSERT executing '{sql_builder.getvalue()}'")
         self.target_db.execute(sql_builder.getvalue())

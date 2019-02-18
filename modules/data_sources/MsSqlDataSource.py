@@ -102,7 +102,7 @@ class MsSqlDataSource(object):
 
         return data_frame
 
-    def init_change_tracking(self, table_config, last_sync_version):
+    def init_change_tracking(self, table_config, last_known_sync_version):
 
         init_change_tracking_sql = "IF NOT EXISTS(SELECT 1 FROM sys.change_tracking_tables " \
             f"WHERE object_id = OBJECT_ID('{table_config['schema']}.{table_config['name']}'))\n" \
@@ -116,52 +116,60 @@ class MsSqlDataSource(object):
                           f"{init_change_tracking_sql}")
         self.database_engine.execute(text(init_change_tracking_sql).execution_options(autocommit=True))
 
-        # in the following we check if we have lost tracking of the table
-        get_change_tracking_info_sql = io.StringIO()
+        # in the following we check if we have lost tracking of the table.
+        #
 
-        # last-sync-version i.e. the tracking number of the last time we ran rdl
-        # it's value was sourced from CHANGE_TRACKING_CURRENT_VERSION()
-        get_change_tracking_info_sql.write(f"DECLARE @last_sync_version bigint = {last_sync_version}; \n")
+        # sync_version: the current version of change tracking at source database.
+        # it's value IS sourced from CHANGE_TRACKING_CURRENT_VERSION()
+        # and it's value also becomes the last_known_sync_version for the next iteration.
 
-        # If we need to do a full load, this will be changed to @next_sync_version after a full load
-        # If we don't need to do a full load, this is changed in this query to @last_sync_version and later updated
-        # to @next_sync_version after an incremental load
-        # also, by default, assume we have lost tracking of the table
-        get_change_tracking_info_sql.write("DECLARE @this_sync_version bigint = 0; \n")
+        # last_known_sync_version: the tracking number of the last time we ran rdl, if we did.
+        # it's value WAS sourced from CHANGE_TRACKING_CURRENT_VERSION()
 
-        # by default, assume we have lost tracking of the table
-        get_change_tracking_info_sql.write("DECLARE @force_full_load bit = 1; \n")
+        # min_valid_version: the minimum version that is valid for use in obtaining change tracking information from
+        # the specified table. it's value sourced from CHANGE_TRACKING_MIN_VALID_VERSION(OBJECT_ID(..))
+
+        get_change_tracking_info_sql = f"" \
+            f"DECLARE @sync_version                     BIGINT  = CHANGE_TRACKING_CURRENT_VERSION(); \n" \
+            f"DECLARE @min_valid_version                BIGINT  =" \
+            f" CHANGE_TRACKING_MIN_VALID_VERSION(OBJECT_ID('{table_config['schema']}.{table_config['name']}')); \n" \
+            f"DECLARE @last_known_sync_version          BIGINT  = {last_known_sync_version}; \n" \
+            f"DECLARE @last_known_sync_version_is_valid BIT     = @last_known_sync_version >= @min_valid_version; \n" \
+            f"DECLARE @last_sync_version                BIGINT; \n" \
+            f"DECLARE @force_full_load                  BIT; \n" \
+            f" \n" \
+            f"IF @last_known_sync_version_is_valid \n" \
+            f"BEGIN \n" \
+            f"    SET @force_full_load   = 0; \n" \
+            f"    SET @last_sync_version = @last_known_sync_version; \n" \
+            f"END \n" \
+            f"ELSE \n" \
+            f"BEGIN \n" \
+            f"    SET @force_full_load   = 1; " \
+            f"    SET @last_sync_version = 0; \n" \
+            f"END \n" \
+            f" \n" \
+            f"SELECT @sync_version AS sync_version \n" \
+            f", @last_sync_version AS last_sync_version \n" \
+            f", @force_full_load   AS force_full_load; \n"
 
         # CHANGE_TRACKING_CURRENT_VERSION gets the tracking number of the database
         # each time mssql tracks a change in the db (in any table), the number is incremented by one
         # next_sync_version - last_sync_version = number of mssql tracked db changes since rdl was run
-        get_change_tracking_info_sql.write("DECLARE @next_sync_version bigint = CHANGE_TRACKING_CURRENT_VERSION(); \n")
 
         # CHANGE_TRACKING_MIN_VALID_VERSION is the minimum tracking number that we can use to update our db from
         # e.g. if a bunch of changes happen to the db, the tracking number will increase, at some point
         # our record of the db may become so far out of sync that we are unable to salvage our db
         # in that case @last_sync_version < CHANGE_TRACKING_MIN_VALID_VERSION and we need to do a full load
         # therefore if @last_sync_version >= CHANGE_TRACKING_MIN_VALID_VERSION, we do not need to do a full load
-        get_change_tracking_info_sql.write(f"DECLARE @min_valid_version bigint = CHANGE_TRACKING_MIN_VALID_VERSION("
-                                           f"OBJECT_ID('{table_config['schema']}.{table_config['name']}')); \n")
-        get_change_tracking_info_sql.write(f"IF @last_sync_version >= @min_valid_version\n")
-        get_change_tracking_info_sql.write("BEGIN\n")
-        get_change_tracking_info_sql.write("     SET @force_full_load = 0; \n")
-        get_change_tracking_info_sql.write("     SET @this_sync_version = @last_sync_version; \n")
-        get_change_tracking_info_sql.write("END\n")
-        get_change_tracking_info_sql.write("SELECT @next_sync_version as next_sync_version,"
-                                           "@force_full_load as force_full_load,"
-                                           "@this_sync_version as this_sync_version; \n")
 
-        self.logger.debug("Getting ChangeTracking info for "
-                          f"{table_config['schema']}.{table_config['name']}.\n"
-                          f"{get_change_tracking_info_sql.getvalue()}")
+        self.logger.debug(f"Getting ChangeTracking info for {table_config['schema']}.{table_config['name']}.\n"
+                          f"{get_change_tracking_info_sql}")
 
-        result = self.database_engine.execute(get_change_tracking_info_sql.getvalue())
+        result = self.database_engine.execute(text(get_change_tracking_info_sql))
         row = result.fetchone()
-        get_change_tracking_info_sql.close()
 
-        return ChangeTrackingInfo(row["this_sync_version"], row["next_sync_version"], row["force_full_load"])
+        return ChangeTrackingInfo(row["last_sync_version"], row["sync_version"], row["force_full_load"])
 
     @staticmethod
     def build_where_clause(batch_key_tracker, table_alias):

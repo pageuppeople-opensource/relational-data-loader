@@ -25,7 +25,7 @@ class DataLoadTrackerRepository(object):
             correlation_id=data_load_tracker.correlation_id,
             model_name=data_load_tracker.model_name,
             status=data_load_tracker.status,
-            this_sync_version=data_load_tracker.change_tracking_info.this_sync_version,
+            last_sync_version=data_load_tracker.change_tracking_info.this_sync_version,
             next_sync_version=data_load_tracker.change_tracking_info.next_sync_version,
             is_full_refresh=data_load_tracker.is_full_refresh,
             full_refresh_reason=data_load_tracker.full_refresh_reason,
