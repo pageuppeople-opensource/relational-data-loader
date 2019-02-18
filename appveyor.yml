@@ -7,6 +7,7 @@ environment:
   PGPORT: 5432
   PGHOST: "localhost"
   DBNAME: relational_data_loader_integration_tests
+  MSSQLSTR: "{'username': '','password': '','server_string': '(local)\\SQL2016'}"
   matrix:
     - PYTHON: "C:\\Python37-x64" #This needs to be a double slash
       PYTHON_VERSION: "3.7.x"
@@ -24,7 +25,6 @@ init:
   #- ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
 
 install:
-
   #Setup Python
   - SET PATH=%PYTHON%;%PYTHON%\Scripts;%PATH% #Swap path to python to latest version (as per matrix above)
   - python --version
@@ -44,14 +44,26 @@ build_script:
   #Install the dependencies for rdl.
   - pip install -r requirements.txt
 
-
 test_script:
+  # unit tests
+  - test_run_unit_tests.cmd
+
+  # integration tests
   - test_full_refresh_from_csv.cmd
   - test_full_refresh_from_mssql.cmd
   - test_incremental_refresh_from_csv.cmd
   - test_incremental_refresh_from_mssql.cmd
+
   - test_full_refresh_from_mssql.cmd
   - test_incremental_refresh_from_mssql.cmd
+
+  - sqlcmd -b -E -f 65001 -S "(local)\SQL2016" -d RelationalDataLoaderIntegrationTestSource -i .\integration_tests\mssql_source\source_database_setup\change_compound_pk.sql
+
+  - test_incremental_refresh_from_mssql.cmd
+
+  - sqlcmd -b -E -f 65001 -S "(local)\SQL2016" -d RelationalDataLoaderIntegrationTestSource -i .\integration_tests\mssql_source\source_database_setup\change_large_table.sql
+
+  - test_full_refresh_from_mssql.cmd
 
 on_finish:
   #Enable this line to make the build pause after completion for RDP troubleshooting.

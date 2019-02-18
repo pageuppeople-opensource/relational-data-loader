@@ -1,4 +1,3 @@
-import os
 import json
 import uuid
 import logging
@@ -9,19 +8,21 @@ from modules.BatchDataLoader import BatchDataLoader
 from modules.DestinationTableManager import DestinationTableManager
 from modules.data_load_tracking.DataLoadTracker import DataLoadTracker
 from modules.BatchKeyTracker import BatchKeyTracker
+from modules.Shared import Constants
 
 
 class DataLoadManager(object):
-    def __init__(self, configuration_path, data_source, data_load_tracker_repository, logger=None):
+    def __init__(self, configuration_path, source_db, target_db, data_load_tracker_repository, logger=None):
         self.logger = logger or logging.getLogger(__name__)
         self.configuration_path = configuration_path
-        self.data_source = data_source
+        self.source_db = source_db
+        self.target_db = target_db
         self.data_load_tracker_repository = data_load_tracker_repository
         self.correlation_id = uuid.uuid4()
         self.model_pattern = '**/{model_name}.json'
         self.all_model_pattern = self.model_pattern.format(model_name='*')
 
-    def start_imports(self, target_engine, force_full_refresh_models):
+    def start_imports(self, force_full_refresh_models):
         model_folder = Path(self.configuration_path)
         if not model_folder.is_dir():
             raise NotADirectoryError(self.configuration_path)
@@ -42,118 +43,132 @@ class DataLoadManager(object):
                     raise FileNotFoundError(f"'{named_model_pattern}' does not exist in '{self.configuration_path}'")
                 if len(model_file_objs) > 1:
                     raise KeyError(f"Multiple models with name '{model_name}' exist in '{self.configuration_path}'")
-                all_model_files[model_file.stem] = (model_file_objs[0], True)
+                model_file = model_file_objs[0]
+                all_model_files[model_file.stem] = (model_file, True)
 
         for (model_file, request_full_refresh) in all_model_files.values():
-            self.start_single_import(target_engine, model_file, request_full_refresh)
+            self.start_single_import(model_file, request_full_refresh)
 
         self.logger.info("Execution completed.")
 
-    def start_single_import(self, target_engine, model_file, requested_full_refresh):
+    def start_single_import(self, model_file, requested_full_refresh):
         model_name = model_file.stem
-        self.logger.debug(f"Using configuration file : {model_name}")
+        self.logger.debug(f"Model name: {model_name}")
 
-        config_file = str(model_file.absolute().resolve())
-        self.logger.debug(f"Using configuration file : {config_file}")
+        self.logger.info(f"Processing model: {model_name}, requested_full_refresh: {requested_full_refresh}")
+
+        model_file_full_path = str(model_file.absolute().resolve())
+        self.logger.debug(f"Model file: {model_file_full_path}")
 
         try:
-            self.logger.info(f"Loading configuration file: '{model_name}'")
-            with open(config_file) as json_file:
-                model_checksum = hashlib.md5(json_file.read().encode('utf-8')).hexdigest()
-                json_file.seek(0)
-                pipeline_configuration = json.load(json_file)
-                self.logger.info(f"Loaded configuration file: '{model_name}'")
+            self.logger.debug(f"Starting to read model: '{model_file_full_path}'")
+            with open(model_file_full_path) as model_file:
+                model_checksum = hashlib.md5(model_file.read().encode('utf-8')).hexdigest()
+                model_file.seek(0)
+                model_config = json.load(model_file)
+                self.logger.debug(f"Finished reading model file: '{model_file_full_path}'")
             pass
         except JSONDecodeError as exception:
-            self.logger.error(f"Loading configuration file failed with message: '{str(exception)}'")
+            self.logger.error(f"Failed to read model file '{model_file_full_path}' with error: '{str(exception)}'")
             raise exception
 
-        self.logger.info(f"Execute Starting for: {model_name} requested_full_refresh: {requested_full_refresh}")
+        self.source_db.assert_data_source_is_valid(model_config['source_table'], model_config['columns'])
 
-        destination_table_manager = DestinationTableManager(target_engine)
+        last_sync_version = 0
+        last_successful_data_load_execution = \
+            self.data_load_tracker_repository.get_last_successful_data_load_execution(model_name)
 
-        full_refresh_reason = "Command Line Argument" if requested_full_refresh else "N/A"
-        full_refresh = requested_full_refresh
-        if not requested_full_refresh and not destination_table_manager.table_exists(
-                pipeline_configuration['target_schema'],
-                pipeline_configuration['load_table']):
-            self.logger.warning(f"The load table {pipeline_configuration['target_schema']}. "
-                                f"{pipeline_configuration['load_table']} does not exist. Swapping to full-refresh mode")
-
-            full_refresh_reason = "Destination table does not exist"
-            full_refresh = True
-
-        self.data_source.assert_data_source_is_valid(pipeline_configuration['source_table'],
-                                                     pipeline_configuration['columns'])
-
-        last_successful_data_load_execution = self.data_load_tracker_repository.get_last_successful_data_load_execution(
-            model_name)
-
-        if last_successful_data_load_execution is None:
-            last_sync_version = 0
-            full_refresh_reason = "First Execution"
-            full_refresh = True
-        else:
-            self.logger.debug(
-                f"Previous Checksum {last_successful_data_load_execution.model_checksum}. "
-                f"Current Checksum {model_checksum}")
+        if last_successful_data_load_execution is not None:
             last_sync_version = last_successful_data_load_execution.next_sync_version
-            if not full_refresh and last_successful_data_load_execution.model_checksum != model_checksum:
-                self.logger.info("A model checksum change has forced this to be a full load")
-                full_refresh = True
-                full_refresh_reason = "Model Change"
 
-        change_tracking_info = self.data_source.init_change_tracking(pipeline_configuration['source_table'],
-                                                                     last_sync_version)
+        destination_table_manager = DestinationTableManager(self.target_db)
+        change_tracking_info = self.source_db.init_change_tracking(model_config['source_table'], last_sync_version)
 
-        if not full_refresh and change_tracking_info.force_full_load:
-            self.logger.info("Change tracking has forced this to be a full load")
-            full_refresh = True
-            full_refresh_reason = "Change Tracking Invalid"
+        last_successful_execution_exists = last_successful_data_load_execution is not None
+        model_changed = (not last_successful_execution_exists) or \
+                        (last_successful_data_load_execution.model_checksum != model_checksum)
 
-        data_load_tracker = DataLoadTracker(model_name, model_checksum, json_file, full_refresh, change_tracking_info,
-                                            self.correlation_id, full_refresh_reason)
+        full_refresh_reason, full_refresh = DataLoadManager.is_full_refresh(
+            user_requested=requested_full_refresh,
+            destination_table_exists=destination_table_manager.table_exists(
+                model_config['target_schema'],
+                model_config['load_table']),
+            last_successful_execution_exists=last_successful_execution_exists,
+            model_changed=model_changed,
+            change_tracking_requests_full_load=change_tracking_info.force_full_load
+        )
 
-        columns = pipeline_configuration['columns']
-        destination_table_manager.create_schema(pipeline_configuration['target_schema'])
+        if full_refresh:
+            self.logger.info(f"Performing full refresh for reason '{full_refresh_reason}'")
 
-        self.logger.debug(f"Recreating the staging table {pipeline_configuration['target_schema']}."
-                          f"{pipeline_configuration['stage_table']}")
-        destination_table_manager.create_table(pipeline_configuration['target_schema'],
-                                               pipeline_configuration['stage_table'],
-                                               columns, drop_first=True)
+        data_load_tracker = DataLoadTracker(self.correlation_id, model_name, model_checksum, model_config,
+                                            full_refresh, full_refresh_reason, change_tracking_info)
+
+        destination_table_manager.create_schema(model_config['target_schema'])
+
+        self.logger.debug(f"Recreating the staging table {model_config['target_schema']}."
+                          f"{model_config['stage_table']}")
+        destination_table_manager.create_table(model_config['target_schema'],
+                                               model_config['stage_table'],
+                                               model_config['columns'],
+                                               drop_first=True)
 
         # Import the data.
-        batch_data_loader = BatchDataLoader(self.data_source,
-                                            pipeline_configuration['source_table'],
-                                            pipeline_configuration['target_schema'],
-                                            pipeline_configuration['stage_table'],
-                                            columns,
+        batch_data_loader = BatchDataLoader(self.source_db,
+                                            model_config['source_table'],
+                                            model_config['target_schema'],
+                                            model_config['stage_table'],
+                                            model_config['columns'],
                                             data_load_tracker,
-                                            pipeline_configuration['batch'],
-                                            target_engine,
+                                            model_config['batch'],
+                                            self.target_db,
                                             full_refresh,
                                             change_tracking_info)
 
-        batch_key_tracker = BatchKeyTracker(pipeline_configuration['source_table']['primary_keys'])
+        batch_key_tracker = BatchKeyTracker(model_config['source_table']['primary_keys'])
         while batch_key_tracker.has_more_data:
             batch_data_loader.load_batch(batch_key_tracker)
 
         if full_refresh:
             # Rename the stage table to the load table.
             self.logger.debug("Full-load is set. Renaming the stage table to the load table.")
-            destination_table_manager.rename_table(pipeline_configuration['target_schema'],
-                                                   pipeline_configuration['stage_table'],
-                                                   pipeline_configuration['load_table'])
+            destination_table_manager.rename_table(model_config['target_schema'],
+                                                   model_config['stage_table'],
+                                                   model_config['load_table'])
         else:
-            self.logger.info("Incremental-load is set. Upserting from the stage table to the load table.")
-            destination_table_manager.upsert_table(pipeline_configuration['target_schema'],
-                                                   pipeline_configuration['stage_table'],
-                                                   pipeline_configuration['load_table'],
-                                                   pipeline_configuration['columns'])
+            self.logger.debug("Incremental-load is set. Upserting from the stage table to the load table.")
+            destination_table_manager.upsert_table(model_config['target_schema'],
+                                                   model_config['stage_table'],
+                                                   model_config['load_table'],
+                                                   model_config['columns'])
 
-            destination_table_manager.drop_table(pipeline_configuration['target_schema'],
-                                                 pipeline_configuration['stage_table'])
+            destination_table_manager.drop_table(model_config['target_schema'],
+                                                 model_config['stage_table'])
         data_load_tracker.completed_successfully()
         self.data_load_tracker_repository.save(data_load_tracker)
         self.logger.info(f"Import Complete for: {model_name}. {data_load_tracker.get_statistics()}")
+
+    @staticmethod
+    def is_full_refresh(*,
+                        user_requested,
+                        destination_table_exists,
+                        last_successful_execution_exists,
+                        model_changed,
+                        change_tracking_requests_full_load):
+
+        if user_requested:
+            return Constants.FullRefreshReason.USER_REQUESTED, True
+
+        if not destination_table_exists:
+            return Constants.FullRefreshReason.DESTINATION_TABLE_ABSENT, True
+
+        if not last_successful_execution_exists:
+            return Constants.FullRefreshReason.FIRST_EXECUTION, True
+
+        if last_successful_execution_exists and model_changed:
+            return Constants.FullRefreshReason.MODEL_CHANGED, True
+
+        if change_tracking_requests_full_load:
+            return Constants.FullRefreshReason.INVALID_CHANGE_TRACKING, True
+
+        return Constants.FullRefreshReason.NOT_APPLICABLE, False
