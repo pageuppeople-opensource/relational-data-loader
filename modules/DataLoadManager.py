@@ -8,7 +8,7 @@ from modules.BatchDataLoader import BatchDataLoader
 from modules.DestinationTableManager import DestinationTableManager
 from modules.data_load_tracking.DataLoadTracker import DataLoadTracker
 from modules.BatchKeyTracker import BatchKeyTracker
-from modules.Shared import Constants
+from modules.shared import Constants
 
 
 class DataLoadManager(object):

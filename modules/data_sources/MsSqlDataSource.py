@@ -7,7 +7,7 @@ from sqlalchemy.schema import Table
 from modules.ColumnTypeResolver import ColumnTypeResolver
 from modules.data_sources.ChangeTrackingInfo import ChangeTrackingInfo
 from sqlalchemy.sql import text
-from modules.Shared import Constants
+from modules.shared import Constants
 
 
 class MsSqlDataSource(object):

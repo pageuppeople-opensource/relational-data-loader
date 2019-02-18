@@ -1,6 +1,7 @@
 import logging
 from io import StringIO
 from modules.column_transformers.StringTransformers import ToUpper
+from modules.shared import Constants
 
 
 class BatchDataLoader(object):
@@ -76,8 +77,8 @@ class BatchDataLoader(object):
             if column['source_name'] == source_column_name:
                 return column['destination']['name']
 
-        # Internal columns - map them straight through
-        if source_column_name.startswith("data_pipeline_"):
+        # Audit columns - map them straight through
+        if source_column_name.startswith(Constants.AUDIT_COLUMN_PREFIX):
             return source_column_name
 
         message = f"A source column with name '{source_column_name}' was not found in the column configuration"

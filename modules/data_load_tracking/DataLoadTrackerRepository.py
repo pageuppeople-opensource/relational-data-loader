@@ -1,7 +1,7 @@
 import logging
 from sqlalchemy import desc
 from modules.data_load_tracking.DataLoadExecution import DataLoadExecution, Base
-from modules.Shared import Constants
+from modules.shared import Constants
 
 
 class DataLoadTrackerRepository(object):

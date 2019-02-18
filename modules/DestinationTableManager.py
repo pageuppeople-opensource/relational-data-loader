@@ -6,7 +6,7 @@ from modules.ColumnTypeResolver import ColumnTypeResolver
 from sqlalchemy import MetaData, DateTime, Boolean, BigInteger
 from sqlalchemy.schema import Column, Table
 from sqlalchemy.sql import func
-from modules.Shared import Constants
+from modules.shared import Constants
 
 
 class DestinationTableManager(object):
