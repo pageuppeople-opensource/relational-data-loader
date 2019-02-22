@@ -9,7 +9,7 @@ Base = declarative_base()
 
 class DataLoadExecution(Base):
     __tablename__ = 'data_load_execution'
-    __table_args__ = {'schema': '{Constants.DATA_PIPELINE_EXECUTION_SCHEMA_NAME}'}
+    __table_args__ = {'schema': f'{Constants.DATA_PIPELINE_EXECUTION_SCHEMA_NAME}'}
     id = Column(Integer, primary_key=True)
     correlation_id = Column(UUID(as_uuid=True), nullable=True)
     model_name = Column(String(250), nullable=False)
