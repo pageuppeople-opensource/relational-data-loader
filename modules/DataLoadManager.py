@@ -79,7 +79,7 @@ class DataLoadManager(object):
             self.data_load_tracker_repository.get_last_successful_data_load_execution(model_name)
 
         if last_successful_data_load_execution is not None:
-            last_sync_version = last_successful_data_load_execution.next_sync_version
+            last_sync_version = last_successful_data_load_execution.sync_version
 
         destination_table_manager = DestinationTableManager(self.target_db)
         change_tracking_info = self.source_db.init_change_tracking(model_config['source_table'], last_sync_version)

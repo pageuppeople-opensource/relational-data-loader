@@ -56,7 +56,7 @@ class MsSqlDataSource(object):
                 f"END AS {Constants.AuditColumnNames.IS_DELETED}"
             from_sql = f"FROM CHANGETABLE(CHANGES" \
                 f" {table_config['schema']}.{table_config['name']}," \
-                f" {change_tracking_info.this_sync_version})" \
+                f" {change_tracking_info.last_sync_version})" \
                 f" AS {MsSqlDataSource.CHANGE_TABLE_ALIAS}" \
                 f" LEFT JOIN {table_config['schema']}.{table_config['name']} AS {MsSqlDataSource.SOURCE_TABLE_ALIAS}" \
                 f" ON {self.build_change_table_on_clause(batch_key_tracker)}"
@@ -104,6 +104,9 @@ class MsSqlDataSource(object):
 
     def init_change_tracking(self, table_config, last_known_sync_version):
 
+        if last_known_sync_version is None:
+            last_known_sync_version = 'NULL'
+
         init_change_tracking_sql = "IF NOT EXISTS(SELECT 1 FROM sys.change_tracking_tables " \
             f"WHERE object_id = OBJECT_ID('{table_config['schema']}.{table_config['name']}'))\n" \
                                    "BEGIN\n" \
@@ -116,29 +119,35 @@ class MsSqlDataSource(object):
                           f"{init_change_tracking_sql}")
         self.database_engine.execute(text(init_change_tracking_sql).execution_options(autocommit=True))
 
-        # in the following we check if we have lost tracking of the table.
-        # TODO TODO PleaseDo
-
-        # sync_version: the current version of change tracking at source database.
-        # it's value IS sourced from CHANGE_TRACKING_CURRENT_VERSION()
-        # and it's value also becomes the last_known_sync_version for the next iteration.
-
-        # last_known_sync_version: the tracking number of the last time we ran rdl, if we did.
-        # it's value WAS sourced from CHANGE_TRACKING_CURRENT_VERSION()
-
-        # min_valid_version: the minimum version that is valid for use in obtaining change tracking information from
-        # the specified table. it's value sourced from CHANGE_TRACKING_MIN_VALID_VERSION(OBJECT_ID(..))
+        # in the following we determine:
+        # a) the current sync version - sourced straight up from the source db
+        # b) the last valid sync version - derived from the last known sync version and its validity based on the
+        #    current state of the source data
+        # c) whether a full refresh is needed - this is a derivative of the validity of the last known sync version
+        #    because if the last known sync version is no longer valid, then our target data is in an invalid-state /
+        #    out-of-sync and a full refresh must be forced to sync the data.
+        #
+        # the following help us determining the above:
+        # a) sync_version: the current version of change tracking at source database.
+        #                  it's value IS sourced from CHANGE_TRACKING_CURRENT_VERSION()
+        #                  and it's value also becomes the last_known_sync_version for the next iteration.
+        # b) last_known_sync_version: the tracking number of the last time we ran rdl, if we did.
+        #                  it's value WAS sourced from CHANGE_TRACKING_CURRENT_VERSION()
+        # c) min_valid_version: the minimum version that is valid for use in obtaining change tracking information from
+        #                       the specified table.
+        #                       it's value IS sourced from CHANGE_TRACKING_MIN_VALID_VERSION(OBJECT_ID(..))
 
         get_change_tracking_info_sql = f"" \
             f"DECLARE @sync_version                     BIGINT  = CHANGE_TRACKING_CURRENT_VERSION(); \n" \
             f"DECLARE @min_valid_version                BIGINT  =" \
             f" CHANGE_TRACKING_MIN_VALID_VERSION(OBJECT_ID('{table_config['schema']}.{table_config['name']}')); \n" \
             f"DECLARE @last_known_sync_version          BIGINT  = {last_known_sync_version}; \n" \
-            f"DECLARE @last_known_sync_version_is_valid BIT     = @last_known_sync_version >= @min_valid_version; \n" \
+            f"DECLARE @last_known_sync_version_is_valid BIT     =" \
+            f" CASE WHEN @last_known_sync_version >= @min_valid_version THEN 1 ELSE 0 END; \n" \
             f"DECLARE @last_sync_version                BIGINT; \n" \
             f"DECLARE @force_full_load                  BIT; \n" \
             f" \n" \
-            f"IF @last_known_sync_version_is_valid \n" \
+            f"IF @last_known_sync_version_is_valid = 1 \n" \
             f"BEGIN \n" \
             f"    SET @force_full_load   = 0; \n" \
             f"    SET @last_sync_version = @last_known_sync_version; \n" \
@@ -152,16 +161,6 @@ class MsSqlDataSource(object):
             f"SELECT @sync_version AS sync_version \n" \
             f", @last_sync_version AS last_sync_version \n" \
             f", @force_full_load   AS force_full_load; \n"
-
-        # CHANGE_TRACKING_CURRENT_VERSION gets the tracking number of the database
-        # each time mssql tracks a change in the db (in any table), the number is incremented by one
-        # next_sync_version - last_sync_version = number of mssql tracked db changes since rdl was run
-
-        # CHANGE_TRACKING_MIN_VALID_VERSION is the minimum tracking number that we can use to update our db from
-        # e.g. if a bunch of changes happen to the db, the tracking number will increase, at some point
-        # our record of the db may become so far out of sync that we are unable to salvage our db
-        # in that case @last_sync_version < CHANGE_TRACKING_MIN_VALID_VERSION and we need to do a full load
-        # therefore if @last_sync_version >= CHANGE_TRACKING_MIN_VALID_VERSION, we do not need to do a full load
 
         self.logger.debug(f"Getting ChangeTracking info for {table_config['schema']}.{table_config['name']}.\n"
                           f"{get_change_tracking_info_sql}")

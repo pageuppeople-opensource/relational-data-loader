@@ -51,8 +51,8 @@ class DataLoadTracker:
 
     def get_statistics(self):
         load_type = 'FULL' if self.is_full_refresh else f"INCREMENTAL from " \
-                                                        f"version '{self.change_tracking_info.this_sync_version}' " \
-                                                        f"to '{self.change_tracking_info.next_sync_version}'"
+                                                        f"version '{self.change_tracking_info.last_sync_version}' " \
+                                                        f"to '{self.change_tracking_info.sync_version}'"
         return f"Rows: {self.total_row_count}," \
                f"Load type: {load_type}, " \
                f"Total Execution Time: {self.total_execution_time} @ {self.rows_per_second:.2f} rows per second "

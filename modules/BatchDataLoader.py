@@ -25,9 +25,8 @@ class BatchDataLoader(object):
 
         self.logger.debug(f"ImportBatch Starting from previous_batch_key: '{batch_key_tracker.bookmarks}'. "
                           f"Full Refresh: '{self.full_refresh}', "
-                          f"sync_version: '{self.change_tracking_info.next_sync_version}', "
-                          f"last_sync_version: '{self.change_tracking_info.this_sync_version}'.")
-        # TODO ^ this is actually the last_sync_version, log appropriately?
+                          f"sync_version: '{self.change_tracking_info.sync_version}', "
+                          f"last_sync_version: '{self.change_tracking_info.last_sync_version}'.")
 
         data_frame = self.source_db.get_next_data_frame(self.source_table_config, self.columns,
                                                         self.batch_config, batch_tracker, batch_key_tracker,
