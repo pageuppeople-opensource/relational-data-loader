@@ -120,11 +120,11 @@ class MsSqlDataSource(object):
         self.database_engine.execute(text(init_change_tracking_sql).execution_options(autocommit=True))
 
         # in the following we determine:
-        # a) the current sync version - sourced straight up from the source db
+        # a) the current sync version - sourced straight up from the source db.
         # b) the last valid sync version - derived from the last known sync version and its validity based on the
-        #    current state of the source data
+        #    current state of the source data.
         # c) whether a full refresh is needed - this is a derivative of the validity of the last known sync version
-        #    because if the last known sync version is no longer valid, then our target data is in an invalid-state /
+        #    because if the last known sync version is no longer valid, then our target data is in-an-invalid-state /
         #    out-of-sync and a full refresh must be forced to sync the data.
         #
         # the following help us determining the above:
@@ -132,10 +132,10 @@ class MsSqlDataSource(object):
         #                  it's value IS sourced from CHANGE_TRACKING_CURRENT_VERSION()
         #                  and it's value also becomes the last_known_sync_version for the next iteration.
         # b) last_known_sync_version: the tracking number of the last time we ran rdl, if we did.
-        #                  it's value WAS sourced from CHANGE_TRACKING_CURRENT_VERSION()
+        #                  it's value WAS sourced from CHANGE_TRACKING_CURRENT_VERSION().
         # c) min_valid_version: the minimum version that is valid for use in obtaining change tracking information from
         #                       the specified table.
-        #                       it's value IS sourced from CHANGE_TRACKING_MIN_VALID_VERSION(OBJECT_ID(..))
+        #                       it's value IS sourced from CHANGE_TRACKING_MIN_VALID_VERSION(OBJECT_ID(..)).
 
         get_change_tracking_info_sql = f"" \
             f"DECLARE @sync_version                     BIGINT  = CHANGE_TRACKING_CURRENT_VERSION(); \n" \
