@@ -100,16 +100,16 @@ class DestinationTableManager(object):
         self.logger.debug(f"Table Rename, executing '{sql}'")
         self.target_db.execute(sql)
 
-    def upsert_table(self, schema_name, source_table_name, target_table_name, columns_configuration):
-        column_array = list(map(lambda column: column['destination']['name'], columns_configuration))
+    def upsert_table(self, schema_name, source_table_name, target_table_name, columns_config):
+        column_array = list(map(lambda column: column['destination']['name'], columns_config))
         column_list = ','.join(map(str, column_array))
         column_list = column_list + f",{Constants.AuditColumnNames.TIMESTAMP}"
         column_list = column_list + f",{Constants.AuditColumnNames.IS_DELETED}"
         column_list = column_list + f",{Constants.AuditColumnNames.CHANGE_VERSION}"
 
-        primary_key_column_array = [column_configuration['destination']['name'] for column_configuration in
-                                    columns_configuration if 'primary_key' in column_configuration['destination'] and
-                                    column_configuration['destination']['primary_key']]
+        primary_key_column_array = [column_config['destination']['name'] for column_config in
+                                    columns_config if 'primary_key' in column_config['destination'] and
+                                    column_config['destination']['primary_key']]
 
         primary_key_column_list = ','.join(map(str, primary_key_column_array))
 
@@ -118,15 +118,17 @@ class DestinationTableManager(object):
         sql_builder.write(f" SELECT {column_list} FROM {schema_name}.{source_table_name} \n")
         sql_builder.write(f" ON CONFLICT({primary_key_column_list}) DO UPDATE SET ")
 
-        for column_configuration in columns_configuration:
-            sql_builder.write("{0} = EXCLUDED.{0},\n".format(column_configuration['destination']['name']))
+        for column_config in columns_config:
+            sql_builder.write("{0} = EXCLUDED.{0},\n".format(column_config['destination']['name']))
 
         sql_builder.write("{0} = EXCLUDED.{0},\n".format(Constants.AuditColumnNames.TIMESTAMP))
         sql_builder.write("{0} = EXCLUDED.{0},\n".format(Constants.AuditColumnNames.IS_DELETED))
-        sql_builder.write("{0} = EXCLUDED.{0}\n".format(Constants.AuditColumnNames.CHANGE_VERSION))
+        sql_builder.write("{0} = EXCLUDED.{0};\n".format(Constants.AuditColumnNames.CHANGE_VERSION))
 
-        self.logger.debug(f"UPSERT executing '{sql_builder.getvalue()}'")
-        self.target_db.execute(sql_builder.getvalue())
+        upsert_sql = sql_builder.getvalue()
+
+        self.logger.debug(f"UPSERT executing '{upsert_sql}'")
+        self.target_db.execute(upsert_sql)
         self.logger.debug("UPSERT completed")
 
         sql_builder.close()
