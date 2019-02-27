@@ -51,7 +51,8 @@ class MsSqlDataSource(object):
             order_by_sql = "ORDER BY " + f", {MsSqlDataSource.SOURCE_TABLE_ALIAS}.".join(table_config['primary_keys'])
         else:
             select_sql = f"SELECT TOP ({batch_config['size']}) {column_names}, " \
-                f"{MsSqlDataSource.CHANGE_TABLE_ALIAS}.SYS_CHANGE_VERSION AS {Constants.AuditColumnNames.CHANGE_VERSION}, " \
+                f"{MsSqlDataSource.CHANGE_TABLE_ALIAS}.SYS_CHANGE_VERSION" \
+                f" AS {Constants.AuditColumnNames.CHANGE_VERSION}, " \
                 f"CASE {MsSqlDataSource.CHANGE_TABLE_ALIAS}.SYS_CHANGE_OPERATION WHEN 'D' THEN 1 ELSE 0 " \
                 f"END AS {Constants.AuditColumnNames.IS_DELETED}"
             from_sql = f"FROM CHANGETABLE(CHANGES" \

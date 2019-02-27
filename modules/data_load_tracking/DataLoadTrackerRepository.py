@@ -1,7 +1,10 @@
 import logging
-from sqlalchemy import desc
+
 from modules.data_load_tracking.DataLoadExecution import DataLoadExecution, Base
 from modules.shared import Constants
+
+from sqlalchemy import desc
+from sqlalchemy import func
 
 
 class DataLoadTrackerRepository(object):
@@ -15,10 +18,12 @@ class DataLoadTrackerRepository(object):
 
     def get_last_successful_data_load_execution(self, model_name):
         session = self.session_maker()
-        return session.query(DataLoadExecution)\
+        result = session.query(DataLoadExecution)\
             .filter_by(model_name=model_name, status=Constants.ExecutionStatus.COMPLETED_SUCCESSFULLY)\
             .order_by(desc(DataLoadExecution.completed_on))\
             .first()
+        session.close()
+        return result
 
     def save(self, data_load_tracker):
         data_load_execution = DataLoadExecution(
@@ -36,3 +41,39 @@ class DataLoadTrackerRepository(object):
         session = self.session_maker()
         session.add(data_load_execution)
         session.commit()
+        session.close()
+
+    def get_full_refresh_since(self, timestamp):
+        session = self.session_maker()
+        results = session.query(DataLoadExecution.model_name)\
+            .filter(DataLoadExecution.completed_on > timestamp,
+                    DataLoadExecution.is_full_refresh)\
+            .distinct(DataLoadExecution.model_name)\
+            .group_by(DataLoadExecution.model_name)\
+            .all()
+        session.close()
+        return [r for (r, ) in results]
+
+    def get_incremental_since(self, timestamp):
+        session = self.session_maker()
+        results = session.query(DataLoadExecution.model_name)\
+            .filter(DataLoadExecution.completed_on > timestamp,
+                    DataLoadExecution.is_full_refresh == False,
+                    DataLoadExecution.rows_processed > 0)\
+            .distinct(DataLoadExecution.model_name)\
+            .group_by(DataLoadExecution.model_name)\
+            .all()
+        session.close()
+        return [r for (r, ) in results]
+
+    def get_only_incremental_since(self, timestamp):
+        session = self.session_maker()
+        results = session.query(DataLoadExecution.model_name)\
+            .filter(DataLoadExecution.completed_on > timestamp,
+                    DataLoadExecution.rows_processed > 0)\
+            .distinct(DataLoadExecution.model_name)\
+            .group_by(DataLoadExecution.model_name)\
+            .having(func.bool_and(DataLoadExecution.is_full_refresh == False))\
+            .all()
+        session.close()
+        return [r for (r, ) in results]

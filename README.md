@@ -9,11 +9,9 @@ A utility for taking data from MS-SQL and loading it into PostgreSQL
 `py rdl.py --help`
 
 ```text
-usage: rdl.py [-h] [-f [FORCE_FULL_REFRESH_MODELS]] [-l [LOG_LEVEL]]
-              source-connection-string destination-connection-string
-              configuration-folder
-
-Relational Data Loader
+usage: rdl.py process [-h] [-f [FORCE_FULL_REFRESH_MODELS]] [-l [LOG_LEVEL]]
+                      source-connection-string destination-connection-string
+                      configuration-folder
 
 positional arguments:
   source-connection-string
@@ -37,6 +35,27 @@ optional arguments:
                         per the state of the source and destination tables. Eg
                         'CompoundPkTest,LargeTableTest'. Leave blank or use
                         glob (*) to force full refresh of all models.
+  -l [LOG_LEVEL], --log-level [LOG_LEVEL]
+                        Set the logging output level. ['CRITICAL', 'ERROR',
+                        'WARNING', 'INFO', 'DEBUG']
+
+usage: rdl.py audit [-h] [-l [LOG_LEVEL]]
+                    destination-connection-string model-type timestamp
+
+positional arguments:
+  destination-connection-string
+                        The destination database connection string. Provide in
+                        PostgreSQL + Psycopg format. Eg: 'postgresql+psycopg2:
+                        //username:password@host:port/dbname'
+  model-type            Use the command FULL to return full refresh models or
+                        the command INCR to return only the incremental models
+                        since the timestamp
+  timestamp             ISO 8601 datetime with timezone (`yyyy-mm-ddThh:mm:ss.nnnnnn+|-hh:mm`) used to provide information on all
+                        actions since the specified date. Eg
+                        '2019-02-14T01:55:54.123456+00:00'.
+
+optional arguments:
+  -h, --help            show this help message and exit
   -l [LOG_LEVEL], --log-level [LOG_LEVEL]
                         Set the logging output level. ['CRITICAL', 'ERROR',
                         'WARNING', 'INFO', 'DEBUG']

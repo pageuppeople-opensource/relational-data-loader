@@ -31,7 +31,7 @@ class TestMsSqlDataSource(unittest.TestCase):
 
         with open(CONFIG_PATH + "connection.json", "r", encoding="utf8") as f:
             config_json = json.loads(f.read(), encoding="utf8")
-            gen_connection_string = MSSQL_STRING_FORMAT.format(**config_json, db="{db}")
+            gen_connection_string = MSSQL_STRING_FORMAT.format(**config_json["mssql"], db="{db}")
         cls.table_configs = []
 
         for file_name in CONFIG_FILES:

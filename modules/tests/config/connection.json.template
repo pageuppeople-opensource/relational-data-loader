@@ -1,5 +1,12 @@
 {
-  "username": "rdl_test_user",
-  "password": "hunter2",
-  "server_string": "(local)\\SQLEXPRESS"
+  "mssql": {
+    "username": "rdl_test_user",
+    "password": "hunter2",
+    "server_string": "(local)\\SQLEXPRESS"
+  },
+  "psql": {
+    "username": "postgres",
+    "password": "postgres",
+    "server_string": "postgres"
+  }
 }
