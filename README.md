@@ -81,6 +81,29 @@ Use the following vscode settings by either:
 
 ### Testing
 
+### Postgres debugging
+
+Ensure the database you are using is in utf8 mode. You cannot change encoding once the database is created.
+
+```sql
+
+CREATE DATABASE "my_database"
+    WITH OWNER "postgres"
+    ENCODING 'UTF8'
+    TEMPLATE template0;
+
+```
+
+Also ensure that the database has the CITEXT extension by logging into the DB and adding it
+
+```sql
+
+>>>psql my_database
+
+CREATE EXTENSION CITEXT;
+
+```
+
 #### Integration
 
 The test batch files assume there is a user by the name of `postgres` on the system.

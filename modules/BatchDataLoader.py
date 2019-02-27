@@ -58,6 +58,11 @@ class BatchDataLoader(object):
         raw = self.target_db.raw_connection()
         curs = raw.cursor()
 
+        # log CSV on debug
+        if self.logger.getEffectiveLevel() == logging.DEBUG:
+            with open(f'{qualified_target_table}.csv', 'w', encoding='utf-8') as f:
+                f.write(data.getvalue())
+
         column_array = list(
             map(lambda source_colum_name: self.get_destination_column_name(source_colum_name), data_frame.columns))
         column_list = ','.join(map(str, column_array))
