@@ -1,4 +1,6 @@
 import logging
+import csv
+
 from io import StringIO
 from modules.column_transformers.StringTransformers import ToUpper
 from modules.shared import Constants
@@ -51,7 +53,12 @@ class BatchDataLoader(object):
         qualified_target_table = f'{self.target_schema}.{self.target_table}'
         self.logger.debug(f"Starting write to table '{qualified_target_table}'")
         data = StringIO()
-        data_frame.to_csv(data, header=False, index=False, na_rep='', float_format='%.16g')
+        # quoting: Due to \r existing in strings in MSSQL we must quote anything that's non numeric just to be safe
+        # line_terminator: ensure \n is used even on windows machines as prod runs on *nix with \n
+        # na_rep: Due to us quoting everything non-numeric, our null's must be represented by something special, as the
+        # default null representation (nothing), once quoted, is equivalent to an empty string
+        data_frame.to_csv(data, header=False, index=False, na_rep='\\N', float_format='%.16g',
+                          quotechar='"', quoting=csv.QUOTE_NONNUMERIC, line_terminator='\n')
         # Float_format is used to truncate any insignificant digits. Unfortunately it gives us an artificial limitation
 
         data.seek(0)
@@ -67,7 +74,12 @@ class BatchDataLoader(object):
             map(lambda source_colum_name: self.get_destination_column_name(source_colum_name), data_frame.columns))
         column_list = ','.join(map(str, column_array))
 
-        sql = f"COPY {qualified_target_table}({column_list}) FROM STDIN with csv"
+        # FORCE_NULL: ensure quoted fields are checked for NULLs as by default they are assumed to be non-null
+        # specify null as \N so that psql doesn't assume empty strings are nulls
+        sql = f"COPY {qualified_target_table}({column_list}) FROM STDIN "\
+            f"with (format csv, "\
+            f"null '\\N', "\
+            f"FORCE_NULL ({column_list}))"
         self.logger.debug(f"Writing to table using command '{sql}'")
 
         curs.copy_expert(sql=sql, file=data)
