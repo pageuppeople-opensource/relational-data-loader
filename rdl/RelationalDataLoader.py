@@ -2,10 +2,10 @@ import logging
 import argparse
 from datetime import datetime
 from sqlalchemy import create_engine
-from modules.DataLoadManager import DataLoadManager
-from modules.shared import Constants
-from modules.data_load_tracking.DataLoadTrackerRepository import DataLoadTrackerRepository
-from modules.data_sources.DataSourceFactory import DataSourceFactory
+from rdl.DataLoadManager import DataLoadManager
+from rdl.shared import Constants
+from rdl.data_load_tracking.DataLoadTrackerRepository import DataLoadTrackerRepository
+from rdl.data_sources.DataSourceFactory import DataSourceFactory
 from sqlalchemy.orm import sessionmaker
 
 _LOG_LEVEL_STRINGS = ['CRITICAL', 'ERROR', 'WARNING', 'INFO', 'DEBUG']

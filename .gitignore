@@ -3,7 +3,7 @@
 .vscode/
 
 # config files
-modules/tests/config/connection.json
+rdl/tests/config/connection.json
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

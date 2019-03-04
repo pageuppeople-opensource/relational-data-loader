@@ -5,11 +5,11 @@ import hashlib
 from pathlib import Path
 from json import JSONDecodeError
 
-from modules.BatchDataLoader import BatchDataLoader
-from modules.DestinationTableManager import DestinationTableManager
-from modules.data_load_tracking.DataLoadTracker import DataLoadTracker
-from modules.BatchKeyTracker import BatchKeyTracker
-from modules.shared import Constants
+from rdl.BatchDataLoader import BatchDataLoader
+from rdl.DestinationTableManager import DestinationTableManager
+from rdl.data_load_tracking.DataLoadTracker import DataLoadTracker
+from rdl.BatchKeyTracker import BatchKeyTracker
+from rdl.shared import Constants
 
 
 class DataLoadManager(object):

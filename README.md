@@ -6,10 +6,10 @@ A utility for taking data from MS-SQL and loading it into PostgreSQL
 
 ## Usage
 
-`py rdl.py --help`
+`py -m rdl --help`
 
 ```text
-usage: rdl.py process [-h] [-f [FORCE_FULL_REFRESH_MODELS]] [-l [LOG_LEVEL]]
+usage: py -m rdl process [-h] [-f [FORCE_FULL_REFRESH_MODELS]] [-l [LOG_LEVEL]]
                       source-connection-string destination-connection-string
                       configuration-folder
 
@@ -39,7 +39,7 @@ optional arguments:
                         Set the logging output level. ['CRITICAL', 'ERROR',
                         'WARNING', 'INFO', 'DEBUG']
 
-usage: rdl.py audit [-h] [-l [LOG_LEVEL]]
+usage: py -m rdl audit [-h] [-l [LOG_LEVEL]]
                     destination-connection-string model-type timestamp
 
 positional arguments:
@@ -134,7 +134,7 @@ _See [Postgres docs](https://www.postgresql.org/docs/9.1/static/auth-pg-hba-conf
 
 _Setup:_
 
-Create a new SQL Server Login/User using the script below. Make sure you update it with your desired password and if you update the username/login, please ensure the changes are reflected in: `modules/tests/config/connection.json`, which can be created using `modules/tests/config/connection.json.template`.
+Create a new SQL Server Login/User using the script below. Make sure you update it with your desired password and if you update the username/login, please ensure the changes are reflected in: `rdl/tests/config/connection.json`, which can be created using `rdl/tests/config/connection.json.template`.
 
 ```sql
 USE master;

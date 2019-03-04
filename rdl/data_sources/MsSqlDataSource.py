@@ -4,10 +4,10 @@ import pandas
 from sqlalchemy import create_engine
 from sqlalchemy import MetaData
 from sqlalchemy.schema import Table
-from modules.ColumnTypeResolver import ColumnTypeResolver
-from modules.data_sources.ChangeTrackingInfo import ChangeTrackingInfo
+from rdl.ColumnTypeResolver import ColumnTypeResolver
+from rdl.data_sources.ChangeTrackingInfo import ChangeTrackingInfo
 from sqlalchemy.sql import text
-from modules.shared import Constants
+from rdl.shared import Constants
 
 
 class MsSqlDataSource(object):

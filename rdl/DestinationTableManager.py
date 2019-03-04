@@ -1,12 +1,12 @@
 import io
 import os
 import logging
-from modules.ColumnTypeResolver import ColumnTypeResolver
+from rdl.ColumnTypeResolver import ColumnTypeResolver
 
 from sqlalchemy import MetaData, DateTime, Boolean, BigInteger
 from sqlalchemy.schema import Column, Table
 from sqlalchemy.sql import func
-from modules.shared import Constants
+from rdl.shared import Constants
 
 
 class DestinationTableManager(object):
