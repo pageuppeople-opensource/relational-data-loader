@@ -47,7 +47,7 @@ class RelationalDataLoader:
 
         results = _AUDIT_FUNCTION_OPTIONS[self.args.model_type](data_load_tracker_repository, last_successful_timestamp)
 
-        print(results.join(" "))
+        print(" ".join(results))
 
     def configure_root_logger(self, log_level):
         # get the root logger
