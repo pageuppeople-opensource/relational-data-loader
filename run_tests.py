@@ -1,4 +1,4 @@
-from modules.tests import test_MsSqlDataSource, test_DataLoadTrackerRepository
+from rdl.tests import test_MsSqlDataSource, test_DataLoadTrackerRepository
 import unittest
 import sys
 

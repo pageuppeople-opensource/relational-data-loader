@@ -2,12 +2,12 @@ import unittest
 import json
 from sqlalchemy import create_engine
 from sqlalchemy.sql import text
-from modules.data_sources.MsSqlDataSource import MsSqlDataSource
+from rdl.data_sources.MsSqlDataSource import MsSqlDataSource
 
 TEST_DB = "RDLUnitTestSource"
 MSSQL_STRING_FORMAT = "mssql+pyodbc://{username}:{password}@{server_string}/{db}?driver=SQL+Server+Native+Client+11.0"
 
-SQL_PATH = "./modules/tests/setup/"
+SQL_PATH = "./rdl/tests/setup/"
 SQL_ORDERED_FILES = [
     {
         "db": "master",
@@ -18,7 +18,7 @@ SQL_ORDERED_FILES = [
         "file_name": "create_simple_table.sql"
     }]
 
-CONFIG_PATH = "./modules/tests/config/"
+CONFIG_PATH = "./rdl/tests/config/"
 CONFIG_FILES = ["SimpleTableTest.json"]
 
 

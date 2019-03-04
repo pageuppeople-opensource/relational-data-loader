@@ -2,8 +2,8 @@ import logging
 import csv
 
 from io import StringIO
-from modules.column_transformers.StringTransformers import ToUpper
-from modules.shared import Constants
+from rdl.column_transformers.StringTransformers import ToUpper
+from rdl.shared import Constants
 
 
 class BatchDataLoader(object):

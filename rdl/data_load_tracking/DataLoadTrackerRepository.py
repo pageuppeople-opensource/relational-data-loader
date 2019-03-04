@@ -1,7 +1,7 @@
 import logging
 
-from modules.data_load_tracking.DataLoadExecution import DataLoadExecution, Base
-from modules.shared import Constants
+from rdl.data_load_tracking.DataLoadExecution import DataLoadExecution, Base
+from rdl.shared import Constants
 
 from sqlalchemy import desc
 from sqlalchemy import func

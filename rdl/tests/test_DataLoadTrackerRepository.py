@@ -9,14 +9,14 @@ from datetime import datetime, timedelta
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
 
-from modules.data_load_tracking.DataLoadExecution import DataLoadExecution
-from modules.data_load_tracking.DataLoadTrackerRepository import DataLoadTrackerRepository
-from modules.shared import Constants
+from rdl.data_load_tracking.DataLoadExecution import DataLoadExecution
+from rdl.data_load_tracking.DataLoadTrackerRepository import DataLoadTrackerRepository
+from rdl.shared import Constants
 
 TEST_DB = "rdl_unit_test_dest"
 PSQL_STRING_FORMAT = "postgresql+psycopg2://{username}:{password}@{server_string}/{db}"
 
-CONFIG_PATH = "./modules/tests/config/"
+CONFIG_PATH = "./rdl/tests/config/"
 
 
 class TestDataLoadTrackerRepository(unittest.TestCase):

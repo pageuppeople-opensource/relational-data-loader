@@ -2,7 +2,7 @@ from sqlalchemy import Column, DateTime, Integer, String, Boolean, BigInteger
 from sqlalchemy.sql import func
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.dialects.postgresql import UUID
-from modules.shared import Constants
+from rdl.shared import Constants
 
 Base = declarative_base()
 

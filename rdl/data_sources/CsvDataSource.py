@@ -1,9 +1,9 @@
 import logging
 import pandas
 import os.path
-from modules.ColumnTypeResolver import ColumnTypeResolver
+from rdl.ColumnTypeResolver import ColumnTypeResolver
 from pathlib import Path
-from modules.data_sources.ChangeTrackingInfo import ChangeTrackingInfo
+from rdl.data_sources.ChangeTrackingInfo import ChangeTrackingInfo
 
 
 class CsvDataSource(object):
