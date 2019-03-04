@@ -6,10 +6,10 @@ A utility for taking data from MS-SQL and loading it into PostgreSQL
 
 ## Usage
 
-`py rdl.py --help`
+`py -m rdl --help`
 
 ```text
-usage: rdl.py process [-h] [-f [FORCE_FULL_REFRESH_MODELS]] [-l [LOG_LEVEL]]
+usage: py -m rdl process [-h] [-f [FORCE_FULL_REFRESH_MODELS]] [-l [LOG_LEVEL]]
                       source-connection-string destination-connection-string
                       configuration-folder
 
@@ -39,7 +39,7 @@ optional arguments:
                         Set the logging output level. ['CRITICAL', 'ERROR',
                         'WARNING', 'INFO', 'DEBUG']
 
-usage: rdl.py audit [-h] [-l [LOG_LEVEL]]
+usage: py -m rdl audit [-h] [-l [LOG_LEVEL]]
                     destination-connection-string model-type timestamp
 
 positional arguments:
