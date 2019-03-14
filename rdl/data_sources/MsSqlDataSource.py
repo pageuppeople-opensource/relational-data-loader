@@ -1,28 +1,42 @@
 import io
 import logging
 import pandas
+import pyodbc
+import re
+
+import sqlalchemy.exc
 from sqlalchemy import create_engine
 from sqlalchemy import MetaData
 from sqlalchemy.schema import Table
+from sqlalchemy.sql import text
+
 from rdl.ColumnTypeResolver import ColumnTypeResolver
 from rdl.data_sources.ChangeTrackingInfo import ChangeTrackingInfo
-from sqlalchemy.sql import text
 from rdl.shared import Constants
 
 
 class MsSqlDataSource(object):
     SOURCE_TABLE_ALIAS = 'src'
     CHANGE_TABLE_ALIAS = 'chg'
+    MSSQL_STRING_REGEX = r"mssql\+pyodbc://" \
+        r"(?:(?P<username>[^@/?&:]+)?:(?P<password>[^@/?&:]+)?@)?" \
+        r"(?P<server>[^@/?&:]*)/(?P<database>[^@/?&:]*)" \
+        r"\?driver=(?P<driver>[^@/?&:]*)" \
+        r"(?:&failover=(?P<failover>[^@/?&:]*))?"
 
     def __init__(self, connection_string, logger=None):
         self.logger = logger or logging.getLogger(__name__)
         self.connection_string = connection_string
-        self.database_engine = create_engine(connection_string)
+        self.database_engine = create_engine(connection_string, creator=self.create_connection_with_failover)
         self.column_type_resolver = ColumnTypeResolver()
 
     @staticmethod
     def can_handle_connection_string(connection_string):
-        return connection_string.startswith(MsSqlDataSource.connection_string_prefix())
+        return MsSqlDataSource.connection_string_regex_match(connection_string) is not None
+
+    @staticmethod
+    def connection_string_regex_match(connection_string):
+        return re.match(MsSqlDataSource.MSSQL_STRING_REGEX, connection_string)
 
     @staticmethod
     def connection_string_prefix():
@@ -36,6 +50,36 @@ class MsSqlDataSource(object):
             return f"{MsSqlDataSource.CHANGE_TABLE_ALIAS}.{column_name}"
         else:
             return f"{MsSqlDataSource.SOURCE_TABLE_ALIAS}.{column_name}"
+
+    def create_connection_with_failover(self):
+        conn_string_data = MsSqlDataSource.connection_string_regex_match(self.connection_string)
+        server = conn_string_data.group('server')
+        failover = conn_string_data.group('failover')
+        database = conn_string_data.group('database')
+        driver = "{"+conn_string_data.group('driver').replace('+', ' ')+"}"
+        dsn = f'DRIVER={driver};DATABASE={database};'
+
+        username = conn_string_data.group('username')
+        password = conn_string_data.group('password')
+
+        login_cred = "Trusted_Connection=yes;"
+        if username is not None and password is not None:
+            login_cred = f'UID={username};PWD={password};'
+
+        dsn += login_cred
+        self.logger.info(
+            'Parsed Connection Details: ' +
+            f'''FAILOVER={failover}
+            SERVER={server}
+            DRIVER={driver}
+            DATABASE={database}''')
+        try:
+            return pyodbc.connect(dsn, server=server)
+        except (sqlalchemy.exc.OperationalError, pyodbc.OperationalError) as e:
+            if e.args[0] == "08001" and failover is not None:
+                self.logger.warning(f'Using Failover Server: {failover}')
+                return pyodbc.connect(dsn, server=failover)
+            raise e
 
     def build_select_statement(self, table_config, columns, batch_config, batch_key_tracker, full_refresh,
                                change_tracking_info):
