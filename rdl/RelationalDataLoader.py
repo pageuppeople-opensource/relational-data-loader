@@ -78,7 +78,7 @@ class RelationalDataLoader:
 
     def raw_connection_string_to_valid_source_connection_string(self, connection_string):
         if not self.data_source_factory.is_prefix_supported(connection_string):
-            message = f"Invalid connection string: '{connection_string}'. " \
+            message = f"Invalid connection string. " \
                       f"Connection strings must begin with '{self.data_source_factory.get_supported_source_prefixes()}'"
             raise argparse.ArgumentTypeError(message)
         return connection_string
