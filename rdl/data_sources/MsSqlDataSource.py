@@ -75,8 +75,8 @@ class MsSqlDataSource(object):
             DATABASE={database}''')
         try:
             return pyodbc.connect(dsn, server=server)
-        except (sqlalchemy.exc.OperationalError, pyodbc.OperationalError) as e:
-            if e.args[0] == "08001" and failover is not None:
+        except (sqlalchemy.exc.OperationalError, pyodbc.OperationalError, pyodbc.ProgrammingError) as e:
+            if e.args[0] in ["08001", "HYT00", "42000"] and failover is not None:
                 self.logger.warning(f'Using Failover Server: {failover}')
                 return pyodbc.connect(dsn, server=failover)
             raise e
