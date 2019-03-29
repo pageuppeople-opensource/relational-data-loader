@@ -47,16 +47,25 @@ class DataLoadManager(object):
                 model_file = model_file_objs[0]
                 all_model_files[model_file.stem] = (model_file, True)
 
-        for (model_file, request_full_refresh) in all_model_files.values():
-            self.start_single_import(model_file, request_full_refresh)
+        all_model_names = sorted(list(all_model_files.keys()))
+        total_number_of_models = len(all_model_names)
+        model_number = 0
+        for model_name in all_model_names:
+            (model_file, request_full_refresh) = all_model_files[model_name]
+            model_number += 1  # avoid all_model_names.index(model_name) due to linear time-complexity in list length
+            self.start_single_import(model_file, request_full_refresh, model_number, total_number_of_models)
 
         self.logger.info("Execution completed.")
 
-    def start_single_import(self, model_file, requested_full_refresh):
+    def start_single_import(self, model_file, requested_full_refresh, model_number, total_number_of_models):
         model_name = model_file.stem
         self.logger.debug(f"Model name: {model_name}")
 
-        self.logger.info(f"Processing model: {model_name}, requested_full_refresh: {requested_full_refresh}")
+        max_model_number_len = len(str(total_number_of_models))
+
+        self.logger.info(f"{model_number:0{max_model_number_len}d} of {total_number_of_models}"
+                         f" STARTING {model_name},"
+                         f" requested_full_refresh={requested_full_refresh}")
 
         model_file_full_path = str(model_file.absolute().resolve())
         self.logger.debug(f"Model file: {model_file_full_path}")
@@ -147,7 +156,9 @@ class DataLoadManager(object):
                                                  model_config['stage_table'])
         data_load_tracker.completed_successfully()
         self.data_load_tracker_repository.save(data_load_tracker)
-        self.logger.info(f"Import Complete for: {model_name}. {data_load_tracker.get_statistics()}")
+        self.logger.info(f"{model_number:0{max_model_number_len}d} of {total_number_of_models}"
+                         f" COMPLETED {model_name},"
+                         f" {data_load_tracker.get_statistics()}")
 
     @staticmethod
     def is_full_refresh(*,
