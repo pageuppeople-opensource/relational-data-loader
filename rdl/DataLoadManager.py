@@ -10,6 +10,7 @@ from rdl.DestinationTableManager import DestinationTableManager
 from rdl.data_load_tracking.DataLoadTracker import DataLoadTracker
 from rdl.BatchKeyTracker import BatchKeyTracker
 from rdl.shared import Constants
+from rdl.shared.Utils import SensitiveDataError
 
 
 class DataLoadManager(object):
@@ -137,7 +138,12 @@ class DataLoadManager(object):
 
         batch_key_tracker = BatchKeyTracker(model_config['source_table']['primary_keys'])
         while batch_key_tracker.has_more_data:
-            batch_data_loader.load_batch(batch_key_tracker)
+            try:
+                batch_data_loader.load_batch(batch_key_tracker)
+            except SensitiveDataError as e:
+                data_load_tracker.data_load_failed(e.sensitive_error_args)
+                self.data_load_tracker_repository.save(data_load_tracker)
+                raise e
 
         if full_refresh:
             # Rename the stage table to the load table.
@@ -154,7 +160,7 @@ class DataLoadManager(object):
 
             destination_table_manager.drop_table(model_config['target_schema'],
                                                  model_config['stage_table'])
-        data_load_tracker.completed_successfully()
+        data_load_tracker.data_load_successful()
         self.data_load_tracker_repository.save(data_load_tracker)
         self.logger.info(f"{model_number:0{max_model_number_len}d} of {total_number_of_models}"
                          f" COMPLETED {model_name},"

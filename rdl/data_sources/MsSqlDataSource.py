@@ -13,6 +13,7 @@ from sqlalchemy.sql import text
 from rdl.ColumnTypeResolver import ColumnTypeResolver
 from rdl.data_sources.ChangeTrackingInfo import ChangeTrackingInfo
 from rdl.shared import Constants
+from rdl.shared.Utils import prevent_senstive_data_logging
 
 
 class MsSqlDataSource(object):
@@ -134,6 +135,7 @@ class MsSqlDataSource(object):
                       autoload_with=self.database_engine)
         return list(map(lambda column: column.name, table.columns))
 
+    @prevent_senstive_data_logging
     def get_next_data_frame(self, table_config, columns, batch_config, batch_tracker, batch_key_tracker,
                             full_refresh, change_tracking_info):
         sql = self.build_select_statement(table_config, columns, batch_config, batch_key_tracker,

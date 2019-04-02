@@ -14,6 +14,7 @@ class FullRefreshReason:
 
 class ExecutionStatus:
     NOT_STARTED = 'Not Started'
+    FAILED = 'Failed'
     EXTRACT_COMPLETED_SUCCESSFULLY = 'Extract Completed Successfully'
     LOAD_COMPLETED_SUCCESSFULLY = 'Load Completed Successfully'
     SKIPPED_AS_ZERO_ROWS = 'Skipped - Zero Rows'

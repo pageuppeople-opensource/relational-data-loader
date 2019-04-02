@@ -1,0 +1,33 @@
+{
+  "source_table": {
+    "name": "CompoundPk",
+    "schema": "dbo",
+    "primary_keys": ["Id1"]
+  },
+  "target_schema": "rdl_integration_tests",
+  "stage_table": "stage_compound_pk",
+  "load_table": "load_compound_pk",
+
+  "batch": {
+    "size": 100000
+  },
+  "columns": [
+    {
+      "source_name": "Id1",
+      "destination": {
+        "name": "id_1",
+        "type": "int",
+        "nullable": false,
+        "primary_key": true
+      }
+    },
+    {
+      "source_name": "Id2",
+      "destination": {
+        "name": "id_2",
+        "type": "int",
+        "nullable": true
+      }
+    }
+  ]
+}

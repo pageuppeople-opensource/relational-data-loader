@@ -34,19 +34,26 @@ class DataLoadTracker:
         self.change_tracking_info = change_tracking_info
         self.correlation_id = correlation_id
         self.full_refresh_reason = full_refresh_reason
+        self.failure_reason = None
 
     def start_batch(self):
         batch = self.Batch()
         self.batches.append(batch)
         return batch
 
-    def completed_successfully(self):
+    def data_load_successful(self):
+        self.data_load_completed(Constants.ExecutionStatus.COMPLETED_SUCCESSFULLY)
+
+    def data_load_failed(self, failure_reason=None):
+        self.data_load_completed(Constants.ExecutionStatus.FAILED, failure_reason)
+
+    def data_load_completed(self, execution_status, failure_reason=None):
         self.completed = datetime.now()
         self.total_execution_time = self.completed - self.started
-        self.status = Constants.ExecutionStatus.COMPLETED_SUCCESSFULLY
+        self.status = execution_status
+        self.failure_reason = failure_reason
         for batch in self.batches:
             self.total_row_count += batch.row_count
-
         self.rows_per_second = self.total_row_count / (self.total_execution_time.total_seconds() + 1e-10)
 
     def get_statistics(self):

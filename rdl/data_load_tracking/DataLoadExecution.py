@@ -22,3 +22,4 @@ class DataLoadExecution(Base):
     execution_time_ms = Column(Integer, nullable=False)
     rows_processed = Column(Integer, nullable=False)
     model_checksum = Column(String(100), nullable=False)
+    failure_reason = Column(String(1000), nullable=True)

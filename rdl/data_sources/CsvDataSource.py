@@ -1,9 +1,11 @@
 import logging
-import pandas
 import os.path
-from rdl.ColumnTypeResolver import ColumnTypeResolver
 from pathlib import Path
+import pandas
+
+from rdl.ColumnTypeResolver import ColumnTypeResolver
 from rdl.data_sources.ChangeTrackingInfo import ChangeTrackingInfo
+from rdl.shared.Utils import prevent_senstive_data_logging
 
 
 class CsvDataSource(object):
@@ -42,6 +44,7 @@ class CsvDataSource(object):
 
     # For now, the CSV data sources will get all rows in the CSV regardless of
     # batch size. - Ie, they don't currently support paging.
+    @prevent_senstive_data_logging
     def get_next_data_frame(
             self,
             table_config,

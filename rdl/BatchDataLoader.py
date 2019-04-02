@@ -4,6 +4,7 @@ import csv
 from io import StringIO
 from rdl.column_transformers.StringTransformers import ToUpper
 from rdl.shared import Constants
+from rdl.shared.Utils import prevent_senstive_data_logging
 
 
 class BatchDataLoader(object):
@@ -49,6 +50,7 @@ class BatchDataLoader(object):
 
         self.logger.info(f"Batch keys '{batch_key_tracker.bookmarks}' completed. {batch_tracker.get_statistics()}")
 
+    @prevent_senstive_data_logging
     def write_data_frame_to_table(self, data_frame):
         qualified_target_table = f'{self.target_schema}.{self.target_table}'
         self.logger.debug(f"Starting write to table '{qualified_target_table}'")

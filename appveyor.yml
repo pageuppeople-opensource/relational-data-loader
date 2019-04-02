@@ -66,6 +66,7 @@ test_script:
 
   - test_full_refresh_from_mssql.cmd
   - test_audit.cmd
+  - test_pi_leak.cmd
   - test_mssql_failover_server.cmd
 
 on_finish:

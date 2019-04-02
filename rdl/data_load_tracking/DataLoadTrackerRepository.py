@@ -36,7 +36,8 @@ class DataLoadTrackerRepository(object):
             full_refresh_reason=data_load_tracker.full_refresh_reason,
             execution_time_ms=int(data_load_tracker.total_execution_time.total_seconds() * 1000),
             rows_processed=data_load_tracker.total_row_count,
-            model_checksum=data_load_tracker.model_checksum)
+            model_checksum=data_load_tracker.model_checksum,
+            failure_reason=data_load_tracker.failure_reason)
 
         session = self.session_maker()
         session.add(data_load_execution)
