@@ -3,7 +3,7 @@ import csv
 
 from io import StringIO
 from rdl.column_transformers.StringTransformers import ToUpper
-from rdl.shared import Constants
+from rdl.shared import Providers
 from rdl.shared.Utils import prevent_senstive_data_logging
 
 
@@ -97,7 +97,7 @@ class BatchDataLoader(object):
                 return column['destination']['name']
 
         # Audit columns - map them straight through
-        if source_column_name.startswith(Constants.AUDIT_COLUMN_PREFIX):
+        if source_column_name.startswith(Providers.AuditColumnsNames.audit_column_prefix):
             return source_column_name
 
         message = f"A source column with name '{source_column_name}' was not found in the column configuration"

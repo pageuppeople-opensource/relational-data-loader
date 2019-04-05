@@ -12,7 +12,7 @@ from sqlalchemy.sql import text
 
 from rdl.ColumnTypeResolver import ColumnTypeResolver
 from rdl.data_sources.ChangeTrackingInfo import ChangeTrackingInfo
-from rdl.shared import Constants
+from rdl.shared import Providers
 from rdl.shared.Utils import prevent_senstive_data_logging
 
 
@@ -97,9 +97,9 @@ class MsSqlDataSource(object):
         else:
             select_sql = f"SELECT TOP ({batch_config['size']}) {column_names}, " \
                 f"{MsSqlDataSource.CHANGE_TABLE_ALIAS}.SYS_CHANGE_VERSION" \
-                f" AS {Constants.AuditColumnNames.CHANGE_VERSION}, " \
+                f" AS {Providers.AuditColumnsNames.CHANGE_VERSION}, " \
                 f"CASE {MsSqlDataSource.CHANGE_TABLE_ALIAS}.SYS_CHANGE_OPERATION WHEN 'D' THEN 1 ELSE 0 " \
-                f"END AS {Constants.AuditColumnNames.IS_DELETED}"
+                f"END AS {Providers.AuditColumnsNames.IS_DELETED}"
             from_sql = f"FROM CHANGETABLE(CHANGES" \
                 f" {table_config['schema']}.{table_config['name']}," \
                 f" {change_tracking_info.last_sync_version})" \

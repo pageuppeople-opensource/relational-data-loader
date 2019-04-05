@@ -9,9 +9,10 @@ A utility for taking data from MS-SQL and loading it into PostgreSQL
 `py -m rdl --help`
 
 ```text
-usage: py -m rdl process [-h] [-f [FORCE_FULL_REFRESH_MODELS]] [-l [LOG_LEVEL]]
-                      source-connection-string destination-connection-string
-                      configuration-folder
+usage: py -m rdl process [-h] [-f [FORCE_FULL_REFRESH_MODELS]]
+                           [-l [LOG_LEVEL]] [-p [AUDIT_COLUMN_PREFIX]]
+                           source-connection-string
+                           destination-connection-string configuration-folder
 
 positional arguments:
   source-connection-string
@@ -38,9 +39,13 @@ optional arguments:
   -l [LOG_LEVEL], --log-level [LOG_LEVEL]
                         Set the logging output level. ['CRITICAL', 'ERROR',
                         'WARNING', 'INFO', 'DEBUG']
+  -p [AUDIT_COLUMN_PREFIX], --audit-column-prefix [AUDIT_COLUMN_PREFIX]
+                        Set the audit column prefix, used in the destination
+                        schema. Default is 'rdl_'.
 
-usage: py -m rdl audit [-h] [-l [LOG_LEVEL]]
-                    destination-connection-string model-type timestamp
+
+usage: py -m rdl audit [-h] [-l [LOG_LEVEL]] [-p [AUDIT_COLUMN_PREFIX]]
+                         destination-connection-string model-type timestamp
 
 positional arguments:
   destination-connection-string
@@ -50,15 +55,19 @@ positional arguments:
   model-type            Use the command FULL to return full refresh models or
                         the command INCR to return only the incremental models
                         since the timestamp
-  timestamp             ISO 8601 datetime with timezone (`yyyy-mm-ddThh:mm:ss.nnnnnn+|-hh:mm`) used to provide information on all
-                        actions since the specified date. Eg
-                        '2019-02-14T01:55:54.123456+00:00'.
+  timestamp             ISO 8601 datetime with timezone (yyyy-mm-
+                        ddThh:mm:ss.nnnnnn+|-hh:mm) used to provide
+                        information on all actions since the specified date.
+                        Eg '2019-02-14T01:55:54.123456+00:00'.
 
 optional arguments:
   -h, --help            show this help message and exit
   -l [LOG_LEVEL], --log-level [LOG_LEVEL]
                         Set the logging output level. ['CRITICAL', 'ERROR',
                         'WARNING', 'INFO', 'DEBUG']
+  -p [AUDIT_COLUMN_PREFIX], --audit-column-prefix [AUDIT_COLUMN_PREFIX]
+                        Set the audit column prefix, used in the destination
+                        schema. Default is 'rdl_'.
 ```
 
 _Notes:_

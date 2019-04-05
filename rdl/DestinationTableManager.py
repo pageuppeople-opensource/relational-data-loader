@@ -6,7 +6,7 @@ from rdl.ColumnTypeResolver import ColumnTypeResolver
 from sqlalchemy import MetaData, DateTime, Boolean, BigInteger
 from sqlalchemy.schema import Column, Table
 from sqlalchemy.sql import func
-from rdl.shared import Constants
+from rdl.shared import Providers
 
 
 class DestinationTableManager(object):
@@ -39,13 +39,13 @@ class DestinationTableManager(object):
             table.append_column(self.create_column(column_configuration['destination']))
 
         table.append_column(
-            Column(Constants.AuditColumnNames.TIMESTAMP, DateTime(timezone=True), server_default=func.now()))
+            Column(Providers.AuditColumnsNames.TIMESTAMP, DateTime(timezone=True), server_default=func.now()))
 
         table.append_column(
-            Column(Constants.AuditColumnNames.IS_DELETED, Boolean, server_default='f', default=False))
+            Column(Providers.AuditColumnsNames.IS_DELETED, Boolean, server_default='f', default=False))
 
         table.append_column(
-            Column(Constants.AuditColumnNames.CHANGE_VERSION, BigInteger))
+            Column(Providers.AuditColumnsNames.CHANGE_VERSION, BigInteger))
 
         if drop_first:
             self.logger.debug(f"Dropping table {schema_name}.{table_name}")
@@ -103,9 +103,9 @@ class DestinationTableManager(object):
     def upsert_table(self, schema_name, source_table_name, target_table_name, columns_config):
         column_array = list(map(lambda column: column['destination']['name'], columns_config))
         column_list = ','.join(map(str, column_array))
-        column_list = column_list + f",{Constants.AuditColumnNames.TIMESTAMP}"
-        column_list = column_list + f",{Constants.AuditColumnNames.IS_DELETED}"
-        column_list = column_list + f",{Constants.AuditColumnNames.CHANGE_VERSION}"
+        column_list = column_list + f",{Providers.AuditColumnsNames.TIMESTAMP}"
+        column_list = column_list + f",{Providers.AuditColumnsNames.IS_DELETED}"
+        column_list = column_list + f",{Providers.AuditColumnsNames.CHANGE_VERSION}"
 
         primary_key_column_array = [column_config['destination']['name'] for column_config in
                                     columns_config if 'primary_key' in column_config['destination'] and
@@ -121,9 +121,9 @@ class DestinationTableManager(object):
         for column_config in columns_config:
             sql_builder.write("{0} = EXCLUDED.{0},\n".format(column_config['destination']['name']))
 
-        sql_builder.write("{0} = EXCLUDED.{0},\n".format(Constants.AuditColumnNames.TIMESTAMP))
-        sql_builder.write("{0} = EXCLUDED.{0},\n".format(Constants.AuditColumnNames.IS_DELETED))
-        sql_builder.write("{0} = EXCLUDED.{0};\n".format(Constants.AuditColumnNames.CHANGE_VERSION))
+        sql_builder.write("{0} = EXCLUDED.{0},\n".format(Providers.AuditColumnsNames.TIMESTAMP))
+        sql_builder.write("{0} = EXCLUDED.{0},\n".format(Providers.AuditColumnsNames.IS_DELETED))
+        sql_builder.write("{0} = EXCLUDED.{0};\n".format(Providers.AuditColumnsNames.CHANGE_VERSION))
 
         upsert_sql = sql_builder.getvalue()
 

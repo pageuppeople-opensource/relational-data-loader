@@ -1,6 +1,5 @@
 APP_NAME = 'Relational Data Loader'
 DATA_PIPELINE_EXECUTION_SCHEMA_NAME = 'data_pipeline'
-AUDIT_COLUMN_PREFIX = f'{DATA_PIPELINE_EXECUTION_SCHEMA_NAME}_'
 
 
 class FullRefreshReason:
@@ -19,9 +18,3 @@ class ExecutionStatus:
     LOAD_COMPLETED_SUCCESSFULLY = 'Load Completed Successfully'
     SKIPPED_AS_ZERO_ROWS = 'Skipped - Zero Rows'
     COMPLETED_SUCCESSFULLY = 'Completed Successfully'
-
-
-class AuditColumnNames:
-    TIMESTAMP = f'{AUDIT_COLUMN_PREFIX}timestamp'
-    IS_DELETED = f'{AUDIT_COLUMN_PREFIX}is_deleted'
-    CHANGE_VERSION = f'{AUDIT_COLUMN_PREFIX}change_version'

@@ -3,7 +3,7 @@ import argparse
 from datetime import datetime
 from sqlalchemy import create_engine
 from rdl.DataLoadManager import DataLoadManager
-from rdl.shared import Constants
+from rdl.shared import Constants, Providers
 from rdl.data_load_tracking.DataLoadTrackerRepository import DataLoadTrackerRepository
 from rdl.data_sources.DataSourceFactory import DataSourceFactory
 from sqlalchemy.orm import sessionmaker
@@ -24,6 +24,7 @@ class RelationalDataLoader:
         self.args = self.get_arguments()
 
         self.configure_root_logger(self.args.log_level)
+        Providers.AuditColumnsNames.update_audit_column_prefix(self.args.audit_column_prefix)
 
         self.args.func()
 
@@ -130,6 +131,13 @@ class RelationalDataLoader:
             nargs='?',
             help=f'Set the logging output level. {_LOG_LEVEL_STRINGS}')
 
+        process_command_parser.add_argument(
+            '-p', '--audit-column-prefix',
+            default='rdl_',
+            type=str,
+            nargs='?',
+            help=f'Set the audit column prefix, used in the destination schema. Default is \'rdl_\'. ')
+
         audit_command_parser = subparsers.add_parser('audit',
                                                      help='provides list of processed models since a given timestamp')
         audit_command_parser.set_defaults(func=self.execute_audit_command)
@@ -161,6 +169,13 @@ class RelationalDataLoader:
             type=self.log_level_string_to_int,
             nargs='?',
             help=f'Set the logging output level. {_LOG_LEVEL_STRINGS}')
+
+        audit_command_parser.add_argument(
+            '-p', '--audit-column-prefix',
+            default='rdl_',
+            type=str,
+            nargs='?',
+            help=f'Set the audit column prefix, used in the destination schema. Default is \'rdl_\'. ')
 
         return parser.parse_args()
 
