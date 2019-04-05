@@ -1,5 +1,5 @@
 APP_NAME = 'Relational Data Loader'
-DATA_PIPELINE_EXECUTION_SCHEMA_NAME = 'data_pipeline'
+DATA_PIPELINE_EXECUTION_SCHEMA_NAME = 'rdl'
 
 
 class FullRefreshReason:

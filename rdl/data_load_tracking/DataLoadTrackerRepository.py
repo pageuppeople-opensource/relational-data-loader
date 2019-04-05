@@ -1,6 +1,6 @@
 import logging
 
-from rdl.data_load_tracking.DataLoadExecution import DataLoadExecution, Base
+from rdl.data_load_tracking.DataLoadExecution import DataLoadExecution
 from rdl.shared import Constants
 
 from sqlalchemy import desc
@@ -11,10 +11,6 @@ class DataLoadTrackerRepository(object):
     def __init__(self, session_maker, logger=None):
         self.logger = logger or logging.getLogger(__name__)
         self.session_maker = session_maker
-
-    def ensure_schema_exists(self, engine):
-        engine.execute(f"CREATE SCHEMA IF NOT EXISTS {Constants.DATA_PIPELINE_EXECUTION_SCHEMA_NAME}")
-        Base.metadata.create_all(engine)
 
     def get_last_successful_data_load_execution(self, model_name):
         session = self.session_maker()

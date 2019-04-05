@@ -7,7 +7,7 @@ from rdl.data_sources.MsSqlDataSource import MsSqlDataSource
 TEST_DB = "RDLUnitTestSource"
 MSSQL_STRING_FORMAT = "mssql+pyodbc://{username}:{password}@{server_string}/{db}?driver=SQL+Server+Native+Client+11.0"
 
-SQL_PATH = "./rdl/tests/setup/"
+SQL_PATH = "./tests/unit_tests/setup/"
 SQL_ORDERED_FILES = [
     {
         "db": "master",
@@ -18,7 +18,7 @@ SQL_ORDERED_FILES = [
         "file_name": "create_simple_table.sql"
     }]
 
-CONFIG_PATH = "./rdl/tests/config/"
+CONFIG_PATH = "./tests/unit_tests/config/"
 CONFIG_FILES = ["SimpleTableTest.json"]
 
 

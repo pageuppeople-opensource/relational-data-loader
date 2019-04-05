@@ -32,9 +32,9 @@ install:
 
 build_script:
   #Setup the source MSSQL database
-  - sqlcmd -b -E -S "(local)\SQL2016" -i .\integration_tests\mssql_source\source_database_setup\create_database.sql
-  - sqlcmd -b -E -f 65001 -S "(local)\SQL2016" -d RelationalDataLoaderIntegrationTestSource -i .\integration_tests\mssql_source\source_database_setup\create_large_table.sql
-  - sqlcmd -b -E -f 65001 -S "(local)\SQL2016" -d RelationalDataLoaderIntegrationTestSource -i .\integration_tests\mssql_source\source_database_setup\create_compound_pk.sql
+  - sqlcmd -b -E -S "(local)\SQL2016" -i .\tests\integration_tests\mssql_source\source_database_setup\create_database.sql
+  - sqlcmd -b -E -f 65001 -S "(local)\SQL2016" -d RelationalDataLoaderIntegrationTestSource -i .\tests\integration_tests\mssql_source\source_database_setup\create_large_table.sql
+  - sqlcmd -b -E -f 65001 -S "(local)\SQL2016" -d RelationalDataLoaderIntegrationTestSource -i .\tests\integration_tests\mssql_source\source_database_setup\create_compound_pk.sql
 
   #Setup the target PostgreSQL database
   - psql -c "SELECT VERSION()"
@@ -42,7 +42,8 @@ build_script:
   - psql -d %DBNAME% -c "CREATE EXTENSION IF NOT EXISTS citext"
   - C:\projects\relational-data-loader\venv\Scripts\activate.bat
   #Install the dependencies for rdl.
-  - pip install -r requirements.txt
+  - pip install .
+  - alembic -c rdl/alembic.ini -x postgresql+psycopg2://postgres:there_is_no_password_due_to_pg_trust@localhost/relational_data_loader_integration_tests upgrade head
 
 test_script:
   # unit tests
@@ -58,11 +59,11 @@ test_script:
   - test_full_refresh_from_mssql.cmd
   - test_incremental_refresh_from_mssql.cmd
 
-  - sqlcmd -b -E -f 65001 -S "(local)\SQL2016" -d RelationalDataLoaderIntegrationTestSource -i .\integration_tests\mssql_source\source_database_setup\change_compound_pk.sql
+  - sqlcmd -b -E -f 65001 -S "(local)\SQL2016" -d RelationalDataLoaderIntegrationTestSource -i .\tests\integration_tests\mssql_source\source_database_setup\change_compound_pk.sql
 
   - test_incremental_refresh_from_mssql.cmd
 
-  - sqlcmd -b -E -f 65001 -S "(local)\SQL2016" -d RelationalDataLoaderIntegrationTestSource -i .\integration_tests\mssql_source\source_database_setup\change_large_table.sql
+  - sqlcmd -b -E -f 65001 -S "(local)\SQL2016" -d RelationalDataLoaderIntegrationTestSource -i .\tests\integration_tests\mssql_source\source_database_setup\change_large_table.sql
 
   - test_full_refresh_from_mssql.cmd
   - test_audit.cmd

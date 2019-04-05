@@ -1,6 +1,7 @@
 import unittest
 import uuid
 import json
+import subprocess
 
 from hashlib import md5
 from random import randrange
@@ -16,7 +17,7 @@ from rdl.shared import Constants
 TEST_DB = "rdl_unit_test_dest"
 PSQL_STRING_FORMAT = "postgresql+psycopg2://{username}:{password}@{server_string}/{db}"
 
-CONFIG_PATH = "./rdl/tests/config/"
+CONFIG_PATH = "./tests/unit_tests/config/"
 
 
 class TestDataLoadTrackerRepository(unittest.TestCase):
@@ -34,9 +35,10 @@ class TestDataLoadTrackerRepository(unittest.TestCase):
         conn.execute(f"CREATE DATABASE {TEST_DB};")
         conn.close()
 
+        subprocess.call(f"alembic -c rdl/alembic.ini -x {gen_connection_string.format(db=TEST_DB)} upgrade head")
+
         cls.target_engine = create_engine(gen_connection_string.format(db=TEST_DB))
         cls.data_load_tracker = DataLoadTrackerRepository(sessionmaker(bind=cls.target_engine))
-        cls.data_load_tracker.ensure_schema_exists(cls.target_engine)
 
     @classmethod
     def tearDownClass(cls):
