@@ -2,6 +2,7 @@ import json
 import uuid
 import logging
 import hashlib
+from datetime import datetime
 from pathlib import Path
 from json import JSONDecodeError
 
@@ -25,6 +26,9 @@ class DataLoadManager(object):
         self.all_model_pattern = self.model_pattern.format(model_name='*')
 
     def start_imports(self, force_full_refresh_models):
+        self.logger.info(f"Starting Execution ID: '{self.correlation_id}'")
+        execution_start_time = datetime.now()
+
         model_folder = Path(self.configuration_path)
         if not model_folder.is_dir():
             raise NotADirectoryError(self.configuration_path)
@@ -57,6 +61,18 @@ class DataLoadManager(object):
             self.start_single_import(model_file, request_full_refresh, model_number, total_number_of_models)
 
         self.logger.info("Execution completed.")
+        execution_end_time = datetime.now()
+        total_execution_seconds = int((execution_end_time - execution_start_time).total_seconds())
+        execution_hours = total_execution_seconds // 3600
+        execution_minutes = (total_execution_seconds // 60) % 60
+        execution_seconds = total_execution_seconds % 60
+        total_number_of_rows_processed = self.data_load_tracker_repository.get_execution_rows(self.correlation_id)
+        self.logger.info(
+            f"Completed Execution ID: {self.correlation_id}"
+            f"\n\tModels Processed: {total_number_of_models}"
+            f"\n\tRows Processed: {total_number_of_rows_processed}"
+            f"\n\tExecution Time: {execution_hours}h {execution_minutes}m {execution_seconds}s"
+            f"\n\tAverage of {total_number_of_rows_processed//max(total_execution_seconds, 1)} rows per second.")
 
     def start_single_import(self, model_file, requested_full_refresh, model_number, total_number_of_models):
         model_name = model_file.stem

@@ -40,6 +40,14 @@ class DataLoadTrackerRepository(object):
         session.commit()
         session.close()
 
+    def get_execution_rows(self, correlation_id):
+        session = self.session_maker()
+        results = session.query(func.sum(DataLoadExecution.rows_processed))\
+            .filter(DataLoadExecution.correlation_id == correlation_id)\
+            .scalar()
+        session.close()
+        return results
+
     def get_full_refresh_since(self, timestamp):
         session = self.session_maker()
         results = session.query(DataLoadExecution.model_name)\

@@ -54,7 +54,7 @@ class DataLoadTracker:
         self.failure_reason = failure_reason
         for batch in self.batches:
             self.total_row_count += batch.row_count
-        self.rows_per_second = self.total_row_count / (self.total_execution_time.total_seconds() + 1e-10)
+        self.rows_per_second = self.total_row_count / max(self.total_execution_time.total_seconds(), 1)
 
     def get_statistics(self):
         load_type = 'FULL' if self.is_full_refresh else f"INCREMENTAL from " \

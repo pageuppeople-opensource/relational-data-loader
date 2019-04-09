@@ -57,7 +57,7 @@ class MsSqlDataSource(object):
         server = conn_string_data.group('server')
         failover = conn_string_data.group('failover')
         database = conn_string_data.group('database')
-        driver = "{"+conn_string_data.group('driver').replace('+', ' ')+"}"
+        driver = "{" + conn_string_data.group('driver').replace('+', ' ') + "}"
         dsn = f'DRIVER={driver};DATABASE={database};'
 
         username = conn_string_data.group('username')
