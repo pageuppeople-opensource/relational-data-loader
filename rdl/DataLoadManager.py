@@ -69,10 +69,10 @@ class DataLoadManager(object):
         total_number_of_rows_processed = self.data_load_tracker_repository.get_execution_rows(self.correlation_id)
         self.logger.info(
             f"Completed Execution ID: {self.correlation_id}"
-            f"\n\tModels Processed: {total_number_of_models}"
-            f"\n\tRows Processed: {total_number_of_rows_processed}"
-            f"\n\tExecution Time: {execution_hours}h {execution_minutes}m {execution_seconds}s"
-            f"\n\tAverage of {total_number_of_rows_processed//max(total_execution_seconds, 1)} rows per second.")
+            f"; Models Processed: {total_number_of_models:,}"
+            f"; Rows Processed: {total_number_of_rows_processed:,}"
+            f"; Execution Time: {execution_hours}h {execution_minutes}m {execution_seconds}s"
+            f"; Average rows processed per second: {(total_number_of_rows_processed//max(total_execution_seconds, 1)):,}.")
 
     def start_single_import(self, model_file, requested_full_refresh, model_number, total_number_of_models):
         model_name = model_file.stem
