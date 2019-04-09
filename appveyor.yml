@@ -47,28 +47,28 @@ build_script:
 
 test_script:
   # unit tests
-  - test_run_unit_tests.cmd
+  - .\tests\unit_tests\run_unit_tests.cmd
 
   # integration tests
-  - test_full_refresh_from_csv.cmd
-  - test_full_refresh_from_mssql.cmd
-  - test_incremental_refresh_from_csv.cmd
-  - test_incremental_refresh_from_mssql.cmd
-  - test_audit.cmd
+  - .\tests\integration_tests\test_full_refresh_from_csv.cmd
+  - .\tests\integration_tests\test_full_refresh_from_mssql.cmd
+  - .\tests\integration_tests\test_incremental_refresh_from_csv.cmd
+  - .\tests\integration_tests\test_incremental_refresh_from_mssql.cmd
+  - .\tests\integration_tests\test_audit.cmd
 
-  - test_full_refresh_from_mssql.cmd
-  - test_incremental_refresh_from_mssql.cmd
+  - .\tests\integration_tests\test_full_refresh_from_mssql.cmd
+  - .\tests\integration_tests\test_incremental_refresh_from_mssql.cmd
 
   - sqlcmd -b -E -f 65001 -S "(local)\SQL2016" -d RelationalDataLoaderIntegrationTestSource -i .\tests\integration_tests\mssql_source\source_database_setup\change_compound_pk.sql
 
-  - test_incremental_refresh_from_mssql.cmd
+  - .\tests\integration_tests\test_incremental_refresh_from_mssql.cmd
 
   - sqlcmd -b -E -f 65001 -S "(local)\SQL2016" -d RelationalDataLoaderIntegrationTestSource -i .\tests\integration_tests\mssql_source\source_database_setup\change_large_table.sql
 
-  - test_full_refresh_from_mssql.cmd
-  - test_audit.cmd
-  - test_pi_leak.cmd
-  - test_mssql_failover_server.cmd
+  - .\tests\integration_tests\test_full_refresh_from_mssql.cmd
+  - .\tests\integration_tests\test_audit.cmd
+  - .\tests\integration_tests\test_pi_leak.cmd
+  - .\tests\integration_tests\test_mssql_failover_server.cmd
 
 on_finish:
   #Enable this line to make the build pause after completion for RDP troubleshooting.

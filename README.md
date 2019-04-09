@@ -76,7 +76,7 @@ _Notes:_
 
 ### Examples
 
-See `test_*.cmd` scripts for usage samples.
+See `./tests/integration_tests/test_*.cmd` scripts for usage samples.
 
 ## Development
 
@@ -143,7 +143,7 @@ _See [Postgres docs](https://www.postgresql.org/docs/9.1/static/auth-pg-hba-conf
 
 _Setup:_
 
-Create a new SQL Server Login/User using the script below. Make sure you update it with your desired password and if you update the username/login, please ensure the changes are reflected in: `rdl/tests/config/connection.json`, which can be created using `rdl/tests/config/connection.json.template`.
+Create a new SQL Server Login/User using the script below. Make sure you update it with your desired password and if you update the username/login, please ensure the changes are reflected in: `./tests/unit_tests/config/connection.json`, which can be created using `./tests/unit_tests/config/connection.json.template`.
 
 ```sql
 USE master;

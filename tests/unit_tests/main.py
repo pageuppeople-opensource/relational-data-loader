@@ -1,4 +1,5 @@
-from tests.unit_tests import test_MsSqlDataSource, test_DataLoadTrackerRepository
+import test_MsSqlDataSource
+import test_DataLoadTrackerRepository
 import unittest
 import sys
 
