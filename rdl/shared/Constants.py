@@ -12,9 +12,20 @@ class FullRefreshReason:
 
 
 class ExecutionStatus:
-    NOT_STARTED = 'Not Started'
+    STARTED = 'Started'
     FAILED = 'Failed'
-    EXTRACT_COMPLETED_SUCCESSFULLY = 'Extract Completed Successfully'
-    LOAD_COMPLETED_SUCCESSFULLY = 'Load Completed Successfully'
+    UNKNOWN = 'UNKNOWN'
+    SUCCESSFUL = 'Successful'
+
+
+class ExecutionModelStatus:
+    STARTED = 'Started'
+    FAILED = 'Failed'
+    SUCCESSFUL = 'Successful'
+
+
+class BatchExecutionStatus:
+    STARTED = 'Started'
+    EXTRACT_COMPLETED_SUCCESSFULLY = 'Extract Successful'
+    LOAD_COMPLETED_SUCCESSFULLY = 'Load Successful'
     SKIPPED_AS_ZERO_ROWS = 'Skipped - Zero Rows'
-    COMPLETED_SUCCESSFULLY = 'Completed Successfully'

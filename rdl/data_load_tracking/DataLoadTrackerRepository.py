@@ -1,6 +1,6 @@
 import logging
 
-from rdl.data_load_tracking.DataLoadExecution import DataLoadExecution
+from rdl.entities import ExecutionModelEntity, ExecutionEntity
 from rdl.shared import Constants
 
 from sqlalchemy import desc
@@ -14,71 +14,125 @@ class DataLoadTrackerRepository(object):
 
     def get_last_successful_data_load_execution(self, model_name):
         session = self.session_maker()
-        result = session.query(DataLoadExecution)\
-            .filter_by(model_name=model_name, status=Constants.ExecutionStatus.COMPLETED_SUCCESSFULLY)\
-            .order_by(desc(DataLoadExecution.completed_on))\
+        result = session.query(ExecutionModelEntity)\
+            .filter_by(model_name=model_name, status=Constants.ExecutionModelStatus.SUCCESSFUL)\
+            .order_by(desc(ExecutionModelEntity.completed_on))\
             .first()
         session.close()
         return result
 
-    def save(self, data_load_tracker):
-        data_load_execution = DataLoadExecution(
-            correlation_id=data_load_tracker.correlation_id,
+    def create_execution(self):
+        session = self.session_maker()
+        new_execution = ExecutionEntity()
+        session.add(new_execution)
+        session.commit()
+        self.logger.info(new_execution)
+        execution_id = new_execution.id
+        session.close()
+        return execution_id
+
+    def fail_execution(self, execution_id, models_so_far):
+        self.complete_execution(execution_id, models_so_far, status=Constants.ExecutionStatus.FAILED)
+
+    def complete_execution(self, execution_id, total_number_of_models,
+                           status=Constants.ExecutionStatus.SUCCESSFUL):
+        session = self.session_maker()
+        current_execution = session.query(ExecutionEntity) \
+            .filter(ExecutionEntity.id == execution_id) \
+            .one()
+
+        execution_end_time = session.query(func.now()).scalar()
+        total_execution_seconds = (execution_end_time - current_execution.execution_started).total_seconds()
+
+        current_execution.total_models_processed = total_number_of_models
+        current_execution.status = status
+        current_execution.execution_ended = execution_end_time
+        current_execution.execution_time_ms = int(total_execution_seconds * 1000)
+        current_execution.total_rows_processed = self.get_execution_rows(current_execution.id)
+        session.commit()
+        self.logger.info(current_execution)
+        session.close()
+
+    def create_execution_model(self, data_load_tracker):
+        new_execution_model = ExecutionModelEntity(
+            execution_id=data_load_tracker.execution_id,
             model_name=data_load_tracker.model_name,
             status=data_load_tracker.status,
             last_sync_version=data_load_tracker.change_tracking_info.last_sync_version,
             sync_version=data_load_tracker.change_tracking_info.sync_version,
             is_full_refresh=data_load_tracker.is_full_refresh,
             full_refresh_reason=data_load_tracker.full_refresh_reason,
-            execution_time_ms=int(data_load_tracker.total_execution_time.total_seconds() * 1000),
-            rows_processed=data_load_tracker.total_row_count,
             model_checksum=data_load_tracker.model_checksum,
             failure_reason=data_load_tracker.failure_reason)
 
         session = self.session_maker()
-        session.add(data_load_execution)
+        session.add(new_execution_model)
         session.commit()
         session.close()
 
-    def get_execution_rows(self, correlation_id):
+    def save_execution_model(self, data_load_tracker):
         session = self.session_maker()
-        results = session.query(func.sum(DataLoadExecution.rows_processed))\
-            .filter(DataLoadExecution.correlation_id == correlation_id)\
+        current_execution_model = session.query(ExecutionModelEntity) \
+            .filter(ExecutionModelEntity.execution_id == data_load_tracker.execution_id) \
+            .filter(ExecutionModelEntity.model_name == data_load_tracker.model_name) \
+            .one()
+
+        execution_end_time = session.query(func.now()).scalar()
+        total_execution_seconds = (execution_end_time - current_execution_model.started_on).total_seconds()
+
+        current_execution_model.completed_on = execution_end_time
+        current_execution_model.execution_time_ms = int(total_execution_seconds * 1000)
+
+        current_execution_model.rows_processed = data_load_tracker.total_row_count
+        current_execution_model.status = data_load_tracker.status
+        current_execution_model.is_full_refresh = data_load_tracker.is_full_refresh
+        current_execution_model.full_refresh_reason = data_load_tracker.full_refresh_reason
+        current_execution_model.model_checksum = data_load_tracker.model_checksum
+        current_execution_model.failure_reason = data_load_tracker.failure_reason
+
+        session.commit()
+        self.logger.info(current_execution_model)
+        session.close()
+
+    def get_execution_rows(self, execution_id):
+        session = self.session_maker()
+        results = session.query(func.sum(ExecutionModelEntity.rows_processed))\
+            .filter(ExecutionModelEntity.execution_id == execution_id)\
             .scalar()
         session.close()
         return results
 
     def get_full_refresh_since(self, timestamp):
         session = self.session_maker()
-        results = session.query(DataLoadExecution.model_name)\
-            .filter(DataLoadExecution.completed_on > timestamp,
-                    DataLoadExecution.is_full_refresh)\
-            .distinct(DataLoadExecution.model_name)\
-            .group_by(DataLoadExecution.model_name)\
+        results = session.query(ExecutionModelEntity.model_name)\
+            .filter(ExecutionModelEntity.completed_on > timestamp,
+                    ExecutionModelEntity.is_full_refresh)\
+            .distinct(ExecutionModelEntity.model_name)\
+            .group_by(ExecutionModelEntity.model_name)\
             .all()
         session.close()
         return [r for (r, ) in results]
 
     def get_incremental_since(self, timestamp):
         session = self.session_maker()
-        results = session.query(DataLoadExecution.model_name)\
-            .filter(DataLoadExecution.completed_on > timestamp,
-                    DataLoadExecution.is_full_refresh == False,
-                    DataLoadExecution.rows_processed > 0)\
-            .distinct(DataLoadExecution.model_name)\
-            .group_by(DataLoadExecution.model_name)\
+        results = session.query(ExecutionModelEntity.model_name)\
+            .filter(ExecutionModelEntity.completed_on > timestamp,
+                    ExecutionModelEntity.is_full_refresh == False,
+                    ExecutionModelEntity.rows_processed > 0)\
+            .distinct(ExecutionModelEntity.model_name)\
+            .group_by(ExecutionModelEntity.model_name)\
             .all()
         session.close()
         return [r for (r, ) in results]
 
     def get_only_incremental_since(self, timestamp):
         session = self.session_maker()
-        results = session.query(DataLoadExecution.model_name)\
-            .filter(DataLoadExecution.completed_on > timestamp,
-                    DataLoadExecution.rows_processed > 0)\
-            .distinct(DataLoadExecution.model_name)\
-            .group_by(DataLoadExecution.model_name)\
-            .having(func.bool_and(DataLoadExecution.is_full_refresh == False))\
+        results = session.query(ExecutionModelEntity.model_name)\
+            .filter(ExecutionModelEntity.completed_on > timestamp,
+                    ExecutionModelEntity.rows_processed > 0)\
+            .distinct(ExecutionModelEntity.model_name)\
+            .group_by(ExecutionModelEntity.model_name)\
+            .having(func.bool_and(ExecutionModelEntity.is_full_refresh == False))\
             .all()
         session.close()
         return [r for (r, ) in results]

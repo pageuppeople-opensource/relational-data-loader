@@ -10,7 +10,7 @@ from datetime import datetime, timedelta
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
 
-from rdl.data_load_tracking.DataLoadExecution import DataLoadExecution
+from rdl.entities import ExecutionModelEntity, ExecutionEntity
 from rdl.data_load_tracking.DataLoadTrackerRepository import DataLoadTrackerRepository
 from rdl.shared import Constants
 
@@ -159,8 +159,9 @@ class TestDataLoadTrackerRepository(unittest.TestCase):
         self.fake_session.close()
 
     def __simulate_rdl_run(self, iteration_time, full_refresh_models, incremental_models):
-
-        correlation_id = uuid.uuid4()
+        execution = ExecutionEntity()
+        self.fake_session.add(execution)
+        self.fake_session.commit()
 
         # emulate an execution of RDL
         for j, fake_model in enumerate(self.fake_models):
@@ -171,7 +172,7 @@ class TestDataLoadTrackerRepository(unittest.TestCase):
             full_refresh_reason = Constants.FullRefreshReason.NOT_APPLICABLE
             is_full_refresh = False
             rows_processed = 0
-            status = Constants.ExecutionStatus.SKIPPED_AS_ZERO_ROWS
+            status = Constants.ExecutionModelStatus.STARTED
             next_sync_version = fake_model["sync_version"]
 
             # fake a model change
@@ -185,12 +186,12 @@ class TestDataLoadTrackerRepository(unittest.TestCase):
             # fake a row update/change
             elif fake_model["name"] in incremental_models:
                 rows_processed = randrange(1, fake_model["num_rows"])
-                status = Constants.ExecutionStatus.COMPLETED_SUCCESSFULLY
+                status = Constants.ExecutionModelStatus.SUCCESSFUL
 
                 # emulate a random amount of changes from change tracking
                 next_sync_version += randrange(1, 10)
 
-            fake_data_load = DataLoadExecution(
+            fake_data_load = ExecutionModelEntity(
                 model_name=fake_model["name"],
                 is_full_refresh=is_full_refresh,
                 last_sync_version=fake_model["sync_version"],
@@ -198,7 +199,7 @@ class TestDataLoadTrackerRepository(unittest.TestCase):
                 completed_on=completed_on,
                 execution_time_ms=execution_time_ms,
                 rows_processed=rows_processed,
-                correlation_id=correlation_id,
+                execution_id=execution.id,
                 status=status,
                 model_checksum=fake_model["checksum"],
                 full_refresh_reason=full_refresh_reason

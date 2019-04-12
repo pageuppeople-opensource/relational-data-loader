@@ -10,6 +10,9 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# generated csvs
+rdl_integration_tests.*.csv
+
 # C extensions
 *.so
 

@@ -21,13 +21,11 @@ class DataLoadManager(object):
         self.source_db = source_db
         self.target_db = target_db
         self.data_load_tracker_repository = data_load_tracker_repository
-        self.correlation_id = uuid.uuid4()
         self.model_pattern = '**/{model_name}.json'
         self.all_model_pattern = self.model_pattern.format(model_name='*')
 
     def start_imports(self, force_full_refresh_models):
-        self.logger.info(f"Starting Execution ID: '{self.correlation_id}'")
-        execution_start_time = datetime.now()
+        self.execution_id = self.data_load_tracker_repository.create_execution()
 
         model_folder = Path(self.configuration_path)
         if not model_folder.is_dir():
@@ -60,19 +58,7 @@ class DataLoadManager(object):
             model_number += 1  # avoid all_model_names.index(model_name) due to linear time-complexity in list length
             self.start_single_import(model_file, request_full_refresh, model_number, total_number_of_models)
 
-        self.logger.info("Execution completed.")
-        execution_end_time = datetime.now()
-        total_execution_seconds = int((execution_end_time - execution_start_time).total_seconds())
-        execution_hours = total_execution_seconds // 3600
-        execution_minutes = (total_execution_seconds // 60) % 60
-        execution_seconds = total_execution_seconds % 60
-        total_number_of_rows_processed = self.data_load_tracker_repository.get_execution_rows(self.correlation_id)
-        self.logger.info(
-            f"Completed Execution ID: {self.correlation_id}"
-            f"; Models Processed: {total_number_of_models:,}"
-            f"; Rows Processed: {total_number_of_rows_processed:,}"
-            f"; Execution Time: {execution_hours}h {execution_minutes}m {execution_seconds}s"
-            f"; Average rows processed per second: {(total_number_of_rows_processed//max(total_execution_seconds, 1)):,}.")
+        self.data_load_tracker_repository.complete_execution(self.execution_id, total_number_of_models)
 
     def start_single_import(self, model_file, requested_full_refresh, model_number, total_number_of_models):
         model_name = model_file.stem
@@ -128,9 +114,9 @@ class DataLoadManager(object):
         if full_refresh:
             self.logger.info(f"Performing full refresh for reason '{full_refresh_reason}'")
 
-        data_load_tracker = DataLoadTracker(self.correlation_id, model_name, model_checksum, model_config,
+        data_load_tracker = DataLoadTracker(self.execution_id, model_name, model_checksum, model_config,
                                             full_refresh, full_refresh_reason, change_tracking_info)
-
+        self.data_load_tracker_repository.create_execution_model(data_load_tracker)
         destination_table_manager.create_schema(model_config['target_schema'])
 
         self.logger.debug(f"Recreating the staging table {model_config['target_schema']}."
@@ -158,7 +144,8 @@ class DataLoadManager(object):
                 batch_data_loader.load_batch(batch_key_tracker)
             except SensitiveDataError as e:
                 data_load_tracker.data_load_failed(e.sensitive_error_args)
-                self.data_load_tracker_repository.save(data_load_tracker)
+                self.data_load_tracker_repository.save_execution_model(data_load_tracker)
+                self.data_load_tracker_repository.fail_execution(self.execution_id, model_number)
                 raise e
 
         if full_refresh:
@@ -177,10 +164,9 @@ class DataLoadManager(object):
             destination_table_manager.drop_table(model_config['target_schema'],
                                                  model_config['stage_table'])
         data_load_tracker.data_load_successful()
-        self.data_load_tracker_repository.save(data_load_tracker)
         self.logger.info(f"{model_number:0{max_model_number_len}d} of {total_number_of_models}"
-                         f" COMPLETED {model_name},"
-                         f" {data_load_tracker.get_statistics()}")
+                         f" COMPLETED {model_name}")
+        self.data_load_tracker_repository.save_execution_model(data_load_tracker)
 
     @staticmethod
     def is_full_refresh(*,
