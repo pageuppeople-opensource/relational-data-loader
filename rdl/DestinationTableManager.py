@@ -100,6 +100,12 @@ class DestinationTableManager(object):
         self.logger.debug(f"Table Rename, executing '{sql}'")
         self.target_db.execute(sql)
 
+        for col in [Providers.AuditColumnsNames.IS_DELETED,
+            Providers.AuditColumnsNames.TIMESTAMP,
+            Providers.AuditColumnsNames.CHANGE_VERSION]:
+            self.target_db.execute( f"CREATE INDEX ix_{schema_name}_{target_table_name}_{col} "
+                                    f" ON {schema_name}.{target_table_name} ({col}); ")
+
     def upsert_table(self, schema_name, source_table_name, target_table_name, columns_config):
         column_array = list(map(lambda column: column['destination']['name'], columns_config))
         column_list = ','.join(map(str, column_array))
