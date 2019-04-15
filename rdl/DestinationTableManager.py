@@ -100,10 +100,16 @@ class DestinationTableManager(object):
         self.logger.debug(f"Table Rename, executing '{sql}'")
         self.target_db.execute(sql)
 
+        from hashlib import md5
+
         for col in [Providers.AuditColumnsNames.IS_DELETED,
             Providers.AuditColumnsNames.TIMESTAMP,
             Providers.AuditColumnsNames.CHANGE_VERSION]:
-            self.target_db.execute( f"CREATE INDEX ix_{schema_name}_{target_table_name}_{col} "
+            ix_name = f"ix_{schema_name}_{target_table_name}_{col}"
+            if len(ix_name) > 50:
+                over = len(ix_name) - 50
+                ix_name = target_table_name[:-over]+str(md5(target_table_name))[:10]
+            self.target_db.execute( f"CREATE INDEX  {ix_name}"
                                     f" ON {schema_name}.{target_table_name} ({col}); ")
 
     def upsert_table(self, schema_name, source_table_name, target_table_name, columns_config):
