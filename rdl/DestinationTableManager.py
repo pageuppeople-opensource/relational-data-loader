@@ -108,7 +108,7 @@ class DestinationTableManager(object):
             ix_name = f"ix_{schema_name}_{target_table_name}_{col}"
             if len(ix_name) > 50:
                 over = len(ix_name) - 50
-                ix_name = target_table_name[:-over]+str(md5(bytes(target_table_name, encoding="utf-8")))[:10]
+                ix_name = target_table_name[:-over]+str(md5(bytes(target_table_name.encode("utf-8"))).hexdigest())[:10]
             self.target_db.execute( f"CREATE INDEX  {ix_name}"
                                     f" ON {schema_name}.{target_table_name} ({col}); ")
 
