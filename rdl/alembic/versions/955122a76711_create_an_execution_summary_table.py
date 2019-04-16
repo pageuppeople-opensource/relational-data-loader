@@ -25,8 +25,8 @@ def upgrade():
                     sa.Column('execution_started', sa.DateTime(timezone=True),
                               server_default=sa.text('now()'), nullable=True),
                     sa.Column('execution_ended', sa.DateTime(timezone=True), nullable=True),
-                    sa.Column('execution_time_ms', sa.Integer(), nullable=True),
-                    sa.Column('total_rows_processed', sa.Integer(), nullable=True),
+                    sa.Column('execution_time_s', sa.Integer(), nullable=True),
+                    sa.Column('total_rows_processed', sa.BigInteger(), nullable=True),
                     sa.Column('total_models_processed', sa.Integer(), nullable=True),
                     sa.Column('status', sa.String(length=25), nullable=False),
                     sa.PrimaryKeyConstraint('id'),
@@ -38,11 +38,11 @@ def upgrade():
         '''
         INSERT INTO rdl.execution (
             id, execution_started,
-            execution_ended, execution_time_ms, total_rows_processed, total_models_processed, status
+            execution_ended, execution_time_s, total_rows_processed, total_models_processed, status
             )
         SELECT
             execution_id, MAX(completed_on) - make_interval(secs := SUM(execution_time_ms)::decimal / 1000),
-            MAX(completed_on), SUM(execution_time_ms), SUM(rows_processed), COUNT(id), 'UNKNOWN'
+            MAX(completed_on), SUM(execution_time_ms) / 1000, SUM(rows_processed), COUNT(id), 'UNKNOWN'
         FROM rdl.data_load_execution
         GROUP BY execution_id
         ''')

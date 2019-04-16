@@ -47,7 +47,7 @@ class DataLoadTrackerRepository(object):
         current_execution.total_models_processed = total_number_of_models
         current_execution.status = status
         current_execution.execution_ended = execution_end_time
-        current_execution.execution_time_ms = int(total_execution_seconds * 1000)
+        current_execution.execution_time_s = total_execution_seconds
         current_execution.total_rows_processed = self.get_execution_rows(current_execution.id)
         session.commit()
         self.logger.info(current_execution)

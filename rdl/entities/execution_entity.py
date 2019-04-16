@@ -1,6 +1,6 @@
 import uuid
 
-from sqlalchemy import Column, DateTime, Integer, String
+from sqlalchemy import Column, DateTime, Integer, String, BigInteger
 from sqlalchemy.sql import func
 from sqlalchemy.dialects.postgresql import UUID
 
@@ -14,8 +14,8 @@ class ExecutionEntity(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     execution_started = Column(DateTime(timezone=True), server_default=func.now())
     execution_ended = Column(DateTime(timezone=True))
-    execution_time_ms = Column(Integer, nullable=True)
-    total_rows_processed = Column(Integer, nullable=True)
+    execution_time_s = Column(Integer, nullable=True)
+    total_rows_processed = Column(BigInteger, nullable=True)
     total_models_processed = Column(Integer, nullable=True)
     status = Column(String(25), nullable=False, default=Constants.ExecutionStatus.STARTED)
 
@@ -23,7 +23,7 @@ class ExecutionEntity(Base):
         if self.status == Constants.ExecutionStatus.STARTED:
             return f"Started Execution ID: {self.id} at {self.execution_started}"
 
-        total_execution_seconds = self.execution_time_ms // 1000
+        total_execution_seconds = self.execution_time_s
         execution_hours = total_execution_seconds // 3600
         execution_minutes = (total_execution_seconds // 60) % 60
         execution_seconds = total_execution_seconds % 60
