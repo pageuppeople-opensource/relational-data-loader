@@ -43,15 +43,17 @@ class DataLoadTrackerRepository(object):
 
         execution_end_time = session.query(func.now()).scalar()
         total_execution_seconds = (execution_end_time - current_execution.execution_started).total_seconds()
+        total_rows_processed = self.get_execution_rows(current_execution.id)
 
         current_execution.total_models_processed = total_number_of_models
         current_execution.status = status
         current_execution.execution_ended = execution_end_time
         current_execution.execution_time_s = total_execution_seconds
-        current_execution.total_rows_processed = self.get_execution_rows(current_execution.id)
+        current_execution.total_rows_processed = total_rows_processed
         session.commit()
         self.logger.info(current_execution)
         session.close()
+        return total_rows_processed
 
     def create_execution_model(self, data_load_tracker):
         new_execution_model = ExecutionModelEntity(

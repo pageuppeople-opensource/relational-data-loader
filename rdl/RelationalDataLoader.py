@@ -36,7 +36,9 @@ class RelationalDataLoader:
         repository = DataLoadTrackerRepository(session_maker)
 
         data_load_manager = DataLoadManager(self.args.configuration_folder, source_db, destination_db, repository)
-        data_load_manager.start_imports(self.args.force_full_refresh_models)
+        total_rows_processed = data_load_manager.start_imports(self.args.force_full_refresh_models)
+
+        print(total_rows_processed)
 
     def execute_audit_command(self):
         destination_db = create_engine(self.args.destination_connection_string)

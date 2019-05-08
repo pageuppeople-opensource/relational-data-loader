@@ -58,7 +58,7 @@ class DataLoadManager(object):
             model_number += 1  # avoid all_model_names.index(model_name) due to linear time-complexity in list length
             self.start_single_import(model_file, request_full_refresh, model_number, total_number_of_models)
 
-        self.data_load_tracker_repository.complete_execution(self.execution_id, total_number_of_models)
+        return self.data_load_tracker_repository.complete_execution(self.execution_id, total_number_of_models)
 
     def start_single_import(self, model_file, requested_full_refresh, model_number, total_number_of_models):
         model_name = model_file.stem
