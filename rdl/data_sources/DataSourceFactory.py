@@ -1,13 +1,12 @@
 import logging
 from rdl.data_sources.MsSqlDataSource import MsSqlDataSource
-from rdl.data_sources.CsvDataSource import CsvDataSource
 
 
 class DataSourceFactory(object):
 
     def __init__(self, logger=None):
         self.logger = logger or logging.getLogger(__name__)
-        self.sources = [MsSqlDataSource, CsvDataSource]
+        self.sources = [MsSqlDataSource]
 
     def create_source(self, connection_string):
         for source in self.sources:

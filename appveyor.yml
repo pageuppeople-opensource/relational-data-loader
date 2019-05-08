@@ -49,9 +49,7 @@ test_script:
   - .\tests\unit_tests\run_unit_tests.cmd
 
   # integration tests
-  - .\tests\integration_tests\test_full_refresh_from_csv.cmd
   - .\tests\integration_tests\test_full_refresh_from_mssql.cmd
-  - .\tests\integration_tests\test_incremental_refresh_from_csv.cmd
   - .\tests\integration_tests\test_incremental_refresh_from_mssql.cmd
   - .\tests\integration_tests\test_audit.cmd
 
