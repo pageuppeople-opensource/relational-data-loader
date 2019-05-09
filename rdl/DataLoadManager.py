@@ -119,6 +119,13 @@ class DataLoadManager(object):
         self.data_load_tracker_repository.create_execution_model(data_load_tracker)
         destination_table_manager.create_schema(model_config['target_schema'])
 
+        skip_incremental_reason, skip_incremental = DataLoadManager.check_skip_incremental(change_tracking_info)
+        if not full_refresh and skip_incremental:
+            self.logger.info(f"Skipping incremental refresh for reason '{skip_incremental_reason}'")
+            data_load_tracker.data_load_successful()
+            self.data_load_tracker_repository.save_execution_model(data_load_tracker)
+            return
+
         self.logger.debug(f"Recreating the staging table {model_config['target_schema']}."
                           f"{model_config['stage_table']}")
         destination_table_manager.create_table(model_config['target_schema'],
@@ -167,6 +174,15 @@ class DataLoadManager(object):
         self.logger.info(f"{model_number:0{max_model_number_len}d} of {total_number_of_models}"
                          f" COMPLETED {model_name}")
         self.data_load_tracker_repository.save_execution_model(data_load_tracker)
+
+    @staticmethod
+    def check_skip_incremental(change_tracking_info):
+        if change_tracking_info.last_sync_version and change_tracking_info.sync_version and (
+                change_tracking_info.last_sync_version == change_tracking_info.sync_version):
+            return Constants.IncrementalSkipReason.SYNC_VERSIONS_ARE_EQUAL, True
+        if not change_tracking_info.data_changed_since_last_sync:
+            return Constants.IncrementalSkipReason.NO_DATA_CHANGED, True
+        return Constants.IncrementalSkipReason.NOT_APPLICABLE, False
 
     @staticmethod
     def is_full_refresh(*,

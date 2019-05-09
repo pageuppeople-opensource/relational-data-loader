@@ -173,6 +173,8 @@ class MsSqlDataSource(object):
         # c) whether a full refresh is needed - this is a derivative of the validity of the last known sync version
         #    because if the last known sync version is no longer valid, then our target data is in-an-invalid-state /
         #    out-of-sync and a full refresh must be forced to sync the data.
+        # d) whether any data has changed for the table synce the last sync - this is a derivative of the results of
+        #    the CHANGETABLE() call, which we perform later and join to the table to load in the changed rows.
         #
         # the following help us determining the above:
         # a) sync_version: the current version of change tracking at source database.
@@ -183,6 +185,8 @@ class MsSqlDataSource(object):
         # c) min_valid_version: the minimum version that is valid for use in obtaining change tracking information from
         #                       the specified table.
         #                       it's value IS sourced from CHANGE_TRACKING_MIN_VALID_VERSION(OBJECT_ID(..)).
+        # d) data_changed_since_last_sync: whether or not data has changed in the table since last_known_sync_version
+        #                       it's value is sourced from CHANGETABLE(table, last_known_sync_version).
 
         get_change_tracking_info_sql = f"" \
             f"DECLARE @sync_version                     BIGINT  = CHANGE_TRACKING_CURRENT_VERSION(); \n" \
@@ -193,6 +197,7 @@ class MsSqlDataSource(object):
             f" CASE WHEN @last_known_sync_version >= @min_valid_version THEN 1 ELSE 0 END; \n" \
             f"DECLARE @last_sync_version                BIGINT; \n" \
             f"DECLARE @force_full_load                  BIT; \n" \
+            f"DECLARE @data_changed_since_last_sync     BIT; \n" \
             f" \n" \
             f"IF @last_known_sync_version_is_valid = 1 \n" \
             f"BEGIN \n" \
@@ -205,9 +210,23 @@ class MsSqlDataSource(object):
             f"    SET @last_sync_version = 0; \n" \
             f"END \n" \
             f" \n" \
-            f"SELECT @sync_version AS sync_version \n" \
-            f", @last_sync_version AS last_sync_version \n" \
-            f", @force_full_load   AS force_full_load; \n"
+            f"IF EXISTS ( " \
+            f"  SELECT 1" \
+            f"  FROM CHANGETABLE(CHANGES " \
+            f"      {table_config['schema']}.{table_config['name']}, {last_known_sync_version} ) " \
+            f"  as c )" \
+            f"BEGIN \n" \
+            f"    SET @data_changed_since_last_sync = 1; \n" \
+            f"END \n" \
+            f"ELSE \n" \
+            f"BEGIN \n" \
+            f"    SET @data_changed_since_last_sync = 0; \n" \
+            f"END \n" \
+            f" \n" \
+            f"SELECT @sync_version              AS sync_version \n" \
+            f", @last_sync_version              AS last_sync_version \n" \
+            f", @force_full_load                AS force_full_load \n" \
+            f", @data_changed_since_last_sync   AS data_changed_since_last_sync; \n"
 
         self.logger.debug(f"Getting ChangeTracking info for {table_config['schema']}.{table_config['name']}.\n"
                           f"{get_change_tracking_info_sql}")
@@ -215,7 +234,8 @@ class MsSqlDataSource(object):
         result = self.database_engine.execute(text(get_change_tracking_info_sql))
         row = result.fetchone()
 
-        return ChangeTrackingInfo(row["last_sync_version"], row["sync_version"], row["force_full_load"])
+        return ChangeTrackingInfo(  row["last_sync_version"], row["sync_version"],
+                                    row["force_full_load"], row["data_changed_since_last_sync"])
 
     @staticmethod
     def build_where_clause(batch_key_tracker, table_alias):
