@@ -75,5 +75,5 @@ class CsvDataSource(object):
         batch_tracker.extract_completed_successfully(len(data_frame))
         return data_frame
 
-    def init_change_tracking(self, table_config, last_sync_version):
+    def get_change_tracking_info(self, table_config, last_sync_version):
         return ChangeTrackingInfo(0, 0, False, True)

@@ -149,22 +149,10 @@ class MsSqlDataSource(object):
 
         return data_frame
 
-    def init_change_tracking(self, table_config, last_known_sync_version):
+    def get_change_tracking_info(self, table_config, last_known_sync_version):
 
         if last_known_sync_version is None:
             last_known_sync_version = 'NULL'
-
-        init_change_tracking_sql = "IF NOT EXISTS(SELECT 1 FROM sys.change_tracking_tables " \
-            f"WHERE object_id = OBJECT_ID('{table_config['schema']}.{table_config['name']}'))\n" \
-                                   "BEGIN\n" \
-            f"ALTER TABLE {table_config['schema']}.{table_config['name']} " \
-            f"ENABLE CHANGE_TRACKING WITH(TRACK_COLUMNS_UPDATED=OFF);\n" \
-                                   "END\n"
-
-        self.logger.debug(f"Initializing ChangeTracking for "
-                          f"{table_config['schema']}.{table_config['name']}:\n"
-                          f"{init_change_tracking_sql}")
-        self.database_engine.execute(text(init_change_tracking_sql).execution_options(autocommit=True))
 
         # in the following we determine:
         # a) the current sync version - sourced straight up from the source db.

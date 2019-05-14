@@ -95,7 +95,7 @@ class DataLoadManager(object):
             last_sync_version = last_successful_data_load_execution.sync_version
 
         destination_table_manager = DestinationTableManager(self.target_db)
-        change_tracking_info = self.source_db.init_change_tracking(model_config['source_table'], last_sync_version)
+        change_tracking_info = self.source_db.get_change_tracking_info(model_config['source_table'], last_sync_version)
 
         last_successful_execution_exists = last_successful_data_load_execution is not None
         model_changed = (not last_successful_execution_exists) or \
