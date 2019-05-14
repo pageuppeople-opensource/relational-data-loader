@@ -97,8 +97,7 @@ class RelationalDataLoader:
             'source_connection_string',
             metavar='source-connection-string',
             type=self.raw_connection_string_to_valid_source_connection_string,
-            help='The source connections string as a 64bit ODBC system dsn. Eg: mssql+pyodbc://dwsource or '
-            'csv://c://some//Path//To//Csv//Files//')
+            help='The source connections string as a 64bit ODBC system dsn. Eg: mssql+pyodbc://dwsource')
 
         process_command_parser.add_argument(
             'destination_connection_string',

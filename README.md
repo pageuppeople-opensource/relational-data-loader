@@ -17,8 +17,7 @@ usage: py -m rdl process [-h] [-f [FORCE_FULL_REFRESH_MODELS]]
 positional arguments:
   source-connection-string
                         The source connections string as a 64bit ODBC system
-                        dsn. Eg: mssql+pyodbc://dwsource or
-                        csv://c://some//Path//To//Csv//Files//
+                        dsn. Eg: mssql+pyodbc://dwsource
   destination-connection-string
                         The destination database connection string. Provide in
                         PostgreSQL + Psycopg format. Eg: 'postgresql+psycopg2:
