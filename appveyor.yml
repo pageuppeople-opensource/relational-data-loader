@@ -28,6 +28,7 @@ install:
   #Setup Python
   - SET PATH=%PYTHON%;%PYTHON%\Scripts;%PATH% #Swap path to python to latest version (as per matrix above)
   - python --version
+  #Create Virtual Environment
   - python -m venv c:\projects\relational-data-loader\venv\
 
 build_script:
@@ -35,10 +36,11 @@ build_script:
   - sqlcmd -b -E -S "(local)\SQL2016" -i .\tests\integration_tests\mssql_source\source_database_setup\create_database.sql
   - sqlcmd -b -E -f 65001 -S "(local)\SQL2016" -d RelationalDataLoaderIntegrationTestSource -i .\tests\integration_tests\mssql_source\source_database_setup\create_large_table.sql
   - sqlcmd -b -E -f 65001 -S "(local)\SQL2016" -d RelationalDataLoaderIntegrationTestSource -i .\tests\integration_tests\mssql_source\source_database_setup\create_compound_pk.sql
-
   #Setup the target PostgreSQL database
   - psql -c "SELECT VERSION()"
   - createdb %DBNAME%
+  - psql -d %DBNAME% -U postgres -a -v ON_ERROR_STOP=1 -f .\tests\integration_tests\psql_destination\setup.sql
+  #Activate Virtual Environment
   - C:\projects\relational-data-loader\venv\Scripts\activate.bat
   #Install the dependencies for rdl.
   - pip install .
