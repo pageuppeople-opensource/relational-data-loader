@@ -180,10 +180,36 @@ Use the following vscode settings by either:
 
 #### Integration
 
-The test batch files assume there is a user by the name of `postgres` on the system.
-It also sends through a nonsense password -- it is assumed that the target system is running in 'trust' mode.
+##### Pre-requisites
 
-_See [Postgres docs](https://www.postgresql.org/docs/9.1/static/auth-pg-hba-conf.html) for details on trust mode._
+- PostgreSQL 10+ and SQL2016 _(even SQL Express would do, you'd just have to find and replace connection string references for SQL2016 with SQLEXPRESS)_ are installed
+
+- The test batch files assume there is a user by the name of `postgres` on the system.
+  It also sends through a nonsense password -- it is assumed that the target system is running in 'trust' mode.
+
+  _See [Postgres docs](https://www.postgresql.org/docs/9.1/static/auth-pg-hba-conf.html) for details on trust mode._
+
+
+##### Setup
+
+Run the below scripts on SQL Server to setup a source database.
+
+```
+./tests/integration_tests/mssql_source/source_database_setup/create_database.sql
+./tests/integration_tests/mssql_source/source_database_setup/create_large_table.sql
+./tests/integration_tests/mssql_source/source_database_setup/create_compound_pk.sql
+```
+
+Run the below scripts on PostgreSQL Server to setup a target database.
+
+```
+./tests/integration_tests/psql_destination/create-db.sql
+./tests/integration_tests/psql_destination/setup-db.sql
+```
+
+##### Execution
+
+Run the different `*.cmd` test files at `./tests/integration_tests/` location. `test_full_refresh_from_mssql.cmd` is a good start.
 
 #### Unit
 

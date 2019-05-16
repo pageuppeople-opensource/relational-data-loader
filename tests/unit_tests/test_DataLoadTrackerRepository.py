@@ -199,7 +199,7 @@ class TestDataLoadTrackerRepository(unittest.TestCase):
                 completed_on=completed_on,
                 execution_time_ms=execution_time_ms,
                 rows_processed=rows_processed,
-                execution_id=execution.id,
+                execution_id=execution.execution_id,
                 status=status,
                 model_checksum=fake_model["checksum"],
                 full_refresh_reason=full_refresh_reason

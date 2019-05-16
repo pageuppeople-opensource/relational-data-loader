@@ -6,7 +6,7 @@ environment:
   PGPASSWORD: "Password12!"
   PGPORT: 5432
   PGHOST: "localhost"
-  DBNAME: relational_data_loader_integration_tests
+  DBNAME: rdl_integration_test_target_db
   MSSQLSTR: "{'username': '','password': '','server_string': '(local)\\SQL2016'}"
   matrix:
     - PYTHON: "C:\\Python37-x64" #This needs to be a double slash
@@ -34,17 +34,17 @@ install:
 build_script:
   #Setup the source MSSQL database
   - sqlcmd -b -E -S "(local)\SQL2016" -i .\tests\integration_tests\mssql_source\source_database_setup\create_database.sql
-  - sqlcmd -b -E -f 65001 -S "(local)\SQL2016" -d RelationalDataLoaderIntegrationTestSource -i .\tests\integration_tests\mssql_source\source_database_setup\create_large_table.sql
-  - sqlcmd -b -E -f 65001 -S "(local)\SQL2016" -d RelationalDataLoaderIntegrationTestSource -i .\tests\integration_tests\mssql_source\source_database_setup\create_compound_pk.sql
+  - sqlcmd -b -E -f 65001 -S "(local)\SQL2016" -d RDL_Integration_Test_Source_Db -i .\tests\integration_tests\mssql_source\source_database_setup\create_large_table.sql
+  - sqlcmd -b -E -f 65001 -S "(local)\SQL2016" -d RDL_Integration_Test_Source_Db -i .\tests\integration_tests\mssql_source\source_database_setup\create_compound_pk.sql
   #Setup the target PostgreSQL database
   - psql -c "SELECT VERSION()"
   - createdb %DBNAME%
-  - psql -d %DBNAME% -U postgres -a -v ON_ERROR_STOP=1 -f .\tests\integration_tests\psql_destination\setup.sql
+  - psql -d %DBNAME% -U postgres -a -v ON_ERROR_STOP=1 -f .\tests\integration_tests\psql_destination\setup-db.sql
   #Activate Virtual Environment
   - C:\projects\relational-data-loader\venv\Scripts\activate.bat
   #Install the dependencies for rdl.
   - pip install .
-  - alembic -c rdl/alembic.ini -x postgresql+psycopg2://postgres:there_is_no_password_due_to_pg_trust@localhost/relational_data_loader_integration_tests upgrade head
+  - alembic -c rdl/alembic.ini -x postgresql+psycopg2://rdl_integration_test_user:rdl_integration_test_password@localhost/rdl_integration_test_target_db upgrade head
 
 test_script:
   # unit tests
@@ -58,11 +58,11 @@ test_script:
   - .\tests\integration_tests\test_full_refresh_from_mssql.cmd
   - .\tests\integration_tests\test_incremental_refresh_from_mssql.cmd
 
-  - sqlcmd -b -E -f 65001 -S "(local)\SQL2016" -d RelationalDataLoaderIntegrationTestSource -i .\tests\integration_tests\mssql_source\source_database_setup\change_compound_pk.sql
+  - sqlcmd -b -E -f 65001 -S "(local)\SQL2016" -d RDL_Integration_Test_Source_Db -i .\tests\integration_tests\mssql_source\source_database_setup\change_compound_pk.sql
 
   - .\tests\integration_tests\test_incremental_refresh_from_mssql.cmd
 
-  - sqlcmd -b -E -f 65001 -S "(local)\SQL2016" -d RelationalDataLoaderIntegrationTestSource -i .\tests\integration_tests\mssql_source\source_database_setup\change_large_table.sql
+  - sqlcmd -b -E -f 65001 -S "(local)\SQL2016" -d RDL_Integration_Test_Source_Db -i .\tests\integration_tests\mssql_source\source_database_setup\change_large_table.sql
 
   - .\tests\integration_tests\test_full_refresh_from_mssql.cmd
   - .\tests\integration_tests\test_audit.cmd
@@ -73,4 +73,4 @@ on_finish:
   #Enable this line to make the build pause after completion for RDP troubleshooting.
   #- ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
 
-  - alembic -c rdl/alembic.ini -x postgresql+psycopg2://postgres:there_is_no_password_due_to_pg_trust@localhost/relational_data_loader_integration_tests downgrade base
+  - alembic -c rdl/alembic.ini -x postgresql+psycopg2://rdl_integration_test_user:rdl_integration_test_password@localhost/rdl_integration_test_target_db downgrade base

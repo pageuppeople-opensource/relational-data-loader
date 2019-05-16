@@ -10,10 +10,12 @@ class FullRefreshReason:
     MODEL_CHANGED = 'Model Changed'
     INVALID_CHANGE_TRACKING = 'Change Tracking Invalid'
 
+
 class IncrementalSkipReason:
     NOT_APPLICABLE = 'N/A'
     SYNC_VERSIONS_ARE_EQUAL = 'last_sync_version is the same as sync_version'
     NO_DATA_CHANGED = 'No data has changed since last sync'
+
 
 class ExecutionStatus:
     STARTED = 'Started'

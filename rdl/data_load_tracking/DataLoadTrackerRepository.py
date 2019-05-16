@@ -27,7 +27,7 @@ class DataLoadTrackerRepository(object):
         session.add(new_execution)
         session.commit()
         self.logger.info(new_execution)
-        execution_id = new_execution.id
+        execution_id = new_execution.execution_id
         session.close()
         return execution_id
 
@@ -38,18 +38,18 @@ class DataLoadTrackerRepository(object):
                            status=Constants.ExecutionStatus.SUCCESSFUL):
         session = self.session_maker()
         current_execution = session.query(ExecutionEntity) \
-            .filter(ExecutionEntity.id == execution_id) \
+            .filter(ExecutionEntity.execution_id == execution_id) \
             .one()
 
         execution_end_time = session.query(func.now()).scalar()
-        total_execution_seconds = (execution_end_time - current_execution.execution_started).total_seconds()
-        total_rows_processed = self.get_execution_rows(current_execution.id)
+        total_execution_seconds = (execution_end_time - current_execution.started_on).total_seconds()
+        total_rows_processed = self.get_execution_rows(current_execution.execution_id)
 
-        current_execution.total_models_processed = total_number_of_models
+        current_execution.models_processed = total_number_of_models
         current_execution.status = status
-        current_execution.execution_ended = execution_end_time
+        current_execution.completed_on = execution_end_time
         current_execution.execution_time_s = total_execution_seconds
-        current_execution.total_rows_processed = total_rows_processed
+        current_execution.rows_processed = total_rows_processed
         session.commit()
         self.logger.info(current_execution)
         session.close()

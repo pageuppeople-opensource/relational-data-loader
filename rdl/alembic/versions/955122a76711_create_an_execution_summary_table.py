@@ -62,7 +62,7 @@ def upgrade():
 
     op.drop_column('data_load_execution', 'id', schema='rdl')
     op.create_primary_key("pk_data_load_execution", "data_load_execution",
-                          ["execution_id", "model_name"],  schema='rdl')
+                          ["execution_id", "model_name"], schema='rdl')
 
     op.execute('ALTER TABLE rdl.data_load_execution RENAME TO execution_model')
     # ### end Alembic commands ###
@@ -79,7 +79,7 @@ def downgrade():
         'id', sa.INTEGER(),
         server_default=sa.text("nextval('rdl.data_load_execution_id_seq'::regclass)"),
         autoincrement=True, nullable=False), schema='rdl')
-    op.create_primary_key("pk_data_load_execution", "data_load_execution", ["id"],  schema='rdl')
+    op.create_primary_key("pk_data_load_execution", "data_load_execution", ["id"], schema='rdl')
 
     op.execute('ALTER SEQUENCE rdl.data_load_execution_id_seq OWNED BY rdl.data_load_execution.id')
     op.drop_column('data_load_execution', 'started_on', schema='rdl')
