@@ -127,7 +127,7 @@ def downgrade():
                     sa.Column('started_on', sa.DateTime(timezone=True), server_default=sa.text('now()'),
                               nullable=False),
                     sa.Column('completed_on', sa.DateTime(timezone=True), nullable=True),
-                    sa.Column('execution_time_ms', sa.Integer(), nullable=False),
+                    sa.Column('execution_time_ms', sa.Integer(), nullable=True),
                     sa.Column('rows_processed', sa.Integer(), nullable=False),
                     sa.Column('model_checksum', sa.String(length=100), nullable=False),
                     sa.Column('failure_reason', sa.String(length=1000), nullable=True),
