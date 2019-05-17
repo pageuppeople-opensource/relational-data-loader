@@ -131,10 +131,14 @@ def downgrade():
                     sa.Column('rows_processed', sa.Integer(), nullable=True),
                     sa.Column('model_checksum', sa.String(length=100), nullable=False),
                     sa.Column('failure_reason', sa.String(length=1000), nullable=True),
-                    sa.ForeignKeyConstraint(['execution_id'], ['rdl.execution.id'], ),
-                    sa.PrimaryKeyConstraint('execution_id', 'model_name'),
+                    # sa.ForeignKeyConstraint(['execution_id'], ['rdl.execution.id'], ),
+                    # sa.PrimaryKeyConstraint('execution_id', 'model_name'),
                     schema='rdl'
                     )
+    op.create_primary_key("pk_data_load_execution", "execution_model",
+                          ["execution_id", "model_name"], schema='rdl')
+    op.create_foreign_key("data_load_execution_execution_id_fkey", 'execution_model', 'execution', ['execution_id'],
+                          ['id'], source_schema='rdl', referent_schema='rdl')
 
     # move data from new revision tables to old revision tables
     op.execute(
