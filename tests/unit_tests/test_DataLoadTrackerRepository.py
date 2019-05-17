@@ -35,9 +35,14 @@ class TestDataLoadTrackerRepository(unittest.TestCase):
         conn.execute(f"CREATE DATABASE {TEST_DB};")
         conn.close()
 
+        cls.target_engine = create_engine(gen_connection_string.format(db=TEST_DB))
+        target_db_conn = cls.target_engine.connect()
+        target_db_conn.execute('CREATE EXTENSION IF NOT EXISTS CITEXT;')
+        target_db_conn.execute('CREATE EXTENSION IF NOT EXISTS "uuid-ossp";')
+        target_db_conn.close()
+
         subprocess.call(f"alembic -c rdl/alembic.ini -x {gen_connection_string.format(db=TEST_DB)} upgrade head")
 
-        cls.target_engine = create_engine(gen_connection_string.format(db=TEST_DB))
         cls.data_load_tracker = DataLoadTrackerRepository(sessionmaker(bind=cls.target_engine))
 
     @classmethod
@@ -199,7 +204,7 @@ class TestDataLoadTrackerRepository(unittest.TestCase):
                 completed_on=completed_on,
                 execution_time_ms=execution_time_ms,
                 rows_processed=rows_processed,
-                execution_id=execution.id,
+                execution_id=execution.execution_id,
                 status=status,
                 model_checksum=fake_model["checksum"],
                 full_refresh_reason=full_refresh_reason

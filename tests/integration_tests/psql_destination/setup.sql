@@ -1,2 +1,0 @@
--- create extensions
-CREATE EXTENSION IF NOT EXISTS CITEXT;

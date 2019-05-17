@@ -14,20 +14,23 @@ from rdl.shared import Constants
 class ExecutionModelEntity(Base):
     __tablename__ = 'execution_model'
     __table_args__ = {'schema': Constants.DATA_PIPELINE_EXECUTION_SCHEMA_NAME}
+    execution_model_id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    created_on = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
+    updated_on = Column(DateTime(timezone=True), nullable=False, server_default=func.now(), onupdate=func.now())
     execution_id = Column(UUID(as_uuid=True), ForeignKey(
         f"{Constants.DATA_PIPELINE_EXECUTION_SCHEMA_NAME}."
         f"{inspect(ExecutionEntity).tables[0].name}."
-        f"{inspect(ExecutionEntity).primary_key[0].name}"), nullable=True, primary_key=True)
-    model_name = Column(String(250), nullable=False, primary_key=True)
-    status = Column(String(25), nullable=False)
+        f"{inspect(ExecutionEntity).primary_key[0].name}"), nullable=False)
+    model_name = Column(String(250), nullable=False)
+    status = Column(String(50), nullable=False, server_default=str(Constants.ExecutionModelStatus.STARTED))
     last_sync_version = Column(BigInteger, nullable=False)
     sync_version = Column(BigInteger, nullable=False)
     is_full_refresh = Column(Boolean, nullable=False)
     full_refresh_reason = Column(String(100), nullable=False)
     started_on = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
-    completed_on = Column(DateTime(timezone=True),  nullable=True)
-    execution_time_ms = Column(Integer, nullable=False, default=0)
-    rows_processed = Column(Integer, nullable=False, default=0)
+    completed_on = Column(DateTime(timezone=True), nullable=True)
+    execution_time_ms = Column(BigInteger, nullable=True)
+    rows_processed = Column(BigInteger, nullable=True)
     model_checksum = Column(String(100), nullable=False)
     failure_reason = Column(String(1000), nullable=True)
 

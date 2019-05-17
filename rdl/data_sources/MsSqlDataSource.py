@@ -222,8 +222,8 @@ class MsSqlDataSource(object):
         result = self.database_engine.execute(text(get_change_tracking_info_sql))
         row = result.fetchone()
 
-        return ChangeTrackingInfo(  row["last_sync_version"], row["sync_version"],
-                                    row["force_full_load"], row["data_changed_since_last_sync"])
+        return ChangeTrackingInfo(row["last_sync_version"], row["sync_version"],
+                                  row["force_full_load"], row["data_changed_since_last_sync"])
 
     @staticmethod
     def build_where_clause(batch_key_tracker, table_alias):
