@@ -9,7 +9,7 @@
   "load_table": "load_compound_pk",
 
   "batch": {
-    "size": 100000
+    "size": 2
   },
   "columns": [
     {

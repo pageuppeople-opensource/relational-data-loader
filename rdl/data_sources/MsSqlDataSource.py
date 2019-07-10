@@ -231,17 +231,22 @@ class MsSqlDataSource(object):
 
         try:
             sql_builder = io.StringIO()
+            where_stack = io.StringIO()
+            where_stack.write("1 = 1")
             for primary_key in batch_key_tracker.bookmarks:
                 if has_value:
-                    sql_builder.write(" AND ")
+                    sql_builder.write(" OR")
 
                 sql_builder.write(
-                    f" {table_alias}.{primary_key} > {batch_key_tracker.bookmarks[primary_key]}")
+                    f" ({where_stack.getvalue()} AND {table_alias}.{primary_key} > {batch_key_tracker.bookmarks[primary_key]})")
                 has_value = True
+                where_stack.write(
+                    f" AND {table_alias}.{primary_key} = {batch_key_tracker.bookmarks[primary_key]}")
 
             return sql_builder.getvalue()
         finally:
             sql_builder.close()
+            where_stack.close()
 
     @staticmethod
     def __build_change_table_on_clause(batch_key_tracker):
