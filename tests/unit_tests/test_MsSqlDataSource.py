@@ -65,14 +65,12 @@ class TestMsSqlDataSource(unittest.TestCase):
         for table in TestMsSqlDataSource.table_configs:
             print("TESTING ON TABLE: " + table["source_table"]["name"])
             print("FIRST TEST: INITIALISE TABLE")
-            results = TestMsSqlDataSource.data_source.get_table_info(
-                table["source_table"], last_sync_version).change_tracking_info
+            results = TestMsSqlDataSource.data_source.get_table_info(table["source_table"], last_sync_version)
             self.assertEqual(results.force_full_load, True)
 
             print("SECOND TEST: NO CHANGES")
             last_sync_version = results.sync_version
-            results = TestMsSqlDataSource.data_source.get_table_info(
-                table["source_table"], last_sync_version).change_tracking_info
+            results = TestMsSqlDataSource.data_source.get_table_info(table["source_table"], last_sync_version)
             self.assertEqual(results.force_full_load, False)
 
             print("OPERATION TESTS")
@@ -82,22 +80,18 @@ class TestMsSqlDataSource(unittest.TestCase):
                 TestMsSqlDataSource.data_source.database_engine.execute(
                     text(operation_string).execution_options(autocommit=True))
 
-                results = TestMsSqlDataSource.data_source.get_table_info(
-                    table["source_table"], last_sync_version).change_tracking_info
+                results = TestMsSqlDataSource.data_source.get_table_info(table["source_table"], last_sync_version)
                 self.assertEqual(results.force_full_load, False, msg="Failed on: " + operation_string)
                 last_sync_version = results.sync_version
 
             print("EXTRA TEST: NO CHANGES")
             last_sync_version = results.sync_version
-            results = TestMsSqlDataSource.data_source.get_table_info(
-                table["source_table"], last_sync_version).change_tracking_info
+            results = TestMsSqlDataSource.data_source.get_table_info(table["source_table"], last_sync_version)
             self.assertEqual(results.force_full_load, False)
 
             print("EXTRA TEST: LOST TRACK")
             last_sync_version = -1
-            results = TestMsSqlDataSource.data_source\
-                .get_table_info(table["source_table"], last_sync_version)\
-                .change_tracking_info
+            results = TestMsSqlDataSource.data_source.get_table_info(table["source_table"], last_sync_version)
             self.assertEqual(results.force_full_load, True)
 
     def test_can_handle_connection_string(self):
