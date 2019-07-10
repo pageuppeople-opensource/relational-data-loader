@@ -4,3 +4,6 @@ if %errorlevel% neq 0 exit /b %errorlevel%
 
 psql -U postgres -d rdl_integration_test_target_db -a -v ON_ERROR_STOP=1 -f ./tests/integration_tests/mssql_source/assertions/large_table_test_full_refresh_assertions.sql
 if %errorlevel% neq 0 exit /b %errorlevel%
+
+psql -U postgres -d rdl_integration_test_target_db -a -v ON_ERROR_STOP=1 -f ./tests/integration_tests/mssql_source/assertions/compound_pk_test_full_refresh_assertions.sql
+if %errorlevel% neq 0 exit /b %errorlevel%
