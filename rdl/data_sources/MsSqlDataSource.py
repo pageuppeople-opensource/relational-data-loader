@@ -115,7 +115,7 @@ class MsSqlDataSource(object):
     def get_table_info(self, table_config, last_known_sync_version):
         columns_in_database = self.__get_table_columns(table_config)
         change_tracking_info = self.__get_change_tracking_info(table_config, last_known_sync_version)
-        source_table_info = SourceTableInfo.from_change_tracking_info(columns_in_database, change_tracking_info)
+        source_table_info = SourceTableInfo(columns_in_database, change_tracking_info)
         return source_table_info
 
     def __get_table_columns(self, table_config):
