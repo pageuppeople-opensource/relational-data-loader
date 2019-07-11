@@ -85,8 +85,6 @@ class DataLoadManager(object):
             self.logger.error(f"Failed to read model file '{model_file_full_path}' with error: '{str(exception)}'")
             raise exception
 
-        self.source_db.assert_data_source_is_valid(model_config['source_table'], model_config['columns'])
-
         last_sync_version = 0
         last_successful_data_load_execution = \
             self.data_load_tracker_repository.get_last_successful_data_load_execution(model_name)
@@ -94,8 +92,22 @@ class DataLoadManager(object):
         if last_successful_data_load_execution is not None:
             last_sync_version = last_successful_data_load_execution.sync_version
 
+        source_table_info = self.source_db.get_table_info(model_config['source_table'], last_sync_version)
+        config_source_column_names = list(map(lambda col_config: col_config['source_name'], model_config['columns']))
+        invalid_config_source_column_names = []
+
+        for col_name in config_source_column_names:
+            if col_name not in source_table_info.column_names:
+                invalid_config_source_column_names.append(col_name)
+
+        if invalid_config_source_column_names:
+            message = "Column(s) {column_names} not found in source table {source_table_name}".format(
+                column_names=", ".join(invalid_config_source_column_names),
+                source_table_name=model_config['source_table']['name'])
+            raise ValueError(message)
+
         destination_table_manager = DestinationTableManager(self.target_db)
-        change_tracking_info = self.source_db.get_change_tracking_info(model_config['source_table'], last_sync_version)
+        change_tracking_info = source_table_info.change_tracking_info
 
         last_successful_execution_exists = last_successful_data_load_execution is not None
         model_changed = (not last_successful_execution_exists) or \

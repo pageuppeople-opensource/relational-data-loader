@@ -12,6 +12,7 @@ from sqlalchemy.sql import text
 
 from rdl.ColumnTypeResolver import ColumnTypeResolver
 from rdl.data_sources.ChangeTrackingInfo import ChangeTrackingInfo
+from rdl.data_sources.SourceTableInfo import SourceTableInfo
 from rdl.shared import Providers
 from rdl.shared.Utils import prevent_senstive_data_logging
 
@@ -111,21 +112,11 @@ class MsSqlDataSource(object):
 
         return f"{select_sql} \n {from_sql} \n {where_sql} \n {order_by_sql};"
 
-    # Returns an array of configured_columns containing only columns that this data source supports. Logs invalid ones.
-    def assert_data_source_is_valid(self, table_config, configured_columns):
+    def get_table_info(self, table_config, last_known_sync_version):
         columns_in_database = self.__get_table_columns(table_config)
-
-        for column in configured_columns:
-            self.__assert_column_exists(column['source_name'],
-                                        columns_in_database,
-                                        f"{table_config['schema']}.{table_config['name']}")
-
-    def __assert_column_exists(self, column_name, columns_in_database, table_name):
-        if column_name in columns_in_database:
-            return True
-
-        message = f'Column {column_name} does not exist in source table {table_name}'
-        raise ValueError(message)
+        change_tracking_info = self.__get_change_tracking_info(table_config, last_known_sync_version)
+        source_table_info = SourceTableInfo(columns_in_database, change_tracking_info)
+        return source_table_info
 
     def __get_table_columns(self, table_config):
         metadata = MetaData()
@@ -149,7 +140,7 @@ class MsSqlDataSource(object):
 
         return data_frame
 
-    def get_change_tracking_info(self, table_config, last_known_sync_version):
+    def __get_change_tracking_info(self, table_config, last_known_sync_version):
 
         if last_known_sync_version is None:
             last_known_sync_version = 'NULL'
