@@ -34,7 +34,7 @@ class MsSqlDataSource(object):
 
     @staticmethod
     def can_handle_connection_string(connection_string):
-        return re.match(MsSqlDataSource.MSSQL_STRING_REGEX, connection_string) is not None
+        return MsSqlDataSource.__connection_string_regex_match(connection_string) is not None
 
     def get_table_info(self, table_config, last_known_sync_version):
         columns_in_database = self.__get_table_columns(table_config)
@@ -55,6 +55,10 @@ class MsSqlDataSource(object):
         batch_tracker.extract_completed_successfully(len(data_frame))
 
         return data_frame
+
+    @staticmethod
+    def __connection_string_regex_match(connection_string):
+        return re.match(MsSqlDataSource.MSSQL_STRING_REGEX, connection_string)
 
     def __create_connection_with_failover(self):
         conn_string_data = MsSqlDataSource.__connection_string_regex_match(self.connection_string)
