@@ -1,5 +1,7 @@
 # RelationalDataLoader
 
+[![Build status](https://ci.appveyor.com/api/projects/status/l7l6are63ir2js4r?svg=true)](https://ci.appveyor.com/project/PageUp/relational-data-loader-fkwak)
+
 ## About
 
 A utility for taking data from MS-SQL and loading it into PostgreSQL
