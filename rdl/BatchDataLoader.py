@@ -31,9 +31,9 @@ class BatchDataLoader(object):
                           f"sync_version: '{self.change_tracking_info.sync_version}', "
                           f"last_sync_version: '{self.change_tracking_info.last_sync_version}'.")
 
-        data_frame = self.source_db.get_next_data_frame(self.source_table_config, self.columns,
-                                                        self.batch_config, batch_tracker, batch_key_tracker,
-                                                        self.full_refresh, self.change_tracking_info)
+        data_frame = self.source_db.get_table_data_frame(self.source_table_config, self.columns,
+                                                         self.batch_config, batch_tracker, batch_key_tracker,
+                                                         self.full_refresh, self.change_tracking_info)
 
         if data_frame is None or len(data_frame) == 0:
             self.logger.debug("There are no more rows to import.")
