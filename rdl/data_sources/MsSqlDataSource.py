@@ -36,6 +36,10 @@ class MsSqlDataSource(object):
     def can_handle_connection_string(connection_string):
         return MsSqlDataSource.__connection_string_regex_match(connection_string) is not None
 
+    @staticmethod
+    def connection_string_prefix():
+        return 'mssql+pyodbc://'
+
     def get_table_info(self, table_config, last_known_sync_version):
         columns_in_database = self.__get_table_columns(table_config)
         change_tracking_info = self.__get_change_tracking_info(table_config, last_known_sync_version)
