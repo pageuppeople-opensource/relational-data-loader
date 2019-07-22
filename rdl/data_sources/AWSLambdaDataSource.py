@@ -10,11 +10,21 @@ from rdl.shared.Utils import prevent_senstive_data_logging
 
 
 class AWSLambdaDataSource(object):
-    CONNECTION_STRING_PREFIX = 'aws-lambda-arn://'  # 'aws-lambda://tenant=543_dc2;arn=123456789012:function:my-function;'
+    # 'aws-lambda://tenant=543_dc2;function=123456789012:function:my-function;'
+    CONNECTION_STRING_PREFIX = 'aws-lambda://'
+    CONNECTION_STRING_GROUP_SEPARATOR = ';'
+    CONNECTION_STRING_KEY_VALUE_SEPARATOR = '='
 
     def __init__(self, connection_string, logger=None):
         self.logger = logger or logging.getLogger(__name__)
+        if not AWSLambdaDataSource.can_handle_connection_string(connection_string):
+            raise ValueError(connection_string)
         self.connection_string = connection_string
+        self.connection_data = dict(kv.split(AWSLambdaDataSource.CONNECTION_STRING_KEY_VALUE_SEPARATOR) for kv in
+                                    self.connection_string
+                                    .lstrip(AWSLambdaDataSource.CONNECTION_STRING_PREFIX)
+                                    .rstrip(AWSLambdaDataSource.CONNECTION_STRING_GROUP_SEPARATOR)
+                                    .split(AWSLambdaDataSource.CONNECTION_STRING_GROUP_SEPARATOR))
         self.aws_lambda_client = boto3.client('lambda')
 
     @staticmethod
@@ -31,7 +41,7 @@ class AWSLambdaDataSource(object):
         columns_in_database = column_names
         change_tracking_info = ChangeTrackingInfo(
             last_sync_version=last_sync_version,
-            sync_version=sync_version + 1,
+            sync_version=sync_version,
             force_full_load=full_refresh_required,
             data_changed_since_last_sync=data_changed_since_last_sync)
         source_table_info = SourceTableInfo(columns_in_database, change_tracking_info)
@@ -51,7 +61,7 @@ class AWSLambdaDataSource(object):
     def __get_table_info(self, table_config, last_known_sync_version):
         pay_load = {
             "command": "GetTableInfo",
-            "tenantId": 543,  # self.connection_string.tenant.split('_')[0] as int
+            "tenantId": self.connection_data['tenant'],
             "table": {
                 "schema": table_config['schema'],
                 "name": table_config['name']
@@ -91,7 +101,7 @@ class AWSLambdaDataSource(object):
 
     def __invoke_lambda(self, pay_load):
         lambda_response = self.aws_lambda_client.invoke(
-            FunctionName='string',  # self.connection_string.arn
+            FunctionName=self.connection_data['function'],
             InvocationType='RequestResponse',
             LogType='None',  # |'Tail', Set to Tail to include the execution log in the response
             Payload=json.dump(pay_load).encode()
