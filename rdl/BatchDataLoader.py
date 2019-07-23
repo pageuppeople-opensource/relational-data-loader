@@ -46,7 +46,7 @@ class BatchDataLoader(object):
         batch_tracker.load_completed_successfully()
 
         for primary_key in batch_key_tracker.primary_keys:
-            batch_key_tracker.set_bookmark(primary_key, data_frame.iloc[-1][primary_key])
+            batch_key_tracker.set_bookmark(primary_key, int(data_frame.iloc[-1][primary_key]))
 
         self.logger.info(f"Batch keys '{batch_key_tracker.bookmarks}' completed. {batch_tracker.get_statistics()}")
 

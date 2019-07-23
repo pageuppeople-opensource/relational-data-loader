@@ -43,9 +43,8 @@ class AWSLambdaDataSource(object):
         return AWSLambdaDataSource.CONNECTION_STRING_PREFIX
 
     def get_table_info(self, table_config, last_known_sync_version):
-        column_names, last_sync_version, sync_version, full_refresh_required, data_changed_since_last_sync = self.__get_table_info(
-            table_config, last_known_sync_version
-        )
+        column_names, last_sync_version, sync_version, full_refresh_required, data_changed_since_last_sync \
+            = self.__get_table_info(table_config, last_known_sync_version)
         columns_in_database = column_names
         change_tracking_info = ChangeTrackingInfo(
             last_sync_version=last_sync_version,
@@ -60,7 +59,7 @@ class AWSLambdaDataSource(object):
     def get_table_data_frame(
         self,
         table_config,
-        columns,
+        columns_config,
         batch_config,
         batch_tracker,
         batch_key_tracker,
@@ -73,7 +72,7 @@ class AWSLambdaDataSource(object):
             batch_config,
             change_tracking_info,
             full_refresh,
-            columns,
+            columns_config,
             batch_key_tracker,
         )
         self.logger.debug(f"Finished read data from lambda.. : \n{None}")
@@ -84,15 +83,19 @@ class AWSLambdaDataSource(object):
 
     def __get_table_info(self, table_config, last_known_sync_version):
         pay_load = {
-            "command": "GetTableInfo",
-            "tenantId": self.connection_data["tenant"],
-            "table": {"schema": table_config["schema"], "name": table_config["name"]},
-            "commandPayload": {"lastSyncVersion": last_known_sync_version},
+            "Command": "GetTableInfo",
+            "TenantId": int(self.connection_data["tenant"]),
+            "Table": {"Schema": table_config["schema"], "Name": table_config["name"]},
+            "CommandPayload": {"lastSyncVersion": last_known_sync_version},
         }
 
         result = self.__invoke_lambda(pay_load)
 
-        return result["ColumnNames"], result["Data"]
+        return result["ColumnNames"], \
+               result["LastSyncVersion"], \
+               result["CurrentSyncVersion"], \
+               result["FullRefreshRequired"], \
+               result["DataChangedSinceLastSync"]
 
     def __get_table_data(
         self,
@@ -100,23 +103,23 @@ class AWSLambdaDataSource(object):
         batch_config,
         change_tracking_info,
         full_refresh,
-        columns,
+        columns_config,
         batch_key_tracker,
     ):
         pay_load = {
-            "command": "GetTableData",
-            "tenantId": self.connection_data["tenant"],
-            "table": {"schema": table_config["schema"], "name": table_config["name"]},
-            "commandPayload": {
-                "auditColumnNameForChangeVersion": Providers.AuditColumnsNames.CHANGE_VERSION,
-                "auditColumnNameForDeletionFlag": Providers.AuditColumnsNames.IS_DELETED,
-                "batchSize": batch_config["size"],
-                "lastSyncVersion": change_tracking_info.last_sync_version,
-                "fullRefresh": full_refresh,
-                "columnNames": columns,
-                "primaryKeyColumnNames": table_config["primary_keys"],
-                "lastBatchPrimaryKeys": [
-                    {k: v} for k, v in batch_key_tracker.bookmarks.items()
+            "Command": "GetTableData",
+            "TenantId": int(self.connection_data["tenant"]),
+            "Table": {"Schema": table_config["schema"], "Name": table_config["name"]},
+            "CommandPayload": {
+                "AuditColumnNameForChangeVersion": Providers.AuditColumnsNames.CHANGE_VERSION,
+                "AuditColumnNameForDeletionFlag": Providers.AuditColumnsNames.IS_DELETED,
+                "BatchSize": batch_config["size"],
+                "LastSyncVersion": change_tracking_info.last_sync_version,
+                "FullRefresh": full_refresh,
+                "ColumnNames": list(map(lambda cfg: cfg['source_name'], columns_config)),
+                "PrimaryKeyColumnNames": table_config["primary_keys"],
+                "LastBatchPrimaryKeys": [
+                    {"Key": k, "Value": v} for k, v in batch_key_tracker.bookmarks.items()
                 ],
             },
         }
@@ -129,11 +132,15 @@ class AWSLambdaDataSource(object):
         return pandas.DataFrame(data=data, columns=column_names)
 
     def __invoke_lambda(self, pay_load):
+        self.logger.debug('\nRequest being sent to Lambda:')
+        self.logger.debug(pay_load)
         lambda_response = self.aws_lambda_client.invoke(
             FunctionName=self.connection_data["function"],
             InvocationType="RequestResponse",
             LogType="None",  # |'Tail', Set to Tail to include the execution log in the response
-            Payload=json.dump(pay_load).encode(),
+            Payload=json.dumps(pay_load).encode(),
         )
-        result = json.loads(lambda_response.Payload.read())  # .decode()
+        result = json.loads(lambda_response['Payload'].read())  # .decode()
+        self.logger.debug('\nResponse received from Lambda:\n')
+        self.logger.debug(result)
         return result
