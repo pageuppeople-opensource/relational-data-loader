@@ -23,4 +23,4 @@ class DataSourceFactory(object):
         return False
 
     def get_supported_source_prefixes(self):
-        return list(map(lambda source: source.connection_string_prefix(), self.sources))
+        return list(map(lambda source: source.get_connection_string_prefix(), self.sources))
