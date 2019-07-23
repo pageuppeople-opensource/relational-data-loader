@@ -105,7 +105,7 @@ class AWSLambdaDataSource(object):
     ):
         pay_load = {
             "command": "GetTableData",
-            "tenantId": 543,  # self.connection_string.tenant.split('_')[0] as int
+            "tenantId": self.connection_data["tenant"],
             "table": {"schema": table_config["schema"], "name": table_config["name"]},
             "commandPayload": {
                 "auditColumnNameForChangeVersion": Providers.AuditColumnsNames.CHANGE_VERSION,
