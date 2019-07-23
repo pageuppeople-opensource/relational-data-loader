@@ -1,12 +1,12 @@
 import logging
 from rdl.data_sources.MsSqlDataSource import MsSqlDataSource
-
+from rdl.data_sources.AWSLambdaDataSource import AWSLambdaDataSource
 
 class DataSourceFactory(object):
 
     def __init__(self, logger=None):
         self.logger = logger or logging.getLogger(__name__)
-        self.sources = [MsSqlDataSource]
+        self.sources = [MsSqlDataSource, AWSLambdaDataSource]
 
     def create_source(self, connection_string):
         for source in self.sources:
@@ -23,4 +23,4 @@ class DataSourceFactory(object):
         return False
 
     def get_supported_source_prefixes(self):
-        return list(map(lambda source: source.connection_string_prefix(), self.sources))
+        return list(map(lambda source: source.get_connection_string_prefix(), self.sources))

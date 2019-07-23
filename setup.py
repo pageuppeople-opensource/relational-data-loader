@@ -14,6 +14,7 @@ setup(name='rdl',
           'SQLAlchemy==1.3.3',
           'sqlalchemy-citext==1.3.post0',
           'alembic==1.0.9',
+          'boto3==1.9.187',
       ],
       package_data={
           '': ['alembic.ini', 'alembic/*.py', 'alembic/**/*.py'],

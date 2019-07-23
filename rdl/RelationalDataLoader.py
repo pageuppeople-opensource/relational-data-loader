@@ -97,7 +97,11 @@ class RelationalDataLoader:
             'source_connection_string',
             metavar='source-connection-string',
             type=self.raw_connection_string_to_valid_source_connection_string,
-            help='The source connections string as a 64bit ODBC system dsn. Eg: mssql+pyodbc://dwsource')
+            help='The source connection string as either '
+                 '(a) 64bit ODBC system dsn. '
+                 'Eg: mssql+pyodbc://dwsource. '
+                 '(b) AWS Lambda Function. '
+                 'Eg: aws-lambda://tenant={databaseIdentifier};function={awsAccountNumber}:function:{functionName}')
 
         process_command_parser.add_argument(
             'destination_connection_string',

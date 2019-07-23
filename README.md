@@ -18,8 +18,11 @@ usage: py -m rdl process [-h] [-f [FORCE_FULL_REFRESH_MODELS]]
 
 positional arguments:
   source-connection-string
-                        The source connections string as a 64bit ODBC system
-                        dsn. Eg: mssql+pyodbc://dwsource
+                        The source connection string as either:
+                         - (a) 64bit ODBC system dsn.
+                           eg: `mssql+pyodbc://dwsource`.
+                         - (b) AWS Lambda Function.
+                           eg: `aws-lambda://tenant={databaseIdentifier};function={awsAccountNumber}:function:{functionName}`
   destination-connection-string
                         The destination database connection string. Provide in
                         PostgreSQL + Psycopg format. Eg: 'postgresql+psycopg2:
