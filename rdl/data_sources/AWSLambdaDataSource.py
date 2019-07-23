@@ -86,7 +86,7 @@ class AWSLambdaDataSource(object):
             "Command": "GetTableInfo",
             "TenantId": int(self.connection_data["tenant"]),
             "Table": {"Schema": table_config["schema"], "Name": table_config["name"]},
-            "CommandPayload": {"lastSyncVersion": last_known_sync_version},
+            "CommandPayload": {"LastSyncVersion": last_known_sync_version},
         }
 
         result = self.__invoke_lambda(pay_load)
@@ -134,13 +134,32 @@ class AWSLambdaDataSource(object):
     def __invoke_lambda(self, pay_load):
         self.logger.debug('\nRequest being sent to Lambda:')
         self.logger.debug(pay_load)
+
         lambda_response = self.aws_lambda_client.invoke(
             FunctionName=self.connection_data["function"],
             InvocationType="RequestResponse",
             LogType="None",  # |'Tail', Set to Tail to include the execution log in the response
             Payload=json.dumps(pay_load).encode(),
         )
-        result = json.loads(lambda_response['Payload'].read())  # .decode()
-        self.logger.debug('\nResponse received from Lambda:\n')
-        self.logger.debug(result)
-        return result
+
+        response_status_code = int(lambda_response['StatusCode'])
+        response_function_error = lambda_response.get("FunctionError")
+        self.logger.debug('\nResponse received from Lambda:')
+        self.logger.debug(f'Response - StatusCode = "{response_status_code}"')
+        self.logger.debug(f'Response - FunctionError = "{response_function_error}"')
+
+        response_payload = json.loads(lambda_response['Payload'].read())
+
+        if response_status_code != 200 or response_function_error:
+            self.logger.error(F'Error in response from aws lambda {self.connection_data["function"]}')
+            self.logger.error(f'Response - Status Code = {response_status_code}')
+            self.logger.error(f'Response - Error Function = {response_function_error}')
+            self.logger.error(f'Response - Error Details:')
+            # the below is risky as it may contain actual data if this line is reached in case of a successful result
+            # however, the same Payload field is used to return actual error details in case of real errors
+            # i.e. StatusCode is 200 (since AWS could invoke the lambda)
+            # BUT the lambda barfed with an error and therefore the FunctionError would not be None
+            self.logger.error(response_payload)
+            raise Exception('Error received when invoking AWS Lambda. See logs for further details.')
+
+        return response_payload
