@@ -44,12 +44,14 @@ class DataLoadTrackerRepository(object):
         execution_end_time = session.query(func.now()).scalar()
         total_execution_seconds = (execution_end_time - current_execution.started_on).total_seconds()
         total_rows_processed = self.get_execution_rows(current_execution.execution_id)
+        total_batches_processed = self.get_execution_batches(current_execution.execution_id)
 
         current_execution.models_processed = total_number_of_models
         current_execution.status = status
         current_execution.completed_on = execution_end_time
         current_execution.execution_time_s = total_execution_seconds
         current_execution.rows_processed = total_rows_processed
+        current_execution.batches_processed = total_batches_processed
         session.commit()
         self.logger.info(current_execution)
         session.close()
@@ -85,6 +87,7 @@ class DataLoadTrackerRepository(object):
         current_execution_model.completed_on = execution_end_time
         current_execution_model.execution_time_ms = int(total_execution_seconds * 1000)
 
+        current_execution_model.batches_processed = len(data_load_tracker.batches)
         current_execution_model.rows_processed = data_load_tracker.total_row_count
         current_execution_model.status = data_load_tracker.status
         current_execution_model.is_full_refresh = data_load_tracker.is_full_refresh
@@ -99,6 +102,14 @@ class DataLoadTrackerRepository(object):
     def get_execution_rows(self, execution_id):
         session = self.session_maker()
         results = session.query(func.sum(ExecutionModelEntity.rows_processed))\
+            .filter(ExecutionModelEntity.execution_id == execution_id)\
+            .scalar()
+        session.close()
+        return results
+
+    def get_execution_batches(self, execution_id):
+        session = self.session_maker()
+        results = session.query(func.sum(ExecutionModelEntity.batches_processed))\
             .filter(ExecutionModelEntity.execution_id == execution_id)\
             .scalar()
         session.close()

@@ -31,6 +31,7 @@ class ExecutionModelEntity(Base):
     completed_on = Column(DateTime(timezone=True), nullable=True)
     execution_time_ms = Column(BigInteger, nullable=True)
     rows_processed = Column(BigInteger, nullable=True)
+    batches_processed = Column(Integer, nullable=True)
     model_checksum = Column(String(100), nullable=False)
     failure_reason = Column(String(1000), nullable=True)
 
