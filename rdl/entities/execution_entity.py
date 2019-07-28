@@ -19,6 +19,7 @@ class ExecutionEntity(Base):
     completed_on = Column(DateTime(timezone=True), nullable=True)
     execution_time_s = Column(BigInteger, nullable=True)
     rows_processed = Column(BigInteger, nullable=True)
+    batches_processed = Column(Integer, nullable=True)
     models_processed = Column(Integer, nullable=True)
 
     def __str__(self):
