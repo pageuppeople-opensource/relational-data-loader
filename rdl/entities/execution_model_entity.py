@@ -64,4 +64,4 @@ class ExecutionModelEntity(Base):
                 exec_time=f'{execution_time_s}s' if execution_time_s else '',
                 batches=f'{self.batches_processed:,}' if self.batches_processed else '',
                 rows=f'{self.rows_processed:,}' if self.rows_processed else '',
-                rows_per_second=f'{rows_per_second:,}' if rows_per_second else '')
+                rows_per_second=f'{rows_per_second:,.2f}' if rows_per_second else '')

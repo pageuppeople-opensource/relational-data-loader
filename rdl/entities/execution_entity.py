@@ -50,8 +50,8 @@ class ExecutionEntity(Base):
                 status=self.status,
                 started=self.started_on.isoformat(),
                 completed=self.completed_on.isoformat() if self.completed_on else '',
-                exec_time=execution_time_str if self.execution_time_str else '',
+                exec_time=execution_time_str if execution_time_str else '',
                 models=f'{self.models_processed:,}' if self.models_processed else '',
                 batches=f'{self.batches_processed:,}' if self.batches_processed else '',
                 rows=f'{self.rows_processed:,}' if self.rows_processed else '',
-                rows_per_second=f'{rows_per_second:,}' if rows_per_second else '')
+                rows_per_second=f'{rows_per_second:,.2f}' if rows_per_second else '')
