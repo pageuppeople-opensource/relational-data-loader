@@ -42,7 +42,7 @@ class DataLoadTrackerRepository(object):
             .one()
 
         execution_end_time = session.query(func.now()).scalar()
-        total_execution_seconds = (execution_end_time - current_execution.started_on).total_seconds()
+        total_execution_seconds = max((execution_end_time - current_execution.started_on).total_seconds(), 1)
         total_rows_processed = self.get_execution_rows(current_execution.execution_id)
         total_batches_processed = self.get_execution_batches(current_execution.execution_id)
 
@@ -82,7 +82,7 @@ class DataLoadTrackerRepository(object):
             .one()
 
         execution_end_time = session.query(func.now()).scalar()
-        total_execution_seconds = (execution_end_time - current_execution_model.started_on).total_seconds()
+        total_execution_seconds = max((execution_end_time - current_execution_model.started_on).total_seconds(), 1)
 
         current_execution_model.completed_on = execution_end_time
         current_execution_model.execution_time_ms = int(total_execution_seconds * 1000)
