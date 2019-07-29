@@ -53,7 +53,7 @@ class DataLoadTrackerRepository(object):
         current_execution.rows_processed = total_rows_processed
         current_execution.batches_processed = total_batches_processed
         session.commit()
-        self.logger.info(current_execution)
+        self.logger.info(f'Completed {current_execution}')
         session.close()
         return total_rows_processed
 

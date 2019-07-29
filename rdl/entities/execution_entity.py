@@ -23,16 +23,35 @@ class ExecutionEntity(Base):
     models_processed = Column(Integer, nullable=True)
 
     def __str__(self):
-        if self.status == Constants.ExecutionStatus.STARTED:
-            return f"Started Execution ID: {self.execution_id} at {self.started_on}"
+        execution_time_str = None
+        rows_per_second = None
 
-        total_execution_seconds = self.execution_time_s
-        execution_hours = total_execution_seconds // 3600
-        execution_minutes = (total_execution_seconds // 60) % 60
-        execution_seconds = total_execution_seconds % 60
+        if self.execution_time_s:
+            total_execution_seconds = self.execution_time_s
 
-        return f"Completed Execution ID: {self.execution_id}" \
-            f"; Models Processed: {self.models_processed:,}" \
-            f"; Rows Processed: {self.rows_processed:,}" \
-            f"; Execution Time: {execution_hours}h {execution_minutes}m {execution_seconds}s" \
-            f"; Average rows processed per second: {(self.rows_processed//max(total_execution_seconds, 1)):,}."
+            execution_hours = total_execution_seconds // 3600
+            execution_minutes = (total_execution_seconds // 60) % 60
+            execution_seconds = total_execution_seconds % 60
+            execution_time_str = f'{execution_hours}h {execution_minutes}m {execution_seconds}s'
+
+            if self.rows_processed:
+                rows_per_second = (self.rows_processed//max(total_execution_seconds, 1))
+
+        return 'Execution ID: {exec_id}; ' \
+               'Status: {status}; ' \
+               'Started on: {started}; ' \
+               'Completed on: {completed}; ' \
+               'Execution time: {exec_time}; ' \
+               'Models processed: {models}; ' \
+               'Batches processed: {batches};' \
+               'Rows processed: {rows}; ' \
+               'Average rows processed per second: {rows_per_second};'.format(
+                exec_id=self.execution_id,
+                status=self.status,
+                started=self.started_on.isoformat(),
+                completed=self.completed_on.isoformat() if self.completed_on else '',
+                exec_time=execution_time_str if self.execution_time_str else '',
+                models=f'{self.models_processed:,}' if self.models_processed else '',
+                batches=f'{self.batches_processed:,}' if self.batches_processed else '',
+                rows=f'{self.rows_processed:,}' if self.rows_processed else '',
+                rows_per_second=f'{rows_per_second:,}' if rows_per_second else '')
