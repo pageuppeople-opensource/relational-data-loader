@@ -36,12 +36,32 @@ class ExecutionModelEntity(Base):
     failure_reason = Column(String(1000), nullable=True)
 
     def __str__(self):
-        load_type = 'FULL' if self.is_full_refresh else f"INCREMENTAL from " \
-                                                        f"version '{self.last_sync_version}' " \
-                                                        f"to '{self.sync_version}'"
+        load_type = f'FULL ({self.full_refresh_reason})' if self.is_full_refresh else \
+            f"INCREMENTAL from version '{self.last_sync_version}' to '{self.sync_version}'"
+        execution_time_s = None
+        rows_per_second = None
 
-        execution_tims_s = max(self.execution_time_ms // 1000, 1)
-        rows_per_second = self.rows_processed / execution_tims_s
-        return f"Rows: {self.rows_processed}, " \
-               f"Load type: {load_type}, " \
-               f"Total Execution Time: {execution_tims_s}s @ {rows_per_second:.2f} rows per second "
+        if self.execution_time_ms:
+            execution_time_s = max(self.execution_time_ms // 1000, 1)
+
+            if self.rows_processed:
+                rows_per_second = self.rows_processed / execution_time_s
+
+        return 'Model: {model}; ' \
+               'Load type: {load_type}; ' \
+               'Status: {status}; ' \
+               'Started on: {started}; ' \
+               'Completed on: {completed}; ' \
+               'Execution time: {exec_time}; ' \
+               'Batches processed: {batches}; ' \
+               'Rows processed: {rows}; ' \
+               'Average rows processed per second: {rows_per_second};'.format(
+                model=self.model_name,
+                load_type=load_type,
+                status=self.status,
+                started=self.started_on.isoformat(),
+                completed=self.completed_on.isoformat() if self.completed_on else 'n/a',
+                exec_time=f'{execution_time_s}s' if execution_time_s else 'n/a',
+                batches=f'{self.batches_processed:,}' if self.batches_processed else 'n/a',
+                rows=f'{self.rows_processed:,}' if self.rows_processed else 'n/a',
+                rows_per_second=f'{rows_per_second:,.2f}' if rows_per_second else 'n/a')

@@ -11,7 +11,7 @@ class DataSourceFactory(object):
     def create_source(self, connection_string):
         for source in self.sources:
             if source.can_handle_connection_string(connection_string):
-                self.logger.debug(f"Found handler '{source}' for connection string.")
+                self.logger.info(f"Found handler '{source}' for given connection string.")
                 return source(connection_string)
 
         raise RuntimeError('There are no data sources that can handle this connection string')
