@@ -1,0 +1,28 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+black = "~=19.3b0"
+
+[packages]
+rdl = {editable = true,path = "."}
+numpy = "~=1.16.2"
+pandas = "~=0.24.2"
+psycopg2-binary = "~=2.8.2"
+pyodbc = "~=4.0.26"
+python-dateutil = "~=2.8.0"
+pytz = "~=2019.1"
+six = "~=1.12.0"
+SQLAlchemy = "~=1.3.3"
+sqlalchemy-citext = "~=1.3.post0"
+alembic = "~=1.0.9"
+boto3 = "~=1.9.187"
+sqlalchemy-redshift = "*"
+
+[requires]
+python_version = "3.7"
+
+[pipenv]
+allow_prereleases = true
