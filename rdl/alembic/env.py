@@ -29,19 +29,25 @@ target_metadata = Base.metadata
 
 if not context.get_x_argument():
     raise AttributeError(
-        "example usage `alembic -c rdl/alembic.ini -x postgresql+psycopg2://postgres:postgres@localhost/postgres downgrade -1`")
+        "example usage `alembic -c rdl/alembic.ini -x redshift+psycopg2://postgres:postgres@localhost/postgres downgrade -1`"
+    )
 
 url = context.get_x_argument()[0]
 
 
 def use_schema(object, name, type_, reflected, compare_to):
-    if type_ == 'table' and object.schema != Constants.DATA_PIPELINE_EXECUTION_SCHEMA_NAME:
+    if (
+        type_ == "table"
+        and object.schema != Constants.DATA_PIPELINE_EXECUTION_SCHEMA_NAME
+    ):
         return False
-    if (type_ == "column" and
-        not reflected and
-            object.info.get("skip_autogenerate", False)):
+    if (
+        type_ == "column"
+        and not reflected
+        and object.info.get("skip_autogenerate", False)
+    ):
         return False
-    if type_ == 'table' and name == 'alembic_version':
+    if type_ == "table" and name == "alembic_version":
         return False
     return True
 
@@ -59,8 +65,12 @@ def run_migrations_offline():
 
     """
     context.configure(
-        url=url, target_metadata=target_metadata, literal_binds=True, include_schemas=True,
-        include_object=use_schema, version_table=f'alembic_version_{Constants.DATA_PIPELINE_EXECUTION_SCHEMA_NAME}'
+        url=url,
+        target_metadata=target_metadata,
+        literal_binds=True,
+        include_schemas=True,
+        include_object=use_schema,
+        version_table=f"alembic_version_{Constants.DATA_PIPELINE_EXECUTION_SCHEMA_NAME}",
     )
 
     with context.begin_transaction():
@@ -74,15 +84,15 @@ def run_migrations_online():
     and associate a connection with the context.
 
     """
-    connectable = create_engine(
-        url,
-        poolclass=pool.NullPool,
-    )
+    connectable = create_engine(url, poolclass=pool.NullPool)
 
     with connectable.connect() as connection:
         context.configure(
-            connection=connection, target_metadata=target_metadata, include_schemas=True,
-            include_object=use_schema, version_table=f'alembic_version_{Constants.DATA_PIPELINE_EXECUTION_SCHEMA_NAME}'
+            connection=connection,
+            target_metadata=target_metadata,
+            include_schemas=True,
+            include_object=use_schema,
+            version_table=f"alembic_version_{Constants.DATA_PIPELINE_EXECUTION_SCHEMA_NAME}",
         )
 
         with context.begin_transaction():
