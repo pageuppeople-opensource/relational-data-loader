@@ -25,7 +25,7 @@ positional arguments:
                            eg: `aws-lambda://tenant={databaseIdentifier};function={awsAccountNumber}:function:{functionName}`
   destination-connection-string
                         The destination database connection string. Provide in
-                        PostgreSQL + Psycopg format. Eg: 'postgresql+psycopg2:
+                        Redshift + Psycopg format. Eg: 'redshift+psycopg2:
                         //username:password@host:port/dbname'
   configuration-folder  Absolute or relative path to the models. Eg
                         './models', 'C:/path/to/models'
@@ -54,7 +54,7 @@ usage: py -m rdl audit [-h] [-l [LOG_LEVEL]] [-p [AUDIT_COLUMN_PREFIX]]
 positional arguments:
   destination-connection-string
                         The destination database connection string. Provide in
-                        PostgreSQL + Psycopg format. Eg: 'postgresql+psycopg2:
+                        Redshift + Psycopg format. Eg: 'redshift+psycopg2:
                         //username:password@host:port/dbname'
   model-type            Use the command FULL to return full refresh models or
                         the command INCR to return only the incremental models
@@ -76,7 +76,7 @@ optional arguments:
 
 _Notes:_
 
-- `destination-connection-string` is a [PostgreSQL Db Connection String](http://docs.sqlalchemy.org/en/latest/dialects/postgresql.html#module-sqlalchemy.dialects.postgresql.psycopg2)
+- `destination-connection-string` is a [Redshift DB Connection String](https://pypi.org/project/sqlalchemy-redshift/)
 
 ### Examples
 
