@@ -224,7 +224,3 @@ class RelationalDataLoader:
             return False
         else:
             raise argparse.ArgumentTypeError("Boolean value expected.")
-<<<<<<< HEAD
-
-=======
->>>>>>> master
