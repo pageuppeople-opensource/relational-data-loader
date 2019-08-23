@@ -100,9 +100,14 @@ class DestinationTableManager(object):
         sql_builder.write("BEGIN TRANSACTION; ")
 
         # Step 3
-        # sql_builder.write(
-        #    f"ALTER TABLE IF EXISTS {schema_name}.{target_table_name} RENAME TO {old_load_table_name}; "
-        # )
+        table_exists = self.target_db.execute(
+            f"SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = '{schema_name}' AND table_name = '{target_table_name}')"
+        ).scalar()
+
+        if table_exists:
+            sql_builder.write(
+                f"ALTER TABLE {schema_name}.{target_table_name} RENAME TO {old_load_table_name}; "
+            )
 
         # Step 4
         sql_builder.write(
