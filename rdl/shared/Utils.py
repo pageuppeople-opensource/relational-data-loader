@@ -27,6 +27,8 @@ def prevent_senstive_data_logging(function):
             return function(self, *args, **kwargs)
         except Exception as e:
             err_str = f"A {e.__class__} occured in {function.__name__}. Re-run with --log-level DEBUG to override"
-            raise SensitiveDataError(err_str).with_traceback(e.__traceback__).add_sensitive_error_args(e.args) from None
+            raise SensitiveDataError(err_str).with_traceback(
+                e.__traceback__
+            ).add_sensitive_error_args(e.args) from None
 
     return wrapper
