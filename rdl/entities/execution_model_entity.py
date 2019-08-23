@@ -16,8 +16,6 @@ from rdl.entities import Base
 from rdl.entities import ExecutionEntity
 from rdl.shared import Constants
 
-from datetime import datetime
-
 
 class ExecutionModelEntity(Base):
 

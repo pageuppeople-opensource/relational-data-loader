@@ -6,8 +6,6 @@ from sqlalchemy.sql import func
 from rdl.entities.base import Base
 from rdl.shared import Constants
 
-from datetime import datetime
-
 
 class ExecutionEntity(Base):
     __tablename__ = "execution"
