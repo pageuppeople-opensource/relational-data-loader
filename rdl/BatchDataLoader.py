@@ -5,6 +5,7 @@ from io import StringIO
 from rdl.column_transformers.StringTransformers import ToUpper
 from rdl.shared import Providers
 from rdl.shared.Utils import prevent_senstive_data_logging
+from pandas import DataFrame
 
 
 class BatchDataLoader(object):
@@ -95,10 +96,6 @@ class BatchDataLoader(object):
         )
         # Float_format is used to truncate any insignificant digits. Unfortunately it gives us an artificial limitation
 
-        data.seek(0)
-        raw = self.target_db.raw_connection()
-        curs = raw.cursor()
-
         # log CSV on debug
         if self.logger.getEffectiveLevel() == logging.DEBUG:
             with open(f"{qualified_target_table}.csv", "w", encoding="utf-8") as f:
@@ -112,23 +109,20 @@ class BatchDataLoader(object):
                 data_frame.columns,
             )
         )
-        column_list = ",".join(map(str, column_array))
 
-        # FORCE_NULL: ensure quoted fields are checked for NULLs as by default they are assumed to be non-null
-        # specify null as \N so that psql doesn't assume empty strings are nulls
-        sql = (
-            f"COPY {qualified_target_table}({column_list}) FROM STDIN "
-            f"with (format csv, "
-            f"null '\\N', "
-            f"FORCE_NULL ({column_list}))"
+        destination_mapped_data_frame = DataFrame(
+            columns=column_array, data=data_frame.to_numpy()
         )
-        self.logger.debug(f"Writing to table using command '{sql}'")
 
-        curs.copy_expert(sql=sql, file=data)
+        destination_mapped_data_frame.to_sql(
+            name=self.target_table,
+            schema=self.target_schema,
+            con=self.target_db,
+            if_exists="append",
+            index=False,
+            method="multi",
+        )
 
-        self.logger.debug(f"Completed write to table '{qualified_target_table}'")
-
-        curs.connection.commit()
         return
 
     def get_destination_column_name(self, source_column_name):

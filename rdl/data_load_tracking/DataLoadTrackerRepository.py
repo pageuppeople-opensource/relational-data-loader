@@ -53,7 +53,9 @@ class DataLoadTrackerRepository(object):
             .one()
         )
 
-        execution_end_time = session.query(func.now()).scalar()
+        execution_end_time = session.query(
+            func.timezone("UTC", func.getdate())
+        ).scalar()
         total_execution_seconds = max(
             (execution_end_time - current_execution.started_on).total_seconds(), 1
         )
@@ -100,7 +102,9 @@ class DataLoadTrackerRepository(object):
             .one()
         )
 
-        execution_end_time = session.query(func.now()).scalar()
+        execution_end_time = session.query(
+            func.timezone("UTC", func.getdate())
+        ).scalar()
         total_execution_seconds = max(
             (execution_end_time - current_execution_model.started_on).total_seconds(), 1
         )

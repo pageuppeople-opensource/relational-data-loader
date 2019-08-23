@@ -2,7 +2,6 @@ import uuid
 
 from sqlalchemy import Column, DateTime, Integer, String, BigInteger
 from sqlalchemy.sql import func
-from sqlalchemy.dialects.postgresql import UUID
 
 from rdl.entities.base import Base
 from rdl.shared import Constants
@@ -11,15 +10,18 @@ from rdl.shared import Constants
 class ExecutionEntity(Base):
     __tablename__ = "execution"
     __table_args__ = {"schema": f"{Constants.DATA_PIPELINE_EXECUTION_SCHEMA_NAME}"}
-    execution_id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+
+    execution_id = Column(String(250), primary_key=True, default=f"{uuid.uuid4()}")
     created_on = Column(
-        DateTime(timezone=True), nullable=False, server_default=func.now()
+        DateTime(timezone=True),
+        nullable=False,
+        server_default=func.timezone("UTC", func.getdate()),
     )
     updated_on = Column(
         DateTime(timezone=True),
         nullable=False,
-        server_default=func.now(),
-        onupdate=func.now(),
+        server_default=func.timezone("UTC", func.getdate()),
+        onupdate=func.timezone("UTC", func.getdate()),
     )
     status = Column(
         String(50),
@@ -27,7 +29,9 @@ class ExecutionEntity(Base):
         server_default=str(Constants.ExecutionStatus.STARTED),
     )
     started_on = Column(
-        DateTime(timezone=True), nullable=False, server_default=func.now()
+        DateTime(timezone=True),
+        nullable=False,
+        server_default=func.timezone("UTC", func.getdate()),
     )
     completed_on = Column(DateTime(timezone=True), nullable=True)
     execution_time_s = Column(BigInteger, nullable=True)

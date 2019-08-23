@@ -1,7 +1,5 @@
-import citext
-from sqlalchemy import DateTime, Numeric, Integer, BigInteger, Boolean
+from sqlalchemy import DateTime, Numeric, Integer, BigInteger, Boolean, String
 from sqlalchemy.dialects.postgresql import JSONB
-from sqlalchemy.dialects.postgresql import UUID
 
 
 class ColumnTypeResolver(object):
@@ -16,11 +14,11 @@ class ColumnTypeResolver(object):
     }
 
     POSTGRES_TYPE_MAP = {
-        "string": citext.CIText,
+        "string": String(length=65535),
         "datetime": DateTime,
         "json": JSONB,
         "numeric": Numeric,
-        "guid": UUID,
+        "guid": String,
         "int": Integer,
         "bigint": BigInteger,
         "boolean": Boolean,

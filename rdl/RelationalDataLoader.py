@@ -125,9 +125,9 @@ class RelationalDataLoader:
         process_command_parser.add_argument(
             "destination_connection_string",
             metavar="destination-connection-string",
-            help="The destination database connection string. Provide in PostgreSQL"
+            help="The destination database connection string. Provide in Redshift"
             " + Psycopg format. "
-            "Eg: 'postgresql+psycopg2://username:password@host:port/dbname'",
+            "Eg: 'redshift+psycopg2://username:password@host:port/dbname'",
         )
 
         process_command_parser.add_argument(
@@ -176,9 +176,9 @@ class RelationalDataLoader:
         audit_command_parser.add_argument(
             "destination_connection_string",
             metavar="destination-connection-string",
-            help="The destination database connection string. Provide in PostgreSQL"
+            help="The destination database connection string. Provide in Redshift"
             " + Psycopg format. "
-            "Eg: 'postgresql+psycopg2://username:password@host:port/dbname'",
+            "Eg: 'redshift+psycopg2://username:password@host:port/dbname'",
         )
 
         audit_command_parser.add_argument(

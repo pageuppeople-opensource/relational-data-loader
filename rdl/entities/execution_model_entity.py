@@ -10,7 +10,6 @@ from sqlalchemy import (
     ForeignKey,
 )
 from sqlalchemy.sql import func
-from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.inspection import inspect
 
 from rdl.entities import Base
@@ -19,22 +18,27 @@ from rdl.shared import Constants
 
 
 class ExecutionModelEntity(Base):
+
     __tablename__ = "execution_model"
     __table_args__ = {"schema": Constants.DATA_PIPELINE_EXECUTION_SCHEMA_NAME}
-    execution_model_id = Column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
-    )
+
+    def generate_uuid():
+        return f"{uuid.uuid4()}"
+
+    execution_model_id = Column(String(250), primary_key=True, default=generate_uuid)
     created_on = Column(
-        DateTime(timezone=True), nullable=False, server_default=func.now()
+        DateTime(timezone=True),
+        nullable=False,
+        server_default=func.timezone("UTC", func.getdate()),
     )
     updated_on = Column(
         DateTime(timezone=True),
         nullable=False,
-        server_default=func.now(),
-        onupdate=func.now(),
+        server_default=func.timezone("UTC", func.getdate()),
+        onupdate=func.timezone("UTC", func.getdate()),
     )
     execution_id = Column(
-        UUID(as_uuid=True),
+        String(250),
         ForeignKey(
             f"{Constants.DATA_PIPELINE_EXECUTION_SCHEMA_NAME}."
             f"{inspect(ExecutionEntity).tables[0].name}."
@@ -53,7 +57,9 @@ class ExecutionModelEntity(Base):
     is_full_refresh = Column(Boolean, nullable=False)
     full_refresh_reason = Column(String(100), nullable=False)
     started_on = Column(
-        DateTime(timezone=True), server_default=func.now(), nullable=False
+        DateTime(timezone=True),
+        server_default=func.timezone("UTC", func.getdate()),
+        nullable=False,
     )
     completed_on = Column(DateTime(timezone=True), nullable=True)
     execution_time_ms = Column(BigInteger, nullable=True)

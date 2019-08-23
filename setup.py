@@ -16,6 +16,7 @@ setup(
         "sqlalchemy-citext==1.3.post0",
         "alembic==1.0.9",
         "boto3==1.9.187",
+        "sqlalchemy-redshift==0.7.3",
     ],
     package_data={"": ["alembic.ini", "alembic/*.py", "alembic/**/*.py"]},
 )
