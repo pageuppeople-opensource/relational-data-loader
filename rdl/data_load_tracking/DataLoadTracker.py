@@ -3,16 +3,16 @@ from rdl.shared import Constants
 
 
 class DataLoadTracker:
-
     def __init__(
-            self,
-            execution_id,
-            model_name,
-            model_checksum,
-            model_config,
-            is_full_refresh,
-            full_refresh_reason,
-            change_tracking_info):
+        self,
+        execution_id,
+        model_name,
+        model_checksum,
+        model_config,
+        is_full_refresh,
+        full_refresh_reason,
+        change_tracking_info,
+    ):
         self.model_name = model_name
         self.model_checksum = model_checksum
         self.model_config = model_config
@@ -70,7 +70,9 @@ class DataLoadTracker:
             if self.extract_execution_time.total_seconds() == 0:
                 self.extract_rows_per_second = self.row_count
             else:
-                self.extract_rows_per_second = self.row_count / self.extract_execution_time.total_seconds()
+                self.extract_rows_per_second = (
+                    self.row_count / self.extract_execution_time.total_seconds()
+                )
 
         def load_completed_successfully(self):
             self.status = Constants.BatchExecutionStatus.LOAD_COMPLETED_SUCCESSFULLY
@@ -80,23 +82,29 @@ class DataLoadTracker:
             if self.load_execution_time.total_seconds() == 0:
                 self.load_rows_per_second = self.row_count
             else:
-                self.load_rows_per_second = self.row_count / self.load_execution_time.total_seconds()
+                self.load_rows_per_second = (
+                    self.row_count / self.load_execution_time.total_seconds()
+                )
 
             self.total_execution_time = self.load_completed - self.extract_started
             if self.total_execution_time.total_seconds() == 0:
                 self.total_rows_per_second = self.row_count
             else:
-                self.total_rows_per_second = self.row_count / self.total_execution_time.total_seconds()
+                self.total_rows_per_second = (
+                    self.row_count / self.total_execution_time.total_seconds()
+                )
 
         def load_skipped_due_to_zero_rows(self):
             self.status = Constants.BatchExecutionStatus.SKIPPED_AS_ZERO_ROWS
             self.load_completed = datetime.now()
 
         def get_statistics(self):
-            return f"Rows: {self.row_count}; " \
-                   f"Extract Execution Time: {self.extract_execution_time} " \
-                   f"@ {self.extract_rows_per_second:.2f} rows per second; " \
-                   f"Load Execution Time: {self.load_execution_time} " \
-                   f"@ {self.load_rows_per_second:.2f} rows per second; " \
-                   f"Total Execution Time: {self.total_execution_time} " \
-                   f"@ {self.total_rows_per_second:.2f} rows per second."
+            return (
+                f"Rows: {self.row_count}; "
+                f"Extract Execution Time: {self.extract_execution_time} "
+                f"@ {self.extract_rows_per_second:.2f} rows per second; "
+                f"Load Execution Time: {self.load_execution_time} "
+                f"@ {self.load_rows_per_second:.2f} rows per second; "
+                f"Total Execution Time: {self.total_execution_time} "
+                f"@ {self.total_rows_per_second:.2f} rows per second."
+            )

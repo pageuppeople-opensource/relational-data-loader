@@ -110,7 +110,9 @@ class BatchDataLoader(object):
             )
         )
 
-        destination_mapped_data_frame = DataFrame(columns=column_array, data=data_frame.to_numpy())
+        destination_mapped_data_frame = DataFrame(
+            columns=column_array, data=data_frame.to_numpy()
+        )
 
         destination_mapped_data_frame.to_sql(
             name=self.target_table,
@@ -118,7 +120,7 @@ class BatchDataLoader(object):
             con=self.target_db,
             if_exists="append",
             index=False,
-            method='multi'
+            method="multi",
         )
 
         return

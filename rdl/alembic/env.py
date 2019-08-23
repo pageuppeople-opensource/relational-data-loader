@@ -29,7 +29,11 @@ target_metadata = Base.metadata
 
 if not context.get_x_argument():
     raise AttributeError(
+<<<<<<< HEAD
         "example usage `alembic -c rdl/alembic.ini -x redshift+psycopg2://postgres:postgres@localhost/postgres downgrade -1`"
+=======
+        "example usage `alembic -c rdl/alembic.ini -x postgresql+psycopg2://postgres:postgres@localhost/postgres downgrade -1`"
+>>>>>>> master
     )
 
 url = context.get_x_argument()[0]

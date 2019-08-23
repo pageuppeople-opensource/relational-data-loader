@@ -21,12 +21,13 @@ CONFIG_PATH = "./tests/unit_tests/config/"
 
 
 class TestDataLoadTrackerRepository(unittest.TestCase):
-
     @classmethod
     def setUpClass(cls):
         with open(CONFIG_PATH + "connection.json", "r", encoding="utf8") as f:
             config_json = json.loads(f.read(), encoding="utf8")
-            gen_connection_string = PSQL_STRING_FORMAT.format(**config_json["psql"], db="{db}")
+            gen_connection_string = PSQL_STRING_FORMAT.format(
+                **config_json["psql"], db="{db}"
+            )
 
         cls.master_engine = create_engine(gen_connection_string.format(db="postgres"))
 
@@ -37,13 +38,17 @@ class TestDataLoadTrackerRepository(unittest.TestCase):
 
         cls.target_engine = create_engine(gen_connection_string.format(db=TEST_DB))
         target_db_conn = cls.target_engine.connect()
-        target_db_conn.execute('CREATE EXTENSION IF NOT EXISTS CITEXT;')
+        target_db_conn.execute("CREATE EXTENSION IF NOT EXISTS CITEXT;")
         target_db_conn.execute('CREATE EXTENSION IF NOT EXISTS "uuid-ossp";')
         target_db_conn.close()
 
-        subprocess.call(f"alembic -c rdl/alembic.ini -x {gen_connection_string.format(db=TEST_DB)} upgrade head")
+        subprocess.call(
+            f"alembic -c rdl/alembic.ini -x {gen_connection_string.format(db=TEST_DB)} upgrade head"
+        )
 
-        cls.data_load_tracker = DataLoadTrackerRepository(sessionmaker(bind=cls.target_engine))
+        cls.data_load_tracker = DataLoadTrackerRepository(
+            sessionmaker(bind=cls.target_engine)
+        )
 
     @classmethod
     def tearDownClass(cls):
@@ -56,7 +61,9 @@ class TestDataLoadTrackerRepository(unittest.TestCase):
 
     def test_get_results(self):
         self.timestamps = []
-        self.fake_session = TestDataLoadTrackerRepository.data_load_tracker.session_maker()
+        self.fake_session = (
+            TestDataLoadTrackerRepository.data_load_tracker.session_maker()
+        )
         self.fake_models = [
             {
                 "name": "fake_jobs",
@@ -82,14 +89,18 @@ class TestDataLoadTrackerRepository(unittest.TestCase):
 
         # 1: incremental only of some rows
         frt_1 = []
-        incr_1 = ['fake_jobs', 'fake_applicants']
+        incr_1 = ["fake_jobs", "fake_applicants"]
         run_time = last_succesful_time + timedelta(hours=2)
         self.__simulate_rdl_run(run_time, frt_1, incr_1)
         # 1A: ensure full refresh list is empty
-        results = TestDataLoadTrackerRepository.data_load_tracker.get_full_refresh_since(self.timestamps[-1])
+        results = TestDataLoadTrackerRepository.data_load_tracker.get_full_refresh_since(
+            self.timestamps[-1]
+        )
         self.assertCountEqual(results, frt_1)
         # 1B: ensure incremental list is full
-        results = TestDataLoadTrackerRepository.data_load_tracker.get_only_incremental_since(self.timestamps[-1])
+        results = TestDataLoadTrackerRepository.data_load_tracker.get_only_incremental_since(
+            self.timestamps[-1]
+        )
         self.assertCountEqual(results, incr_1)
         last_succesful_time = run_time + timedelta(minutes=30)
         self.timestamps.append(last_succesful_time)
@@ -100,70 +111,106 @@ class TestDataLoadTrackerRepository(unittest.TestCase):
         run_time = last_succesful_time + timedelta(hours=2)
         self.__simulate_rdl_run(run_time, frt_2, incr_2)
         # 2A: ensure full refresh list is empty
-        results = TestDataLoadTrackerRepository.data_load_tracker.get_full_refresh_since(self.timestamps[-1])
+        results = TestDataLoadTrackerRepository.data_load_tracker.get_full_refresh_since(
+            self.timestamps[-1]
+        )
         self.assertCountEqual(results, frt_2)
         # 2B: ensure incremental list is empty
-        results = TestDataLoadTrackerRepository.data_load_tracker.get_only_incremental_since(self.timestamps[-1])
+        results = TestDataLoadTrackerRepository.data_load_tracker.get_only_incremental_since(
+            self.timestamps[-1]
+        )
         self.assertCountEqual(results, incr_2)
         # 2C: assuming DBT failure, ensure RDL outputs include #1
-        results = TestDataLoadTrackerRepository.data_load_tracker.get_full_refresh_since(self.timestamps[-2])
+        results = TestDataLoadTrackerRepository.data_load_tracker.get_full_refresh_since(
+            self.timestamps[-2]
+        )
         frt_set = set(frt_1 + frt_2)
         self.assertCountEqual(results, frt_set)
-        results = TestDataLoadTrackerRepository.data_load_tracker.get_only_incremental_since(self.timestamps[-2])
+        results = TestDataLoadTrackerRepository.data_load_tracker.get_only_incremental_since(
+            self.timestamps[-2]
+        )
         self.assertCountEqual(results, set(incr_1 + incr_2).difference(frt_set))
         last_succesful_time = run_time + timedelta(minutes=30)
         self.timestamps.append(last_succesful_time)
 
         # 3: simulate Full Refresh only
-        frt_3 = ['fake_users', 'fake_applicants']
+        frt_3 = ["fake_users", "fake_applicants"]
         incr_3 = []
         run_time = last_succesful_time + timedelta(hours=2)
         self.__simulate_rdl_run(run_time, frt_3, incr_3)
         # 3A: ensure full refresh list is correct
-        results = TestDataLoadTrackerRepository.data_load_tracker.get_full_refresh_since(self.timestamps[-1])
+        results = TestDataLoadTrackerRepository.data_load_tracker.get_full_refresh_since(
+            self.timestamps[-1]
+        )
         self.assertCountEqual(results, frt_3)
         # 3B: ensure incremental list is empty
-        results = TestDataLoadTrackerRepository.data_load_tracker.get_only_incremental_since(self.timestamps[-1])
+        results = TestDataLoadTrackerRepository.data_load_tracker.get_only_incremental_since(
+            self.timestamps[-1]
+        )
         self.assertCountEqual(results, incr_3)
         # 3C: assuming DBT failure, ensure RDL outputs include #1 and #2
-        results = TestDataLoadTrackerRepository.data_load_tracker.get_full_refresh_since(self.timestamps[-3])
+        results = TestDataLoadTrackerRepository.data_load_tracker.get_full_refresh_since(
+            self.timestamps[-3]
+        )
         frt_set = set(frt_1 + frt_2 + frt_3)
         self.assertCountEqual(results, frt_set)
-        results = TestDataLoadTrackerRepository.data_load_tracker.get_only_incremental_since(self.timestamps[-3])
-        self.assertCountEqual(results, set(incr_1 + incr_2 + incr_3).difference(frt_set))
+        results = TestDataLoadTrackerRepository.data_load_tracker.get_only_incremental_since(
+            self.timestamps[-3]
+        )
+        self.assertCountEqual(
+            results, set(incr_1 + incr_2 + incr_3).difference(frt_set)
+        )
         # 3D: as #2 was blank, ensure #3 == #2
-        results = TestDataLoadTrackerRepository.data_load_tracker.get_full_refresh_since(self.timestamps[-2])
-        results_ = TestDataLoadTrackerRepository.data_load_tracker.get_full_refresh_since(self.timestamps[-1])
+        results = TestDataLoadTrackerRepository.data_load_tracker.get_full_refresh_since(
+            self.timestamps[-2]
+        )
+        results_ = TestDataLoadTrackerRepository.data_load_tracker.get_full_refresh_since(
+            self.timestamps[-1]
+        )
         self.assertCountEqual(results, results_)
-        results = TestDataLoadTrackerRepository.data_load_tracker.get_only_incremental_since(self.timestamps[-2])
-        results_ = TestDataLoadTrackerRepository.data_load_tracker.get_only_incremental_since(self.timestamps[-1])
+        results = TestDataLoadTrackerRepository.data_load_tracker.get_only_incremental_since(
+            self.timestamps[-2]
+        )
+        results_ = TestDataLoadTrackerRepository.data_load_tracker.get_only_incremental_since(
+            self.timestamps[-1]
+        )
         self.assertCountEqual(results, results_)
         last_succesful_time = run_time + timedelta(minutes=30)
         self.timestamps.append(last_succesful_time)
 
         # 4: simulate mixed
-        frt_4 = ['fake_jobs', 'fake_applicants']
-        incr_4 = ['fake_users']
+        frt_4 = ["fake_jobs", "fake_applicants"]
+        incr_4 = ["fake_users"]
         run_time = last_succesful_time + timedelta(hours=2)
         self.__simulate_rdl_run(run_time, frt_4, incr_4)
         # 4A: ensure full refresh list is correct
-        results = TestDataLoadTrackerRepository.data_load_tracker.get_full_refresh_since(self.timestamps[-1])
+        results = TestDataLoadTrackerRepository.data_load_tracker.get_full_refresh_since(
+            self.timestamps[-1]
+        )
         self.assertCountEqual(results, frt_4)
         # 4B: ensure incremental list is correct
-        results = TestDataLoadTrackerRepository.data_load_tracker.get_only_incremental_since(self.timestamps[-1])
+        results = TestDataLoadTrackerRepository.data_load_tracker.get_only_incremental_since(
+            self.timestamps[-1]
+        )
         self.assertCountEqual(results, incr_4)
         # 4C: assuming DBT failure, ensure RDL outputs include #3
-        results = TestDataLoadTrackerRepository.data_load_tracker.get_full_refresh_since(self.timestamps[-2])
+        results = TestDataLoadTrackerRepository.data_load_tracker.get_full_refresh_since(
+            self.timestamps[-2]
+        )
         frt_set = set(frt_4 + frt_3)
         self.assertCountEqual(results, frt_set)
-        results = TestDataLoadTrackerRepository.data_load_tracker.get_only_incremental_since(self.timestamps[-2])
+        results = TestDataLoadTrackerRepository.data_load_tracker.get_only_incremental_since(
+            self.timestamps[-2]
+        )
         self.assertCountEqual(results, set(incr_4 + incr_3).difference(frt_set))
         last_succesful_time = run_time + timedelta(minutes=30)
         self.timestamps.append(last_succesful_time)
 
         self.fake_session.close()
 
-    def __simulate_rdl_run(self, iteration_time, full_refresh_models, incremental_models):
+    def __simulate_rdl_run(
+        self, iteration_time, full_refresh_models, incremental_models
+    ):
         execution = ExecutionEntity()
         self.fake_session.add(execution)
         self.fake_session.commit()
@@ -172,7 +219,9 @@ class TestDataLoadTrackerRepository(unittest.TestCase):
         for j, fake_model in enumerate(self.fake_models):
             execution_time_ms = 10
             time_since_iteration_ms = j * execution_time_ms
-            completed_on = iteration_time + timedelta(milliseconds=time_since_iteration_ms)
+            completed_on = iteration_time + timedelta(
+                milliseconds=time_since_iteration_ms
+            )
 
             full_refresh_reason = Constants.FullRefreshReason.NOT_APPLICABLE
             is_full_refresh = False
@@ -207,7 +256,7 @@ class TestDataLoadTrackerRepository(unittest.TestCase):
                 execution_id=execution.execution_id,
                 status=status,
                 model_checksum=fake_model["checksum"],
-                full_refresh_reason=full_refresh_reason
+                full_refresh_reason=full_refresh_reason,
             )
 
             self.fake_session.add(fake_data_load)
@@ -216,5 +265,5 @@ class TestDataLoadTrackerRepository(unittest.TestCase):
         self.fake_session.commit()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
