@@ -28,12 +28,16 @@ class ExecutionModelEntity(Base):
         return f"{uuid.uuid4()}"
 
     execution_model_id = Column(String(250), primary_key=True, default=generate_uuid)
-    created_on = Column(DateTime(timezone=True), nullable=False, default=datetime.utcnow)
+    created_on = Column(
+        DateTime(timezone=True),
+        nullable=False,
+        server_default=func.timezone("UTC", func.getdate()),
+    )
     updated_on = Column(
         DateTime(timezone=True),
         nullable=False,
-        default=datetime.utcnow,
-        onupdate=func.now(),
+        server_default=func.timezone("UTC", func.getdate()),
+        onupdate=func.timezone("UTC", func.getdate()),
     )
     execution_id = Column(
         String(250),
@@ -54,7 +58,11 @@ class ExecutionModelEntity(Base):
     sync_version = Column(BigInteger, nullable=False)
     is_full_refresh = Column(Boolean, nullable=False)
     full_refresh_reason = Column(String(100), nullable=False)
-    started_on = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+    started_on = Column(
+        DateTime(timezone=True),
+        server_default=func.timezone("UTC", func.getdate()),
+        nullable=False,
+    )
     completed_on = Column(DateTime(timezone=True), nullable=True)
     execution_time_ms = Column(BigInteger, nullable=True)
     rows_processed = Column(BigInteger, nullable=True)

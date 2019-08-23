@@ -1,8 +1,8 @@
 """Initial revision
 
-Revision ID: b62653121263
+Revision ID: 8f36bc04e0a5
 Revises: 
-Create Date: 2019-08-22 13:58:14.585775
+Create Date: 2019-08-23 14:07:50.129146
 
 """
 from alembic import op
@@ -10,14 +10,13 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = "b62653121263"
+revision = "8f36bc04e0a5"
 down_revision = None
 branch_labels = None
 depends_on = None
 
 
 def upgrade():
-
     # Generated using `alembic -c rdl/alembic.ini -x $DESTINATION_DB_URL revision -m "$REVISION_MESSAGE" --autogenerate`
     op.execute("CREATE SCHEMA IF NOT EXISTS rdl")
 
@@ -25,12 +24,27 @@ def upgrade():
     op.create_table(
         "execution",
         sa.Column("execution_id", sa.String(length=250), nullable=False),
-        sa.Column("created_on", sa.DateTime(timezone=True), nullable=False),
-        sa.Column("updated_on", sa.DateTime(timezone=True), nullable=False),
+        sa.Column(
+            "created_on",
+            sa.DateTime(timezone=True),
+            server_default=sa.text("timezone('UTC', getdate())"),
+            nullable=False,
+        ),
+        sa.Column(
+            "updated_on",
+            sa.DateTime(timezone=True),
+            server_default=sa.text("timezone('UTC', getdate())"),
+            nullable=False,
+        ),
         sa.Column(
             "status", sa.String(length=50), server_default="Started", nullable=False
         ),
-        sa.Column("started_on", sa.DateTime(timezone=True), nullable=False),
+        sa.Column(
+            "started_on",
+            sa.DateTime(timezone=True),
+            server_default=sa.text("timezone('UTC', getdate())"),
+            nullable=False,
+        ),
         sa.Column("completed_on", sa.DateTime(timezone=True), nullable=True),
         sa.Column("execution_time_s", sa.BigInteger(), nullable=True),
         sa.Column("rows_processed", sa.BigInteger(), nullable=True),
@@ -42,8 +56,18 @@ def upgrade():
     op.create_table(
         "execution_model",
         sa.Column("execution_model_id", sa.String(length=250), nullable=False),
-        sa.Column("created_on", sa.DateTime(timezone=True), nullable=False),
-        sa.Column("updated_on", sa.DateTime(timezone=True), nullable=False),
+        sa.Column(
+            "created_on",
+            sa.DateTime(timezone=True),
+            server_default=sa.text("timezone('UTC', getdate())"),
+            nullable=False,
+        ),
+        sa.Column(
+            "updated_on",
+            sa.DateTime(timezone=True),
+            server_default=sa.text("timezone('UTC', getdate())"),
+            nullable=False,
+        ),
         sa.Column("execution_id", sa.String(length=250), nullable=False),
         sa.Column("model_name", sa.String(length=250), nullable=False),
         sa.Column(
@@ -53,7 +77,12 @@ def upgrade():
         sa.Column("sync_version", sa.BigInteger(), nullable=False),
         sa.Column("is_full_refresh", sa.Boolean(), nullable=False),
         sa.Column("full_refresh_reason", sa.String(length=100), nullable=False),
-        sa.Column("started_on", sa.DateTime(timezone=True), nullable=False),
+        sa.Column(
+            "started_on",
+            sa.DateTime(timezone=True),
+            server_default=sa.text("timezone('UTC', getdate())"),
+            nullable=False,
+        ),
         sa.Column("completed_on", sa.DateTime(timezone=True), nullable=True),
         sa.Column("execution_time_ms", sa.BigInteger(), nullable=True),
         sa.Column("rows_processed", sa.BigInteger(), nullable=True),
@@ -72,3 +101,5 @@ def downgrade():
     op.drop_table("execution_model", schema="rdl")
     op.drop_table("execution", schema="rdl")
     # ### end Alembic commands ###
+
+    op.execute("CREATE SCHEMA IF EXISTS rdl")

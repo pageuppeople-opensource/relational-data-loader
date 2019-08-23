@@ -14,19 +14,27 @@ class ExecutionEntity(Base):
     __table_args__ = {"schema": f"{Constants.DATA_PIPELINE_EXECUTION_SCHEMA_NAME}"}
 
     execution_id = Column(String(250), primary_key=True, default=f"{uuid.uuid4()}")
-    created_on = Column(DateTime(timezone=True), nullable=False, default=datetime.utcnow)
+    created_on = Column(
+        DateTime(timezone=True),
+        nullable=False,
+        server_default=func.timezone("UTC", func.getdate()),
+    )
     updated_on = Column(
         DateTime(timezone=True),
         nullable=False,
-        default=datetime.utcnow,
-        onupdate=func.now(),
+        server_default=func.timezone("UTC", func.getdate()),
+        onupdate=func.timezone("UTC", func.getdate()),
     )
     status = Column(
         String(50),
         nullable=False,
         server_default=str(Constants.ExecutionStatus.STARTED),
     )
-    started_on = Column(DateTime(timezone=True), nullable=False, default=datetime.utcnow)
+    started_on = Column(
+        DateTime(timezone=True),
+        nullable=False,
+        server_default=func.timezone("UTC", func.getdate()),
+    )
     completed_on = Column(DateTime(timezone=True), nullable=True)
     execution_time_s = Column(BigInteger, nullable=True)
     rows_processed = Column(BigInteger, nullable=True)
