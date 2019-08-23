@@ -1,6 +1,4 @@
-
 class BatchKeyTracker(object):
-
     def __init__(self, primary_keys):
         self.primary_keys = primary_keys
         self.has_more_data = True

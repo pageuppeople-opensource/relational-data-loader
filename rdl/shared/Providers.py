@@ -1,6 +1,6 @@
 class __AuditColumnsNames:
     def __init__(self):
-        self.audit_column_prefix = 'rdl_'
+        self.audit_column_prefix = "rdl_"
         self.__changed = False
 
     def update_audit_column_prefix(self, audit_column_prefix):
@@ -11,15 +11,15 @@ class __AuditColumnsNames:
 
     @property
     def TIMESTAMP(self):
-        return f'{self.audit_column_prefix}timestamp'
+        return f"{self.audit_column_prefix}timestamp"
 
     @property
     def IS_DELETED(self):
-        return f'{self.audit_column_prefix}is_deleted'
+        return f"{self.audit_column_prefix}is_deleted"
 
     @property
     def CHANGE_VERSION(self):
-        return f'{self.audit_column_prefix}change_version'
+        return f"{self.audit_column_prefix}change_version"
 
 
 AuditColumnsNames = __AuditColumnsNames()
