@@ -102,4 +102,4 @@ def downgrade():
     op.drop_table("execution", schema="rdl")
     # ### end Alembic commands ###
 
-    op.execute("CREATE SCHEMA IF EXISTS rdl")
+    op.execute("DPOP SCHEMA IF EXISTS rdl")
