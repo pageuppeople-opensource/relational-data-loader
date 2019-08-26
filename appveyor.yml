@@ -14,7 +14,7 @@ environment:
       PYTHON_ARCH: "64"
 
 services:
-  - postgresql101
+  - postgresql93
   - mssql2016
 
 init:
