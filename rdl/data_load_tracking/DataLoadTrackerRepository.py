@@ -148,47 +148,61 @@ class DataLoadTrackerRepository(object):
 
     def get_full_refresh_since(self, timestamp):
         session = self.session_maker()
-        results = (
-            session.query(ExecutionModelEntity.model_name)
-            .filter(
-                ExecutionModelEntity.completed_on > timestamp,
-                ExecutionModelEntity.is_full_refresh,
-            )
-            .distinct(ExecutionModelEntity.model_name)
-            .group_by(ExecutionModelEntity.model_name)
-            .all()
-        )
+        results = session.execute(
+            f"SELECT DISTINCT model_name FROM rdl.execution_model WHERE completed_on > '{timestamp}' AND is_full_refresh IS TRUE GROUP BY model_name"
+        ).fetchall()
+
+        # results = (
+        #     session.query(ExecutionModelEntity.model_name)
+        #     .filter(
+        #         ExecutionModelEntity.completed_on > timestamp,
+        #         ExecutionModelEntity.is_full_refresh,
+        #     )
+        #     .distinct(ExecutionModelEntity.model_name)
+        #     .group_by(ExecutionModelEntity.model_name)
+        #     .all()
+        # )
         session.close()
         return [r for (r,) in results]
 
     def get_incremental_since(self, timestamp):
         session = self.session_maker()
-        results = (
-            session.query(ExecutionModelEntity.model_name)
-            .filter(
-                ExecutionModelEntity.completed_on > timestamp,
-                ExecutionModelEntity.is_full_refresh == False,
-                ExecutionModelEntity.rows_processed > 0,
-            )
-            .distinct(ExecutionModelEntity.model_name)
-            .group_by(ExecutionModelEntity.model_name)
-            .all()
-        )
+
+        results = session.execute(
+            f"SELECT DISTINCT model_name FROM rdl.execution_model WHERE completed_on > '{timestamp}' AND is_full_refresh IS FALSE AND rows_processed > 0 GROUP BY model_name"
+        ).fetchall()
+
+        # results = (
+        #     session.query(ExecutionModelEntity.model_name)
+        #     .filter(
+        #         ExecutionModelEntity.completed_on > timestamp,
+        #         ExecutionModelEntity.is_full_refresh == False,
+        #         ExecutionModelEntity.rows_processed > 0,
+        #     )
+        #     .distinct(ExecutionModelEntity.model_name)
+        #     .group_by(ExecutionModelEntity.model_name)
+        #     .all()
+        # )
         session.close()
         return [r for (r,) in results]
 
     def get_only_incremental_since(self, timestamp):
         session = self.session_maker()
-        results = (
-            session.query(ExecutionModelEntity.model_name)
-            .filter(
-                ExecutionModelEntity.completed_on > timestamp,
-                ExecutionModelEntity.rows_processed > 0,
-            )
-            .distinct(ExecutionModelEntity.model_name)
-            .group_by(ExecutionModelEntity.model_name)
-            .having(func.bool_and(ExecutionModelEntity.is_full_refresh == False))
-            .all()
-        )
+
+        results = session.execute(
+            f"SELECT DISTINCT model_name FROM rdl.execution_model WHERE completed_on > '{timestamp}' AND rows_processed > 0 GROUP BY model_name HAVING BOOL_AND(is_full_refresh IS FALSE)"
+        ).fetchall()
+
+        # results = (
+        #     session.query(ExecutionModelEntity.model_name)
+        #     .filter(
+        #         ExecutionModelEntity.completed_on > timestamp,
+        #         ExecutionModelEntity.rows_processed > 0,
+        #     )
+        #     .distinct(ExecutionModelEntity.model_name)
+        #     .group_by(ExecutionModelEntity.model_name)
+        #     .having(func.bool_and(ExecutionModelEntity.is_full_refresh == False))
+        #     .all()
+        # )
         session.close()
         return [r for (r,) in results]
