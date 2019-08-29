@@ -143,30 +143,23 @@ class DestinationTableManager(object):
         ]
 
         primary_key_column_list = ",".join(map(str, primary_key_column_array))
-
         sql_builder = io.StringIO()
-        sql_builder.write(
-            f"INSERT INTO {schema_name}.{target_table_name} ({column_list}) \n"
-        )
-        sql_builder.write(
-            f" SELECT {column_list} FROM {schema_name}.{source_table_name} \n"
-        )
-        sql_builder.write(f" ON CONFLICT({primary_key_column_list}) DO UPDATE SET ")
+        sql_builder.write(f"begin transaction;\n")
+        sql_builder.write(f"delete from {schema_name}.{target_table_name}\n")
+        sql_builder.write(f"using {schema_name}.{source_table_name}\n")
+        sql_builder.write(f"where ")
 
-        for column_config in columns_config:
-            sql_builder.write(
-                "{0} = EXCLUDED.{0},\n".format(column_config["destination"]["name"])
-            )
+        primary_key_column_join_array = [
+            f"{schema_name}.{target_table_name}.{primary_key_column} = {schema_name}.{source_table_name}.{primary_key_column}"
+            for primary_key_column in primary_key_column_array
+        ]
+        sql_builder.write(f"{' and '.join(primary_key_column_join_array)};\n\n")
+        sql_builder.write(f"insert into {schema_name}.{target_table_name}\n")
+        sql_builder.write(
+            f"select {column_list} from {schema_name}.{source_table_name};"
+        )
 
-        sql_builder.write(
-            "{0} = EXCLUDED.{0},\n".format(Providers.AuditColumnsNames.TIMESTAMP)
-        )
-        sql_builder.write(
-            "{0} = EXCLUDED.{0},\n".format(Providers.AuditColumnsNames.IS_DELETED)
-        )
-        sql_builder.write(
-            "{0} = EXCLUDED.{0};\n".format(Providers.AuditColumnsNames.CHANGE_VERSION)
-        )
+        sql_builder.write(f"end transaction;\n")
 
         upsert_sql = sql_builder.getvalue()
 
