@@ -90,16 +90,54 @@ class AWSLambdaDataSource(object):
             "Table": {"Schema": table_config["schema"], "Name": table_config["name"]},
             "CommandPayload": {"LastSyncVersion": last_known_sync_version},
         }
-
-        result = self.__invoke_lambda(pay_load)
+        self.logger.info('payload to get table INFO is..\n')
+        self.logger.info(pay_load)
 
         return (
-            result["ColumnNames"],
-            result["LastSyncVersion"],
-            result["CurrentSyncVersion"],
-            result["FullRefreshRequired"],
-            result["DataChangedSinceLastSync"],
+            ["lItemID",
+                "bBonusable",
+                "dAudit",
+                "dCreated",
+                "dDateMax",
+                "dDateMin",
+                "dDatePar",
+                "dTargetDate",
+                "sMeasure",
+                "lAbsoluteWeighting",
+                "lBonusWeighting",
+                "lGoalID",
+                "lItemAttachmentID",
+                "lLKP_ItemStatusID",
+                "lLKP_ItemTargetTypeID",
+                "lManagerRatingID",
+                "lPersonRatingID",
+                "lSectionID",
+                "lWeighting",
+                "nBonusScore",
+                "nNumberMax",
+                "nNumberMin",
+                "nNumberPar",
+                "sBonusOpportunity",
+                "sTextMax",
+                "sTextMin",
+                "sTextPar",
+                "sPersonComment",
+                "sManagerComment",
+                "sTitle",
+                "nManagerRatingPercentage",
+                "uUniqueId"],
+                0, 0, False, False
         )
+
+        # result = self.__invoke_lambda(pay_load)
+
+        # return (
+        #     result["ColumnNames"],
+        #     result["LastSyncVersion"],
+        #     result["CurrentSyncVersion"],
+        #     result["FullRefreshRequired"],
+        #     result["DataChangedSinceLastSync"],
+        # )
 
     def __get_table_data(
         self,
@@ -120,25 +158,32 @@ class AWSLambdaDataSource(object):
                 "BatchSize": batch_config["size"],
                 "LastSyncVersion": change_tracking_info.last_sync_version,
                 "FullRefresh": full_refresh,
-                "ColumnNames": list(
-                    map(lambda cfg: cfg["source_name"], columns_config)
-                ),
-                "PrimaryKeyColumnNames": table_config["primary_keys"],
+                "Columns": [
+                    {
+                        "Name": col["source_name"],
+                        "DataType": col["destination"]["type"],
+                        "IsPrimaryKey": col["destination"]["primary_key"]
+                    }
+                    for col in columns_config
+                ],
                 "LastBatchPrimaryKeys": [
                     {"Key": k, "Value": v}
                     for k, v in batch_key_tracker.bookmarks.items()
                 ],
             },
         }
+        self.logger.info('payload to get table DATA is..\n')
+        self.logger.info(pay_load)
+        raise EnvironmentError('coz so')
 
-        result = self.__invoke_lambda(pay_load)
-        command_result = self.aws_s3_client.get_object(
-            Bucket=result["DataBucketName"], Key=result["DataKey"]
-        )
+        # result = self.__invoke_lambda(pay_load)
+        # command_result = self.aws_s3_client.get_object(
+        #     Bucket=result["DataBucketName"], Key=result["DataKey"]
+        # )
 
-        data = json.loads(command_result["Body"].read())
+        # data = json.loads(command_result["Body"].read())
 
-        return result["ColumnNames"], data
+        # return result["ColumnNames"], data
 
     def __get_data_frame(self, data: [[]], column_names: []):
         return pandas.DataFrame(data=data, columns=column_names)
