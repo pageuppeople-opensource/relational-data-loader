@@ -120,10 +120,14 @@ class AWSLambdaDataSource(object):
                 "BatchSize": batch_config["size"],
                 "LastSyncVersion": change_tracking_info.last_sync_version,
                 "FullRefresh": full_refresh,
-                "ColumnNames": list(
-                    map(lambda cfg: cfg["source_name"], columns_config)
-                ),
-                "PrimaryKeyColumnNames": table_config["primary_keys"],
+                "Columns": [
+                    {
+                        "Name": col["source_name"],
+                        "DataType": col["destination"]["type"],
+                        "IsPrimaryKey": col["destination"]["primary_key"]
+                    }
+                    for col in columns_config
+                ],
                 "LastBatchPrimaryKeys": [
                     {"Key": k, "Value": v}
                     for k, v in batch_key_tracker.bookmarks.items()
