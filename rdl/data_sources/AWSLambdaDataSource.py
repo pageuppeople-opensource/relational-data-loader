@@ -142,7 +142,7 @@ class AWSLambdaDataSource(object):
 
     def __get_data_frame(self, data: [[]], column_names: []):
         return pandas.DataFrame(data=data, columns=column_names).replace(
-            r"\W+", "", regex=True
+            regex=r"\x00", value=""
         )
 
     def __invoke_lambda(self, pay_load):
