@@ -61,6 +61,10 @@ class BatchDataLoader(object):
             batch_key_tracker.has_more_data = False
             return
 
+        # replacing unicode null characters because postgres doesn't support null characters in text fields
+        # https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.replace.html
+        data_frame = data_frame.replace(regex=r"\x00", value="")
+
         data_frame = self.attach_column_transformers(data_frame)
         self.write_data_frame_to_table(data_frame)
         batch_tracker.load_completed_successfully()
@@ -122,7 +126,8 @@ class BatchDataLoader(object):
             f"null '\\N', "
             f"FORCE_NULL ({column_list}))"
         )
-        self.logger.debug(f"Writing to table using command '{sql}'")
+
+        self.logger.info(f"Writing to table using command '{sql}'")
 
         curs.copy_expert(sql=sql, file=data)
 
