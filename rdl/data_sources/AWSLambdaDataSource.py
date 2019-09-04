@@ -145,9 +145,7 @@ class AWSLambdaDataSource(object):
         return result["ColumnNames"], data
 
     def __get_data_frame(self, data: [[]], column_names: []):
-        return pandas.DataFrame(data=data, columns=column_names).replace(
-            regex=r"\x00", value=""
-        )
+        return pandas.DataFrame(data=data, columns=column_names)
 
     def __invoke_lambda(self, pay_load):
         self.logger.debug("\nRequest being sent to Lambda:")
