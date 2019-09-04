@@ -126,7 +126,7 @@ class BatchDataLoader(object):
             f"null '\\N', "
             f"FORCE_NULL ({column_list}))"
         )
-        self.logger.info(f"Writing to table using command '{sql}'")
+        self.logger.debug(f"Writing to table using command '{sql}'")
 
         curs.copy_expert(sql=sql, file=data)
 
