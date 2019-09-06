@@ -1,5 +1,6 @@
 APP_NAME = "Relational Data Loader"
 DATA_PIPELINE_EXECUTION_SCHEMA_NAME = "rdl"
+MAX_AWS_LAMBDA_INVOKATION_ATTEMPTS = 3
 
 
 class FullRefreshReason:
