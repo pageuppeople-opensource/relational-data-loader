@@ -184,9 +184,11 @@ class AWSLambdaDataSource(object):
                 # BUT the lambda barfed with an error and therefore the FunctionError would not be None
                 self.logger.error(response_payload)
 
-                if current_attempt >= max_attempts:
+                if current_attempt == max_attempts:
                     raise Exception(
                         "Error received when invoking AWS Lambda. See logs for further details."
                     )
+            else:
+                break
 
         return response_payload
