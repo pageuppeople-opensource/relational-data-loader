@@ -1,6 +1,7 @@
 APP_NAME = "Relational Data Loader"
 DATA_PIPELINE_EXECUTION_SCHEMA_NAME = "rdl"
-MAX_AWS_LAMBDA_INVOKATION_ATTEMPTS = 3
+MAX_AWS_LAMBDA_INVOKATION_ATTEMPTS = 4 # 1 + 3 retries
+AWS_LAMBDA_RETRY_DELAY_SECONDS = 4 # 4 ^ retry attempt, so retry attempt 3 is delayed 64 seconds
 
 
 class FullRefreshReason:
