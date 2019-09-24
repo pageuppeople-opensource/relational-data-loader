@@ -2,6 +2,7 @@ import logging
 import pandas
 import json
 import boto3
+import time
 
 from rdl.data_sources.ChangeTrackingInfo import ChangeTrackingInfo
 from rdl.data_sources.SourceTableInfo import SourceTableInfo
@@ -149,9 +150,14 @@ class AWSLambdaDataSource(object):
 
     def __invoke_lambda(self, pay_load):
         max_attempts = Constants.MAX_AWS_LAMBDA_INVOKATION_ATTEMPTS
+        retry_delay = Constants.AWS_LAMBDA_RETRY_DELAY_SECONDS
         response_payload = None
 
         for current_attempt in list(range(1, max_attempts+1, 1)):
+            if current_attempt > 1:
+                self.logger.debug(f"\nDelaying retry for {(current_attempt - 1) ^ retry_delay} seconds")
+                time.sleep((current_attempt - 1) ^ retry_delay)
+
             self.logger.debug(f"\nRequest being sent to Lambda, attempt {current_attempt} of {max_attempts}:")
             self.logger.debug(pay_load)
 
