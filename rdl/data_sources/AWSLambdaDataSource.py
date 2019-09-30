@@ -191,7 +191,8 @@ class AWSLambdaDataSource(object):
         )
 
     def __refresh_aws_clients_if_expired(self):
-        current_datetime = datetime.datetime.now()
+        # this is due to AWS returning their expiry date in UTC
+        current_datetime = datetime.datetime.now(datetime.timezone.utc)
 
         if (
             current_datetime > self.role_session_expiry - datetime.timedelta(minutes=5)
