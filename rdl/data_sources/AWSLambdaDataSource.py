@@ -16,7 +16,10 @@ class AWSLambdaDataSource(object):
     CONNECTION_STRING_PREFIX = "aws-lambda://"
     CONNECTION_STRING_GROUP_SEPARATOR = ";"
     CONNECTION_STRING_KEY_VALUE_SEPARATOR = "="
-    CONNECTION_STRING_ROLE_KEY = "role"
+
+    CONNECTION_DATA_ROLE_KEY = "role"
+    CONNECTION_DATA_FUNCTION_KEY = "function"
+    CONNECTION_DATA_TENANT_KEY = "tenant"
 
     AWS_SERVICE_LAMBDA = "lambda"
     AWS_SERVICE_S3 = "s3"
@@ -39,8 +42,8 @@ class AWSLambdaDataSource(object):
 
         self.aws_sts_client = boto3.client("sts")
         role_credentials = self.__assume_role(
-            self.connection_data[self.CONNECTION_STRING_ROLE_KEY],
-            f'dwp_{self.connection_data["tenant"]}',
+            self.connection_data[self.CONNECTION_DATA_ROLE_KEY],
+            f"dwp_{self.connection_data[self.CONNECTION_DATA_TENANT_KEY]}",
         )
 
         self.aws_lambda_client = self.__get_aws_client(
@@ -105,7 +108,7 @@ class AWSLambdaDataSource(object):
     def __get_table_info(self, table_config, last_known_sync_version):
         pay_load = {
             "Command": "GetTableInfo",
-            "TenantId": int(self.connection_data["tenant"]),
+            "TenantId": int(self.connection_data[self.CONNECTION_DATA_TENANT_KEY]),
             "Table": {"Schema": table_config["schema"], "Name": table_config["name"]},
             "CommandPayload": {"LastSyncVersion": last_known_sync_version},
         }
@@ -131,7 +134,7 @@ class AWSLambdaDataSource(object):
     ):
         pay_load = {
             "Command": "GetTableData",
-            "TenantId": int(self.connection_data["tenant"]),
+            "TenantId": int(self.connection_data[self.CONNECTION_DATA_TENANT_KEY]),
             "Table": {"Schema": table_config["schema"], "Name": table_config["name"]},
             "CommandPayload": {
                 "AuditColumnNameForChangeVersion": Providers.AuditColumnsNames.CHANGE_VERSION,
@@ -195,8 +198,8 @@ class AWSLambdaDataSource(object):
             and current_datetime < self.role_session_expiry
         ):
             role_credentials = self.__assume_role(
-                self.connection_data[self.CONNECTION_STRING_ROLE_KEY],
-                f'dwp_{self.connection_data["tenant"]}',
+                self.connection_data[self.CONNECTION_DATA_ROLE_KEY],
+                f"dwp_{self.connection_data[self.CONNECTION_DATA_TENANT_KEY]}",
             )
 
             self.aws_lambda_client = self.__get_aws_client(
@@ -227,7 +230,7 @@ class AWSLambdaDataSource(object):
             self.logger.debug(pay_load)
 
             lambda_response = self.aws_lambda_client.invoke(
-                FunctionName=self.connection_data["function"],
+                FunctionName=self.connection_data[self.CONNECTION_DATA_FUNCTION_KEY],
                 InvocationType="RequestResponse",
                 LogType="None",  # |'Tail', Set to Tail to include the execution log in the response
                 Payload=json.dumps(pay_load).encode(),
@@ -245,7 +248,7 @@ class AWSLambdaDataSource(object):
 
             if response_status_code != 200 or response_function_error:
                 self.logger.error(
-                    f'Error in response from aws lambda \'{self.connection_data["function"]}\', '
+                    f"Error in response from aws lambda '{self.connection_data[self.CONNECTION_DATA_FUNCTION_KEY]}', "
                     f"attempt {current_attempt} of {max_attempts}"
                 )
                 self.logger.error(f"Response - Status Code = {response_status_code}")
