@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="rdl",
-    version="0.1.14-beta",
+    version="0.1.24-beta",
     packages=find_packages(),
     install_requires=[
         "numpy==1.16.2",
