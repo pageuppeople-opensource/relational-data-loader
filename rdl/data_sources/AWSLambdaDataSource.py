@@ -4,7 +4,7 @@ import json
 import boto3
 import time
 import datetime
-
+from botocore.client import Config
 from rdl.data_sources.ChangeTrackingInfo import ChangeTrackingInfo
 from rdl.data_sources.SourceTableInfo import SourceTableInfo
 from rdl.shared import Providers, Constants
@@ -47,7 +47,8 @@ class AWSLambdaDataSource(object):
         )
 
         self.aws_lambda_client = self.__get_aws_client(
-            self.AWS_SERVICE_LAMBDA, role_credentials
+            self.AWS_SERVICE_LAMBDA, role_credentials,
+            Config(read_timeout=200)
         )
         self.aws_s3_client = self.__get_aws_client(
             self.AWS_SERVICE_S3, role_credentials
@@ -182,12 +183,13 @@ class AWSLambdaDataSource(object):
 
         return role_credentials
 
-    def __get_aws_client(self, service, credentials):
+    def __get_aws_client(self, service, credentials, config=None):
         return boto3.client(
             service_name=service,
             aws_access_key_id=credentials["AccessKeyId"],
             aws_secret_access_key=credentials["SecretAccessKey"],
             aws_session_token=credentials["SessionToken"],
+            config=config
         )
 
     def __refresh_aws_clients_if_expired(self):
