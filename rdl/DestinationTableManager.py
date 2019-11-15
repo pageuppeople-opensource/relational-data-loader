@@ -150,11 +150,15 @@ class DestinationTableManager(object):
 
         deleted_column = f"EXCLUDED.{Providers.AuditColumnsNames.IS_DELETED}"
         for column_config in columns_config:
-            if "preserve_after_delete" in column_config["destination"] and column_config["destination"]["preserve_after_delete"]:
-                existing_column = f"{target_table_name}.{column_config["destination"]["name"]}"
-                excluded_column = f"EXCLUDED.{column_config["destination"]["name"]}"
+            if (
+                "preserve_after_delete" in column_config["destination"]
+                and column_config["destination"]["preserve_after_delete"]
+            ):
+                col_name = column_config["destination"]["name"]
+                existing_column = f"{target_table_name}.{col_name}"
+                excluded_column = f"EXCLUDED.{col_name}"
                 sql_builder.write(
-                    f"{column_config["destination"]["name"]} = CASE WHEN {deleted_column} = TRUE THEN {existing_column} ELSE {excluded_column} END, \n"
+                    f"{col_name} = CASE WHEN {deleted_column} = TRUE THEN {existing_column} ELSE {excluded_column} END, \n"
                 )
             else:
                 sql_builder.write(
