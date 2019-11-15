@@ -148,10 +148,22 @@ class DestinationTableManager(object):
         )
         sql_builder.write(f" ON CONFLICT({primary_key_column_list}) DO UPDATE SET ")
 
+        deleted_column = f"EXCLUDED.{Providers.AuditColumnsNames.IS_DELETED}"
         for column_config in columns_config:
-            sql_builder.write(
-                "{0} = EXCLUDED.{0},\n".format(column_config["destination"]["name"])
-            )
+            if (
+                "preserve_after_delete" in column_config["destination"]
+                and column_config["destination"]["preserve_after_delete"]
+            ):
+                col_name = column_config["destination"]["name"]
+                existing_column = f"{target_table_name}.{col_name}"
+                excluded_column = f"EXCLUDED.{col_name}"
+                sql_builder.write(
+                    f"{col_name} = CASE WHEN {deleted_column} = TRUE THEN {existing_column} ELSE {excluded_column} END, \n"
+                )
+            else:
+                sql_builder.write(
+                    "{0} = EXCLUDED.{0},\n".format(column_config["destination"]["name"])
+                )
 
         sql_builder.write(
             "{0} = EXCLUDED.{0},\n".format(Providers.AuditColumnsNames.TIMESTAMP)
