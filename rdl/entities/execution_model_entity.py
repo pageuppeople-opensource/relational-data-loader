@@ -8,6 +8,7 @@ from sqlalchemy import (
     Boolean,
     BigInteger,
     ForeignKey,
+    Index,
 )
 from sqlalchemy.sql import func
 from sqlalchemy.dialects.postgresql import UUID
@@ -47,6 +48,7 @@ class ExecutionModelEntity(Base):
         String(50),
         nullable=False,
         server_default=str(Constants.ExecutionModelStatus.STARTED),
+        index=True
     )
     last_sync_version = Column(BigInteger, nullable=False)
     sync_version = Column(BigInteger, nullable=False)
@@ -55,12 +57,15 @@ class ExecutionModelEntity(Base):
     started_on = Column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
-    completed_on = Column(DateTime(timezone=True), nullable=True)
+    completed_on = Column(DateTime(timezone=True), nullable=True, index=True)
     execution_time_ms = Column(BigInteger, nullable=True)
     rows_processed = Column(BigInteger, nullable=True)
     batches_processed = Column(Integer, nullable=True)
     model_checksum = Column(String(100), nullable=False)
     failure_reason = Column(String(1000), nullable=True)
+
+    index_on_execution_id_model_name = Index("execution_model__index_on_execution_id_model_name", execution_id, model_name, unique=True)
+    index_on_model_name_completed_on = Index("execution_model__index_on_model_name_completed_on", model_name, completed_on)
 
     def __str__(self):
         load_type = (
