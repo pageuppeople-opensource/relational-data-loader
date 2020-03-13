@@ -1,3 +1,6 @@
+**THIS PROJECT IS ARCHIVED** We started adding a lot of custom code that was specific to our company infrastructure so it became not viable to support this as an opensource implementation.
+
+
 # RelationalDataLoader
 
 [![Build status](https://ci.appveyor.com/api/projects/status/l7l6are63ir2js4r?svg=true)](https://ci.appveyor.com/project/PageUp/relational-data-loader-fkwak)
